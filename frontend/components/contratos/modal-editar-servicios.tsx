@@ -141,14 +141,19 @@ export default function ModalEditarServicios({ contratoId, fechaInicioContrato, 
         
         if (original && original.esActivo !== servicio.esActivo) {
           try {
-            // El estado cambió, activar o desactivar
-            const endpoint = servicio.esActivo 
-              ? `${BACKEND_URL}/servicios-contrato/${servicioId}/reactivar`
-              : `${BACKEND_URL}/servicios-contrato/${servicioId}/desactivar`;
-            
-            await fetchWithToken(endpoint, {
-              method: "PUT",
-            });
+            if (servicio.esActivo) {
+              // Reactivar: ahora requiere fechaInicio en el body (YYYY-MM-DD)
+              await fetchWithToken(`${BACKEND_URL}/servicios-contrato/${servicioId}/reactivar`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ fechaInicio: fechaActualValida() }),
+              });
+            } else {
+              // Desactivar: sin body
+              await fetchWithToken(`${BACKEND_URL}/servicios-contrato/${servicioId}/desactivar`, {
+                method: "PUT",
+              });
+            }
             
             console.log(`✅ Servicio ${servicioId} ${servicio.esActivo ? 'reactivado' : 'desactivado'} exitosamente`);
           } catch (error: any) {
