@@ -7,6 +7,7 @@ import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
 import BACKEND_URL from "@/utils/backendURL"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
+import LoadingSmall from "../loading-sm"
 
 interface AlquilerNoPagado {
   idContrato: number
@@ -49,7 +50,15 @@ export default function NotificacionFechaLimite({ onClose }: NotificacionFechaLi
     fetchAlquileresNoPagados()
   }, [mostrarNotificacion])
 
-  if (!mostrarNotificacion || loading) {
+  if(loading){
+    return(
+      <div>
+        <LoadingSmall text="Cargando..."/>
+      </div>
+    )
+  }
+
+  if (!mostrarNotificacion) {
     return null
   }
 
