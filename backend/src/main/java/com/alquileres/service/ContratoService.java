@@ -288,14 +288,6 @@ public class ContratoService {
         // Validar fechas lógicas usando las fechas convertidas
         String fechaActualISO = LocalDate.now().toString(); // Formato yyyy-MM-dd
 
-        // Validar que la fecha de inicio no sea anterior a la fecha actual
-        if (fechaInicioISO != null) {
-            if (FechaUtil.compararFechas(fechaInicioISO, fechaActualISO) < 0) {
-                throw new BusinessException(ErrorCodes.RANGO_DE_FECHAS_INVALIDO,
-                    "La fecha de inicio no puede ser anterior a la fecha actual", HttpStatus.BAD_REQUEST);
-            }
-        }
-
         if (fechaInicioISO != null && fechaFinISO != null) {
             if (FechaUtil.compararFechas(fechaFinISO, fechaInicioISO) < 0) {
                 throw new BusinessException(ErrorCodes.RANGO_DE_FECHAS_INVALIDO, "La fecha de fin no puede ser anterior a la fecha de inicio", HttpStatus.BAD_REQUEST);
