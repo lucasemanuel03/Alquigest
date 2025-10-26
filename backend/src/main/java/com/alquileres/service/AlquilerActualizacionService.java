@@ -6,6 +6,7 @@ import com.alquileres.model.ConfiguracionSistema;
 import com.alquileres.repository.AlquilerRepository;
 import com.alquileres.repository.ContratoRepository;
 import com.alquileres.repository.ConfiguracionSistemaRepository;
+import com.alquileres.util.BCRAApiClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Propagation;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -44,6 +46,12 @@ public class AlquilerActualizacionService {
 
     @Autowired
     private ConfiguracionSistemaRepository configuracionSistemaRepository;
+
+    @Autowired
+    private BCRAApiClient bcraApiClient;
+
+    @Autowired
+    private AumentoAlquilerService aumentoAlquilerService;
 
     /**
      * Procesa la creación de alquileres pendientes
@@ -182,6 +190,7 @@ public class AlquilerActualizacionService {
 
     /**
      * Crea un alquiler para un contrato específico si no tiene alquileres pendientes
+     * Aplica aumento por ICL si corresponde
      * Usa una transacción independiente para evitar bloqueos
      *
      * @param contrato El contrato para el cual crear el alquiler
@@ -200,22 +209,151 @@ public class AlquilerActualizacionService {
                 return false;
             }
 
+            // Obtener el último alquiler para determinar el monto
+            Optional<Alquiler> ultimoAlquilerOpt =
+                alquilerRepository.findTopByContratoOrderByFechaVencimientoPagoDesc(contrato);
+
+            BigDecimal montoOriginal = contrato.getMonto();
+            BigDecimal montoNuevo = montoOriginal;
+            boolean aplicoAumento = false;
+
+            // Verificar si debe aplicar aumento
+            if (debeAplicarAumento(contrato)) {
+                logger.info("Contrato ID {} requiere aumento. Aumenta con ICL: {}",
+                           contrato.getId(), contrato.getAumentaConIcl());
+
+                // Si aumenta con ICL, consultar la API del BCRA
+                if (contrato.getAumentaConIcl() != null && contrato.getAumentaConIcl()) {
+                    try {
+                        // Determinar el monto base (del último alquiler o del contrato)
+                        BigDecimal montoBase = ultimoAlquilerOpt.isPresent()
+                            ? ultimoAlquilerOpt.get().getMonto()
+                            : montoOriginal;
+
+                        // Obtener fechas para consultar ICL
+                        String fechaInicio = contrato.getFechaAumento(); // Última fecha de aumento
+                        String fechaFin = LocalDate.now().format(FORMATO_FECHA);
+
+                        logger.info("Consultando ICL del BCRA para contrato ID {} - Desde: {} hasta: {}",
+                                   contrato.getId(), fechaInicio, fechaFin);
+
+                        // Consultar tasa de aumento del BCRA
+                        BigDecimal tasaAumento = bcraApiClient.obtenerTasaAumentoICL(fechaInicio, fechaFin);
+                        montoNuevo = montoBase.multiply(tasaAumento).setScale(2, BigDecimal.ROUND_HALF_UP);
+                        aplicoAumento = true;
+
+                        logger.info("ICL aplicado al contrato ID {} - Monto anterior: {}, Monto nuevo: {}, Tasa: {}",
+                                   contrato.getId(), montoBase, montoNuevo, tasaAumento);
+
+                        // Registrar el aumento en el historial
+                        BigDecimal porcentajeAumento = tasaAumento.subtract(BigDecimal.ONE)
+                            .multiply(new BigDecimal("100"))
+                            .setScale(2, BigDecimal.ROUND_HALF_UP);
+
+                        aumentoAlquilerService.registrarAumentoAutomatico(
+                            contrato,
+                            montoBase,
+                            montoNuevo,
+                            porcentajeAumento
+                        );
+
+                    } catch (Exception e) {
+                        logger.error("Error al consultar ICL para contrato ID {}: {}. Se usará el monto sin aumento.",
+                                   contrato.getId(), e.getMessage());
+                        // Si falla la consulta, usar el monto original
+                        montoNuevo = ultimoAlquilerOpt.isPresent()
+                            ? ultimoAlquilerOpt.get().getMonto()
+                            : montoOriginal;
+                    }
+                } else {
+                    // Aumenta sin ICL (por porcentaje fijo)
+                    BigDecimal montoBase = ultimoAlquilerOpt.isPresent()
+                        ? ultimoAlquilerOpt.get().getMonto()
+                        : montoOriginal;
+
+                    if (contrato.getPorcentajeAumento() != null && contrato.getPorcentajeAumento().compareTo(BigDecimal.ZERO) > 0) {
+                        BigDecimal tasaAumento = BigDecimal.ONE.add(
+                            contrato.getPorcentajeAumento().divide(new BigDecimal("100"), 10, BigDecimal.ROUND_HALF_UP)
+                        );
+                        montoNuevo = montoBase.multiply(tasaAumento).setScale(2, BigDecimal.ROUND_HALF_UP);
+                        aplicoAumento = true;
+
+                        logger.info("Aumento fijo aplicado al contrato ID {} - Monto anterior: {}, Monto nuevo: {}, Porcentaje: {}%",
+                                   contrato.getId(), montoBase, montoNuevo, contrato.getPorcentajeAumento());
+
+                        // Registrar el aumento en el historial
+                        aumentoAlquilerService.registrarAumentoAutomatico(
+                            contrato,
+                            montoBase,
+                            montoNuevo,
+                            contrato.getPorcentajeAumento()
+                        );
+                    }
+                }
+            } else {
+                // No aplica aumento, usar el monto del último alquiler o del contrato
+                montoNuevo = ultimoAlquilerOpt.isPresent()
+                    ? ultimoAlquilerOpt.get().getMonto()
+                    : montoOriginal;
+            }
+
             // Crear nuevo alquiler con vencimiento el día 10 del mes actual
             LocalDate fechaActual = LocalDate.now();
             LocalDate fechaVencimiento = LocalDate.of(fechaActual.getYear(), fechaActual.getMonth(), 10);
             String fechaVencimientoISO = fechaVencimiento.format(FORMATO_FECHA);
 
-            Alquiler nuevoAlquiler = new Alquiler(contrato, fechaVencimientoISO, contrato.getMonto());
+            Alquiler nuevoAlquiler = new Alquiler(contrato, fechaVencimientoISO, montoNuevo);
             nuevoAlquiler.setEsActivo(true);
             alquilerRepository.save(nuevoAlquiler);
 
-            logger.info("Alquiler creado automáticamente para contrato ID: {} - Monto: {}",
-                       contrato.getId(), contrato.getMonto());
+            logger.info("Alquiler creado automáticamente para contrato ID: {} - Monto: {} (Aumento aplicado: {})",
+                       contrato.getId(), montoNuevo, aplicoAumento);
             return true;
 
         } catch (Exception e) {
             logger.error("Error al crear alquiler para contrato ID {}: {}",
                         contrato.getId(), e.getMessage(), e);
+            return false;
+        }
+    }
+
+    /**
+     * Determina si un contrato debe recibir aumento en su próximo alquiler
+     * Basado en el atributo fechaAumento del contrato
+     *
+     * @param contrato El contrato a evaluar
+     * @return true si debe aplicar aumento, false en caso contrario
+     */
+    private boolean debeAplicarAumento(Contrato contrato) {
+        // Si no tiene fecha de aumento configurada, no aumenta
+        if (contrato.getFechaAumento() == null || contrato.getFechaAumento().isEmpty()) {
+            return false;
+        }
+
+        // Si dice "No aumenta más" o similar, no aumenta
+        if (contrato.getFechaAumento().equalsIgnoreCase("No aumenta más") ||
+            contrato.getFechaAumento().equalsIgnoreCase("Sin Aumento")) {
+            return false;
+        }
+
+        try {
+            // Parsear la fecha de aumento
+            LocalDate fechaAumento = LocalDate.parse(contrato.getFechaAumento(), FORMATO_FECHA);
+            LocalDate fechaActual = LocalDate.now();
+
+            // Si la fecha de aumento ya pasó, debe aumentar
+            boolean debeAumentar = !fechaActual.isBefore(fechaAumento);
+
+            if (debeAumentar) {
+                logger.debug("Contrato ID {} debe aplicar aumento. Fecha de aumento: {}, Fecha actual: {}",
+                           contrato.getId(), fechaAumento, fechaActual);
+            }
+
+            return debeAumentar;
+
+        } catch (Exception e) {
+            logger.warn("Error al parsear fecha de aumento del contrato ID {}: {}. No se aplicará aumento.",
+                       contrato.getId(), e.getMessage());
             return false;
         }
     }

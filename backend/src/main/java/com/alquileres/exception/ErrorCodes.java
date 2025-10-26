@@ -47,4 +47,5 @@ public class ErrorCodes {
     public static final String ERROR_INTERNO = "ERROR_INTERNO";
     public static final String DATOS_INCOMPLETOS = "DATOS_INCOMPLETOS";
     public static final String DATOS_INVALIDOS = "DATOS_INVALIDOS";
+    public static final String ERROR_SERVICIO_EXTERNO = "ERROR_SERVICIO_EXTERNO";
 }
