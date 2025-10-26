@@ -117,6 +117,29 @@ export default function GenerarReciboPage() {
       )
     }
 
+  if (contratoBD?.estadoContratoId !== 1) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="p-6 max-w-lg mx-4">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <AlertCircle className="h-6 w-6 text-red-600" />
+              Atención
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              No es posible generar un recibo para este contrato ya que su estado actual es "<span className="font-semibold">{contratoBD?.estadoContratoNombre}</span>".
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Por favor, verifique el estado del contrato o contacte al administrador si cree que esto es un error.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-background">
 

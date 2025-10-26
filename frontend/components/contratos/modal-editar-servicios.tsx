@@ -17,6 +17,7 @@ interface ModalEditarServiciosProps {
   contratoId: number;
   fechaInicioContrato: string;
   onServiciosActualizados?: () => void;
+  disabled: boolean;
 }
 
 const serviciosInicial: ServicioContrato[] = [
@@ -27,7 +28,7 @@ const serviciosInicial: ServicioContrato[] = [
   { tipoServicioId: 5, nroCuenta: null, contratoId: null, nroContrato: '', esDeInquilino: true, esActivo: false, esAnual: true, fechaInicio: '' },  // Otros
 ];
 
-export default function ModalEditarServicios({ contratoId, fechaInicioContrato, onServiciosActualizados }: ModalEditarServiciosProps) {
+export default function ModalEditarServicios({ contratoId, fechaInicioContrato, onServiciosActualizados, disabled = false }: ModalEditarServiciosProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [serviciosContrato, setServiciosContrato] = useState<ServicioContrato[]>(serviciosInicial);
   const [serviciosOriginales, setServiciosOriginales] = useState<any[]>([]); // Para comparar cambios
@@ -193,7 +194,7 @@ export default function ModalEditarServicios({ contratoId, fechaInicioContrato, 
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
-          <Button variant="default">
+          <Button variant="default" disabled={disabled} >
             <Edit className="h-4 w-4 mr-2" />
             Editar Servicios
           </Button>
