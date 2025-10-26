@@ -309,7 +309,13 @@ public class ContratoService {
         String fechaAumentoCalculada = null;
         if (fechaInicioISO != null && contratoDTO.getPeriodoAumento() != null && contratoDTO.getPeriodoAumento() > 0) {
             try {
-                fechaAumentoCalculada = FechaUtil.agregarMeses(fechaInicioISO, contratoDTO.getPeriodoAumento());
+                String fechaCalculada = FechaUtil.agregarMeses(fechaInicioISO, contratoDTO.getPeriodoAumento());
+
+                // Convertir a día 1 del mes calculado
+                // Ejemplo: 2025-06-20 → 2025-06-01
+                LocalDate fecha = LocalDate.parse(fechaCalculada, DateTimeFormatter.ISO_LOCAL_DATE);
+                LocalDate fechaDia1 = fecha.withDayOfMonth(1);
+                fechaAumentoCalculada = fechaDia1.format(DateTimeFormatter.ISO_LOCAL_DATE);
 
                 // Validar que la fechaAumento no sea mayor a la fechaFin
                 if (fechaFinISO != null && FechaUtil.compararFechas(fechaAumentoCalculada, fechaFinISO) > 0) {
