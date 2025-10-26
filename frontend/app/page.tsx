@@ -117,7 +117,7 @@ export default function HomePage() {
               <BarChart3 className="h-6 w-6 text-muted-foreground" />
             </CardHeader>
             <CardContent className="flex flex-col items-center">
-              <div className="text-2xl font-bold font-sans">${contadores.honorariosDelMes.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+              <div className="text-2xl font-bold font-sans">${contadores.honorariosDelMes.toLocaleString('es-AR')}</div>
               <p className="text-sm text-muted-foreground">Cálculo estimativo</p>
               
             </CardContent>

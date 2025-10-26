@@ -19,7 +19,7 @@ interface ServicioPagoCardProps {
 
 export default function ServicioPagoCard({ pagoServicio, onPagoRegistrado }: ServicioPagoCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
-  const [monto, setMonto] = useState(pagoServicio.monto || "")
+  const [monto, setMonto] = useState(pagoServicio.monto || 0)
   // Obtener la fecha actual en formato YYYY-MM-DD
   const fechaActual = new Date().toISOString().split('T')[0]
   const [fechaPago, setFechaPago] = useState(fechaActual)
@@ -112,7 +112,7 @@ export default function ServicioPagoCard({ pagoServicio, onPagoRegistrado }: Ser
           <div className="mt-3 grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
             <div className="space-y-2">
               <Label>Monto</Label>
-              <Input type="number" value={monto || 0} onChange={e => setMonto(e.target.value)} min={0} max={90000000} placeholder="Ej. $10.000"/>
+              <Input type="number" value={monto} onChange={e => setMonto(e.target.value)} min={0} max={90000000} placeholder="Ej. $10.000"/>
             </div>
             <div className="space-y-2">
               <Label>Fecha de pago</Label>
