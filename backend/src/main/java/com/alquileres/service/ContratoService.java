@@ -79,6 +79,9 @@ public class ContratoService {
     private AlquilerActualizacionService alquilerActualizacionService;
 
     @Autowired
+    private ServicioXContratoService servicioXContratoService;
+
+    @Autowired
     private EncryptionService encryptionService;
 
     @Autowired
@@ -417,6 +420,9 @@ public class ContratoService {
 
             // ANULAR TODOS LOS ALQUILERES DEL CONTRATO
             anularAlquileresDelContrato(id);
+
+            // DESACTIVAR TODOS LOS SERVICIOS DEL CONTRATO
+            desactivarServiciosDelContrato(id);
         } else if ("Vigente".equals(nombreEstadoContrato)) {
             // Actualizar el estado del inmueble a "Alquilado"
             Optional<EstadoInmueble> estadoAlquilado = estadoInmuebleRepository.findByNombre("Alquilado");
@@ -562,9 +568,35 @@ public class ContratoService {
                 logger.info("No hay alquileres para anular en el contrato ID: {}", contratoId);
             }
         } catch (Exception e) {
-            logger.error("Error al anular alquileres del contrato ID: {}", contratoId, e);
+            logger.error("Error al desactivar servicios del contrato ID: {}", contratoId, e);
             throw new BusinessException(ErrorCodes.ERROR_INTERNO,
-                "Error al anular los alquileres del contrato", HttpStatus.INTERNAL_SERVER_ERROR);
+                "Error al desactivar los servicios del contrato", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Desactiva todos los servicios activos asociados a un contrato
+     *
+     * @param contratoId ID del contrato
+     */
+    private void desactivarServiciosDelContrato(Long contratoId) {
+        try {
+            // Obtener todos los servicios activos del contrato
+            List<com.alquileres.model.ServicioXContrato> servicios = servicioXContratoService.obtenerServiciosActivosPorContrato(contratoId);
+
+            if (servicios != null && !servicios.isEmpty()) {
+                // Desactivar todos los servicios
+                for (com.alquileres.model.ServicioXContrato servicio : servicios) {
+                    servicioXContratoService.desactivarServicio(servicio.getId());
+                }
+                logger.info("Se desactivaron {} servicios del contrato ID: {}", servicios.size(), contratoId);
+            } else {
+                logger.info("No hay servicios activos para desactivar en el contrato ID: {}", contratoId);
+            }
+        } catch (Exception e) {
+            logger.error("Error al desactivar servicios del contrato ID: {}", contratoId, e);
+            throw new BusinessException(ErrorCodes.ERROR_INTERNO,
+                "Error al desactivar los servicios del contrato", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
