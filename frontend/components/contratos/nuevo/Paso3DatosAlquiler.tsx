@@ -27,7 +27,7 @@ export default function Paso3DatosAlquiler({
         <Receipt className="h-5 w-5" />
         <span className="font-semibold">Paso 3: Datos de Alquiler</span>
       </div>
-      <div className="space-y-4">
+      <div className="space-y-4 w-fit">
         <Label>Monto Inicial de Locación *</Label>
         <Input
           type="text"
@@ -60,13 +60,21 @@ export default function Paso3DatosAlquiler({
             <Percent className="h-4 w-4" />
             <Label>Porcentaje de Aumento</Label>
         </div>
-        <Input
-          type="number"
-          value={formData.porcentajeAumento}
-          disabled={formData.tipoAumento !== 'Porcentaje fijo'}
-          onChange={(e) => onChange('porcentajeAumento', e.target.value)}
-          placeholder={formData.tipoAumento === 'ICL' ? 'N/A para ICL' : 'Ingrese porcentaje'}
-        />
+        <div className="relative w-fit">
+          <Input
+            type="number"
+            inputMode='decimal'
+            min={0}
+            value={formData.porcentajeAumento}
+            disabled={formData.tipoAumento !== 'Porcentaje fijo'}
+            onChange={(e) => onChange('porcentajeAumento', e.target.value)}
+            placeholder={formData.tipoAumento === 'ICL' ? 'N/A para ICL' : 'Ingrese porcentaje'}
+            className="pr-8"
+          />
+          {formData.porcentajeAumento && formData.tipoAumento === 'Porcentaje fijo' && (
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
+          )}
+        </div>
         {formData.tipoAumento === 'ICL' && (
           <p className="text-xs text-muted-foreground">El porcentaje se calcula por índice ICL y no puede modificarse manualmente.</p>
         )}
