@@ -56,27 +56,43 @@ export default function Paso3DatosAlquiler({
             <SelectItem value="ICL">ICL</SelectItem>
           </SelectContent>
         </Select>
-        <div className="flex items-center gap-2">
-            <Percent className="h-4 w-4" />
-            <Label>Porcentaje de Aumento</Label>
-        </div>
-        <div className="relative w-fit">
-          <Input
-            type="number"
-            inputMode='decimal'
-            min={0}
-            value={formData.porcentajeAumento}
-            disabled={formData.tipoAumento !== 'Porcentaje fijo'}
-            onChange={(e) => onChange('porcentajeAumento', e.target.value)}
-            placeholder={formData.tipoAumento === 'ICL' ? 'N/A para ICL' : 'Ingrese porcentaje'}
-            className="pr-8"
-          />
-          {formData.porcentajeAumento && formData.tipoAumento === 'Porcentaje fijo' && (
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
-          )}
-        </div>
+        {formData.tipoAumento === 'Porcentaje fijo' && (
+          <>
+            <div className="flex items-center gap-2">
+              <Percent className="h-4 w-4" />
+              <Label>Porcentaje de Aumento</Label>
+            </div>
+            <div className="relative w-full">
+              <Input
+                type="number"
+                inputMode='decimal'
+                min={0}
+                max={999}
+                value={formData.porcentajeAumento > 0 ? formData.porcentajeAumento : ''}
+                onChange={(e) => {
+                  const valor = e.target.value;
+                  // Solo permite números y limita a 999
+                  if (valor === '' || (!/\D/.test(valor) && parseInt(valor) <= 999)) {
+                    onChange('porcentajeAumento', valor);
+                  }
+                }}
+                placeholder='Ingrese porcentaje'
+                className="pr-8"
+              />
+              {formData.porcentajeAumento > 0 && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
+              )}
+            </div>
+          </>
+        )}
         {formData.tipoAumento === 'ICL' && (
-          <p className="text-xs text-muted-foreground">El porcentaje se calcula por índice ICL y no puede modificarse manualmente.</p>
+          <>
+            <div className="flex items-center gap-2">
+              <Percent className="h-4 w-4" />
+              <Label>Porcentaje de Aumento</Label>
+            </div>
+            <p className="text-sm text-muted-foreground">El porcentaje se calcula por índice ICL y no puede modificarse manualmente.</p>
+          </>
         )}
       </div>
     </>
