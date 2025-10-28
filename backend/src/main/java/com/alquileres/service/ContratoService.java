@@ -274,7 +274,7 @@ public class ContratoService {
                     throw new BusinessException(ErrorCodes.FORMATO_FECHA_INVALIDO,
                         "Formato de fecha de inicio inválido. Use dd/MM/yyyy (ej: 25/12/2024)", HttpStatus.BAD_REQUEST);
                 }
-                fechaInicioISO = FechaUtil.convertirFechaUsuarioToISO(contratoDTO.getFechaInicio());
+                fechaInicioISO = FechaUtil.convertirFechaUsuarioToISODate(contratoDTO.getFechaInicio());
             }
 
             if (contratoDTO.getFechaFin() != null) {
@@ -282,7 +282,7 @@ public class ContratoService {
                     throw new BusinessException(ErrorCodes.FORMATO_FECHA_INVALIDO,
                         "Formato de fecha de fin inválido. Use dd/MM/yyyy (ej: 25/12/2024)", HttpStatus.BAD_REQUEST);
                 }
-                fechaFinISO = FechaUtil.convertirFechaUsuarioToISO(contratoDTO.getFechaFin());
+                fechaFinISO = FechaUtil.convertirFechaUsuarioToISODate(contratoDTO.getFechaFin());
             }
         } catch (IllegalArgumentException e) {
             throw new BusinessException(ErrorCodes.FORMATO_FECHA_INVALIDO, e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -309,7 +309,7 @@ public class ContratoService {
         String fechaAumentoCalculada = null;
         if (fechaInicioISO != null && contratoDTO.getPeriodoAumento() != null && contratoDTO.getPeriodoAumento() > 0) {
             try {
-                String fechaCalculada = FechaUtil.agregarMeses(fechaInicioISO, contratoDTO.getPeriodoAumento());
+                String fechaCalculada = FechaUtil.agregarMesesDate(fechaInicioISO, contratoDTO.getPeriodoAumento());
 
                 // Convertir a día 1 del mes calculado
                 // Ejemplo: 2025-06-20 → 2025-06-01

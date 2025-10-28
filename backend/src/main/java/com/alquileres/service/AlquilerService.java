@@ -140,7 +140,7 @@ public class AlquilerService {
                     "Formato de fecha de vencimiento inválido. Use dd/MM/yyyy (ej: 25/12/2024)", HttpStatus.BAD_REQUEST);
             }
             try {
-                fechaVencimientoISO = FechaUtil.convertirFechaUsuarioToISO(alquilerDTO.getFechaVencimientoPago());
+                fechaVencimientoISO = FechaUtil.convertirFechaUsuarioToISODate(alquilerDTO.getFechaVencimientoPago());
             } catch (IllegalArgumentException e) {
                 throw new BusinessException(ErrorCodes.FORMATO_FECHA_INVALIDO, e.getMessage(), HttpStatus.BAD_REQUEST);
             }
@@ -180,7 +180,7 @@ public class AlquilerService {
                     "Formato de fecha de vencimiento inválido. Use dd/MM/yyyy (ej: 25/12/2024)", HttpStatus.BAD_REQUEST);
             }
             try {
-                String fechaVencimientoISO = FechaUtil.convertirFechaUsuarioToISO(alquilerDTO.getFechaVencimientoPago());
+                String fechaVencimientoISO = FechaUtil.convertirFechaUsuarioToISODate(alquilerDTO.getFechaVencimientoPago());
                 alquiler.setFechaVencimientoPago(fechaVencimientoISO);
             } catch (IllegalArgumentException e) {
                 throw new BusinessException(ErrorCodes.FORMATO_FECHA_INVALIDO, e.getMessage(), HttpStatus.BAD_REQUEST);

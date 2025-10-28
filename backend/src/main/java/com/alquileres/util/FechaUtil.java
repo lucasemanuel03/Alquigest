@@ -47,6 +47,31 @@ public class FechaUtil {
     }
 
     /**
+     * Convierte una fecha del formato del usuario (dd/MM/yyyy) al formato ISO sin hora (yyyy-MM-dd)
+     *
+     * @param fechaUsuario Fecha en formato dd/MM/yyyy
+     * @return Fecha en formato yyyy-MM-dd, o null si la fecha es null o inválida
+     */
+    public static String convertirFechaUsuarioToISODate(String fechaUsuario) {
+        if (fechaUsuario == null || fechaUsuario.trim().isEmpty()) {
+            return null;
+        }
+
+        try {
+            LocalDate fecha = LocalDate.parse(fechaUsuario.trim(), FORMATO_USUARIO);
+            return fecha.format(FORMATO_ISO_DATE);
+        } catch (DateTimeParseException e) {
+            // Si no puede parsear con formato usuario, intenta con formato ISO
+            try {
+                LocalDate fecha = LocalDate.parse(fechaUsuario.trim());
+                return fecha.format(FORMATO_ISO_DATE);
+            } catch (DateTimeParseException e2) {
+                throw new IllegalArgumentException("Formato de fecha inválido. Use dd/MM/yyyy (ej: 25/12/2024)", e);
+            }
+        }
+    }
+
+    /**
      * Convierte una fecha del formato del usuario (dd/MM/yyyy) al formato ISO con tiempo
      *
      * @param fechaUsuario Fecha en formato dd/MM/yyyy
@@ -140,6 +165,33 @@ public class FechaUtil {
             }
             LocalDateTime nuevaFecha = fechaDateTime.plusMonths(meses);
             return nuevaFecha.format(FORMATO_ISO_DATETIME);
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Formato de fecha inválido para cálculo: " + fechaBase, e);
+        }
+    }
+
+    /**
+     * Calcula una fecha agregando meses a una fecha base (sin hora)
+     *
+     * @param fechaBase Fecha base en formato ISO (yyyy-MM-dd)
+     * @param meses Cantidad de meses a agregar
+     * @return Nueva fecha en formato ISO sin hora (yyyy-MM-dd), o null si la fecha base es null
+     */
+    public static String agregarMesesDate(String fechaBase, int meses) {
+        if (fechaBase == null || fechaBase.trim().isEmpty()) {
+            return null;
+        }
+
+        try {
+            LocalDate fecha;
+            if (fechaBase.contains("T")) {
+                LocalDateTime fechaDateTime = LocalDateTime.parse(fechaBase.trim(), FORMATO_ISO_DATETIME);
+                fecha = fechaDateTime.toLocalDate();
+            } else {
+                fecha = LocalDate.parse(fechaBase.trim(), FORMATO_ISO_DATE);
+            }
+            LocalDate nuevaFecha = fecha.plusMonths(meses);
+            return nuevaFecha.format(FORMATO_ISO_DATE);
         } catch (DateTimeParseException e) {
             throw new IllegalArgumentException("Formato de fecha inválido para cálculo: " + fechaBase, e);
         }
