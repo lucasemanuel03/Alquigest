@@ -150,37 +150,154 @@ public class AlquilerActualizacionService {
 
     /**
      * Crea alquileres para todos los contratos vigentes que no tengan alquileres pendientes
-     * Usa transacciones independientes para evitar bloqueos en SQLite
+     * Optimizado para procesar en batch y reducir transacciones
      *
      * @return Cantidad de alquileres creados
      */
+    @Transactional
     public int crearAlquileresParaContratosVigentes() {
         try {
             logger.info("Iniciando creación automática de alquileres para contratos vigentes");
 
             // Obtener todos los contratos vigentes
-            List<Contrato> contratosVigentes = contratoRepository.findAll().stream()
-                    .filter(c -> c.getEstadoContrato() != null && "Vigente".equals(c.getEstadoContrato().getNombre()))
-                    .collect(Collectors.toList());
+            List<Contrato> contratosVigentes = contratoRepository.findContratosVigentes();
 
             logger.info("Encontrados {} contratos vigentes para verificar alquileres", contratosVigentes.size());
 
-            int alquileresCreados = 0;
+            if (contratosVigentes.isEmpty()) {
+                logger.info("No hay contratos vigentes para procesar");
+                return 0;
+            }
 
-            for (Contrato contrato : contratosVigentes) {
+            // Obtener IDs de contratos que ya tienen alquileres pendientes
+            List<Long> contratoIds = contratosVigentes.stream()
+                .map(Contrato::getId)
+                .collect(Collectors.toList());
+
+            // Buscar alquileres pendientes en batch
+            List<Alquiler> alquileresPendientes = alquilerRepository.findAlquileresPendientesByContratoIds(contratoIds);
+
+            // Crear un Set de IDs de contratos que ya tienen alquileres
+            java.util.Set<Long> contratosConAlquileres = alquileresPendientes.stream()
+                .map(a -> a.getContrato().getId())
+                .collect(Collectors.toSet());
+
+            // Filtrar contratos que necesitan alquileres
+            List<Contrato> contratosSinAlquileres = contratosVigentes.stream()
+                .filter(c -> !contratosConAlquileres.contains(c.getId()))
+                .collect(Collectors.toList());
+
+            if (contratosSinAlquileres.isEmpty()) {
+                logger.info("Todos los contratos vigentes ya tienen alquileres pendientes");
+                return 0;
+            }
+
+            logger.info("Procesando {} contratos que necesitan alquileres", contratosSinAlquileres.size());
+
+            // Calcular fecha de vencimiento una sola vez
+            LocalDate fechaActual = LocalDate.now();
+            LocalDate fechaVencimiento = LocalDate.of(fechaActual.getYear(), fechaActual.getMonth(), 10);
+            String fechaVencimientoISO = fechaVencimiento.format(FORMATO_FECHA);
+
+            // Colección para batch insert
+            List<Alquiler> nuevosAlquileres = new java.util.ArrayList<>();
+            List<com.alquileres.model.AumentoAlquiler> nuevosAumentos = new java.util.ArrayList<>();
+
+            // Procesar cada contrato
+            for (Contrato contrato : contratosSinAlquileres) {
                 try {
-                    boolean creado = crearAlquilerParaContrato(contrato);
-                    if (creado) {
-                        alquileresCreados++;
+                    BigDecimal montoOriginal = contrato.getMonto();
+                    BigDecimal montoNuevo = montoOriginal;
+                    boolean aplicoAumento = false;
+
+                    // Obtener el último alquiler para determinar el monto
+                    Optional<Alquiler> ultimoAlquilerOpt =
+                        alquilerRepository.findTopByContratoOrderByFechaVencimientoPagoDesc(contrato);
+
+                    // Verificar si debe aplicar aumento
+                    if (debeAplicarAumento(contrato)) {
+                        BigDecimal montoBase = ultimoAlquilerOpt.isPresent()
+                            ? ultimoAlquilerOpt.get().getMonto()
+                            : montoOriginal;
+
+                        // Calcular nuevo monto según tipo de aumento
+                        if (Boolean.TRUE.equals(contrato.getAumentaConIcl())) {
+                            try {
+                                String fechaInicio = contrato.getFechaAumento();
+                                String fechaFin = LocalDate.now().withDayOfMonth(1).format(FORMATO_FECHA);
+
+                                BigDecimal tasaAumento = bcraApiClient.obtenerTasaAumentoICL(fechaInicio, fechaFin);
+                                montoNuevo = montoBase.multiply(tasaAumento).setScale(2, BigDecimal.ROUND_HALF_UP);
+                                aplicoAumento = true;
+
+                                // Preparar registro de aumento
+                                BigDecimal porcentajeAumento = tasaAumento.subtract(BigDecimal.ONE)
+                                    .multiply(new BigDecimal("100"))
+                                    .setScale(2, BigDecimal.ROUND_HALF_UP);
+
+                                com.alquileres.model.AumentoAlquiler aumento =
+                                    aumentoAlquilerService.crearAumentoSinGuardar(
+                                        contrato, montoBase, montoNuevo, porcentajeAumento);
+                                nuevosAumentos.add(aumento);
+
+                            } catch (Exception e) {
+                                logger.error("Error al consultar ICL para contrato ID {}: {}. Se usará el monto sin aumento.",
+                                           contrato.getId(), e.getMessage());
+                                montoNuevo = montoBase;
+                            }
+                        } else {
+                            // Aumento fijo
+                            BigDecimal porcentajeAumento = contrato.getPorcentajeAumento() != null
+                                ? contrato.getPorcentajeAumento()
+                                : BigDecimal.ZERO;
+
+                            BigDecimal tasaAumento = BigDecimal.ONE.add(
+                                porcentajeAumento.divide(new BigDecimal("100"), 10, BigDecimal.ROUND_HALF_UP)
+                            );
+
+                            montoNuevo = montoBase.multiply(tasaAumento).setScale(2, BigDecimal.ROUND_HALF_UP);
+                            aplicoAumento = true;
+
+                            // Preparar registro de aumento
+                            com.alquileres.model.AumentoAlquiler aumento =
+                                aumentoAlquilerService.crearAumentoSinGuardar(
+                                    contrato, montoBase, montoNuevo, porcentajeAumento);
+                            nuevosAumentos.add(aumento);
+                        }
+                    } else {
+                        montoNuevo = ultimoAlquilerOpt.isPresent()
+                            ? ultimoAlquilerOpt.get().getMonto()
+                            : montoOriginal;
                     }
+
+                    // Crear alquiler
+                    Alquiler nuevoAlquiler = new Alquiler(contrato, fechaVencimientoISO, montoNuevo);
+                    nuevoAlquiler.setEsActivo(true);
+                    nuevosAlquileres.add(nuevoAlquiler);
+
+                    logger.debug("Alquiler preparado para contrato ID: {} - Monto: {} (Aumento: {})",
+                               contrato.getId(), montoNuevo, aplicoAumento);
+
                 } catch (Exception e) {
-                    logger.error("Error al crear alquiler para contrato ID {}: {}",
-                               contrato.getId(), e.getMessage());
+                    logger.error("Error al preparar alquiler para contrato ID {}: {}",
+                                contrato.getId(), e.getMessage());
                 }
             }
 
-            logger.info("Creación automática de alquileres completada. Total: {}", alquileresCreados);
-            return alquileresCreados;
+            // Guardar todos los alquileres en batch
+            if (!nuevosAlquileres.isEmpty()) {
+                alquilerRepository.saveAll(nuevosAlquileres);
+                logger.info("Guardados {} alquileres en batch", nuevosAlquileres.size());
+            }
+
+            // Guardar todos los aumentos en batch
+            if (!nuevosAumentos.isEmpty()) {
+                aumentoAlquilerService.guardarAumentosEnBatch(nuevosAumentos);
+                logger.info("Guardados {} aumentos en batch", nuevosAumentos.size());
+            }
+
+            logger.info("Creación automática de alquileres completada. Total: {}", nuevosAlquileres.size());
+            return nuevosAlquileres.size();
 
         } catch (Exception e) {
             logger.error("Error en creación automática de alquileres: {}", e.getMessage(), e);

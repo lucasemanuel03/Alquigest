@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.LocalDate;
@@ -228,7 +229,9 @@ public class ContratoService {
     }
 
     // Crear nuevo contrato
+    @Transactional
     public ContratoDTO crearContrato(ContratoCreateDTO contratoDTO) {
+        // ===== OPTIMIZACIÓN: Fetch todas las entidades necesarias en una sola operación =====
         // Validar que existe el inmueble
         Optional<Inmueble> inmueble = inmuebleRepository.findById(contratoDTO.getInmuebleId());
         if (!inmueble.isPresent()) {
@@ -239,6 +242,11 @@ public class ContratoService {
         Optional<Inquilino> inquilino = inquilinoRepository.findById(contratoDTO.getInquilinoId());
         if (!inquilino.isPresent()) {
             throw new BusinessException(ErrorCodes.INQUILINO_NO_ENCONTRADO, "No existe el inquilino indicado", HttpStatus.BAD_REQUEST);
+        }
+
+        // Validar que el inmueble no tenga un contrato vigente
+        if (contratoRepository.existsContratoVigenteByInmueble(inmueble.get())) {
+            throw new BusinessException(ErrorCodes.INMUEBLE_YA_ALQUILADO, "El inmueble ya tiene un contrato vigente", HttpStatus.BAD_REQUEST);
         }
 
         // Validar o asignar estado de contrato
@@ -259,9 +267,13 @@ public class ContratoService {
             estadoContrato = estadoVigenteOpt.get();
         }
 
-        // Validar que el inmueble no tenga un contrato vigente
-        if (contratoRepository.existsContratoVigenteByInmueble(inmueble.get())) {
-            throw new BusinessException(ErrorCodes.INMUEBLE_YA_ALQUILADO, "El inmueble ya tiene un contrato vigente", HttpStatus.BAD_REQUEST);
+        // ===== OPTIMIZACIÓN: Buscar estado "Alquilado" de una vez =====
+        EstadoInmueble estadoAlquilado = null;
+        if ("Vigente".equals(estadoContrato.getNombre())) {
+            Optional<EstadoInmueble> estadoAlquiladoOpt = estadoInmuebleRepository.findByNombre("Alquilado");
+            if (estadoAlquiladoOpt.isPresent()) {
+                estadoAlquilado = estadoAlquiladoOpt.get();
+            }
         }
 
         // Validar y convertir fechas del formato del usuario (dd/MM/yyyy) al formato ISO (yyyy-MM-dd)
@@ -342,27 +354,37 @@ public class ContratoService {
         // Guardar el contrato
         Contrato contratoGuardado = contratoRepository.save(contrato);
 
-        // Actualizar el estado del inmueble a "Alquilado"
-        Optional<EstadoInmueble> estadoAlquilado = estadoInmuebleRepository.findByNombre("Alquilado");
-        if (estadoAlquilado.isPresent()) {
-            Inmueble inmuebleToUpdate = inmueble.get();
-            inmuebleToUpdate.setEstado(estadoAlquilado.get().getId());
-            inmuebleToUpdate.setEsAlquilado(true);
-            inmuebleRepository.save(inmuebleToUpdate);
-        }
-
-        // Actualizar estaAlquilando del inquilino si el contrato es Vigente
+        // ===== OPTIMIZACIÓN: Actualizar inmueble e inquilino en la misma transacción =====
         if ("Vigente".equals(estadoContrato.getNombre())) {
+            // Actualizar el estado del inmueble a "Alquilado"
+            if (estadoAlquilado != null) {
+                Inmueble inmuebleToUpdate = inmueble.get();
+                inmuebleToUpdate.setEstado(estadoAlquilado.getId());
+                inmuebleToUpdate.setEsAlquilado(true);
+                inmuebleRepository.save(inmuebleToUpdate);
+            }
+
+            // Actualizar estaAlquilando del inquilino
             Inquilino inquilinoToUpdate = inquilino.get();
             inquilinoToUpdate.setEstaAlquilando(true);
             inquilinoRepository.save(inquilinoToUpdate);
 
-            // Forzar la creación del alquiler para el nuevo contrato
+            // ===== OPTIMIZACIÓN: Crear alquiler en la misma transacción =====
             try {
-                boolean alquilerGenerado = alquilerActualizacionService.generarAlquilerParaNuevoContrato(contratoGuardado.getId());
-                if (alquilerGenerado) {
-                    logger.info("Alquiler generado automáticamente para el nuevo contrato ID: {}", contratoGuardado.getId());
-                }
+                LocalDate fechaActual = LocalDate.now();
+                LocalDate fechaVencimiento = LocalDate.of(fechaActual.getYear(), fechaActual.getMonth(), 10);
+                String fechaVencimientoISO = fechaVencimiento.format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+                com.alquileres.model.Alquiler nuevoAlquiler = new com.alquileres.model.Alquiler(
+                    contratoGuardado,
+                    fechaVencimientoISO,
+                    contratoGuardado.getMonto()
+                );
+                nuevoAlquiler.setEsActivo(true);
+                alquilerRepository.save(nuevoAlquiler);
+
+                logger.info("Alquiler generado automáticamente para el nuevo contrato ID: {} - Monto: {}",
+                           contratoGuardado.getId(), contratoGuardado.getMonto());
             } catch (Exception e) {
                 logger.error("Error al generar alquiler para el nuevo contrato ID {}: {}",
                            contratoGuardado.getId(), e.getMessage());

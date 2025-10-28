@@ -204,4 +204,32 @@ public class AumentoAlquilerService {
         return aumentos.get(0); // El primero es el más reciente
     }
 
+    /**
+     * Crear un objeto AumentoAlquiler sin guardarlo en base de datos
+     * Usado para optimización de batch inserts
+     */
+    public AumentoAlquiler crearAumentoSinGuardar(Contrato contrato, BigDecimal montoAnterior,
+                                                   BigDecimal montoNuevo, BigDecimal porcentajeAumento) {
+        AumentoAlquiler aumento = new AumentoAlquiler();
+        aumento.setContrato(contrato);
+        aumento.setFechaAumento(java.time.LocalDate.now().toString());
+        aumento.setMontoAnterior(montoAnterior);
+        aumento.setMontoNuevo(montoNuevo);
+        aumento.setPorcentajeAumento(porcentajeAumento != null ? porcentajeAumento : BigDecimal.ZERO);
+        aumento.setDescripcion("Aumento automático registrado");
+        aumento.setCreatedAt(java.time.LocalDateTime.now().toString());
+        return aumento;
+    }
+
+    /**
+     * Guardar múltiples aumentos en batch
+     * Optimizado para reducir accesos a base de datos
+     */
+    @Transactional
+    public void guardarAumentosEnBatch(List<AumentoAlquiler> aumentos) {
+        if (aumentos != null && !aumentos.isEmpty()) {
+            aumentoAlquilerRepository.saveAll(aumentos);
+        }
+    }
+
 }
