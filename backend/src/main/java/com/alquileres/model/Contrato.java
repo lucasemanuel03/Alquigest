@@ -76,6 +76,12 @@ public class Contrato {
         this.aumentaConIcl = true;
     }
 
+    @PrePersist
+    protected void onCreate() {
+        String now = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        createdAt = now;
+    }
+
     // Getters y Setters
     public Long getId() {
         return id;
