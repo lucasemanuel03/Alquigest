@@ -3,7 +3,7 @@
 import { useState } from "react"
 
 import { KeySquare } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
@@ -85,13 +85,14 @@ export default function NuevaContrasenaCard({token}: {token?: string}) {
     <>
       <div className="max-w-md w-full shadow-md">
         <Card>
-          <CardHeader>
-            <CardTitle className="text-lg mb-4">Cambiar Contraseña</CardTitle>
+          <CardHeader className="mb-5">
+            <CardTitle className="text-lg">Ingrese aquí su nueva contraseña</CardTitle>
+            <CardDescription>Recuerde que debe tener como mínimo 6 caracteres.</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <Label htmlFor="nueva-contrasena" className="block text-sm font-medium text-gray-700">
+                <Label htmlFor="nueva-contrasena" className="block text-sm font-medium text-foreground">
                   Nueva Contraseña
                 </Label>
                 <Input
@@ -99,12 +100,13 @@ export default function NuevaContrasenaCard({token}: {token?: string}) {
                   id="nueva-contrasena"
                   placeholder="Ingrese su nueva contraseña"
                   value={nuevaContrasena}
+                  minLength={6}
                   onChange={(e) => setNuevaContrasena(e.target.value)}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="confirmar-contrasena" className="block text-sm font-medium text-gray-700">
+                <Label htmlFor="confirmar-contrasena" className="block text-sm font-medium text-foreground">
                   Confirmar Contraseña
                 </Label>
                 <Input
@@ -112,6 +114,7 @@ export default function NuevaContrasenaCard({token}: {token?: string}) {
                   id="confirmar-contrasena"
                   placeholder="Confirme su nueva contraseña"
                   value={confirmarContrasena}
+                  minLength={6}
                   onChange={(e) => setConfirmarContrasena(e.target.value)}
                   required
                 />

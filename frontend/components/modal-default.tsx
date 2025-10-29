@@ -22,7 +22,7 @@ export default function ModalDefault({ titulo, mensaje, onClose }: ModalDefaultP
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="flex flex-col gap-5">
         <DialogHeader>
-          <DialogTitle className="text-primary font-bold">{titulo}</DialogTitle>
+          <DialogTitle className="text-foreground font-bold">{titulo}</DialogTitle>
         </DialogHeader>
         <p className="font-sans">{mensaje}</p>
         <DialogFooter>
