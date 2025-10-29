@@ -76,5 +76,4 @@ Thumbs.db
 *~
 
 # Application specific
-src/main/resources/database/*.db
-src/main/java/com/alquileres/application.properties IPV4.txt
+src/main/resources/application.properties

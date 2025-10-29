@@ -4,6 +4,8 @@ import com.alquileres.dto.JwtResponse;
 import com.alquileres.dto.LoginRequest;
 import com.alquileres.dto.MessageResponse;
 import com.alquileres.dto.SignupRequest;
+import com.alquileres.dto.RecuperarContrasenaDTO;
+import com.alquileres.dto.ResetearContrasenaDTO;
 import com.alquileres.model.Rol;
 import com.alquileres.model.RolNombre;
 import com.alquileres.model.Usuario;
@@ -16,6 +18,8 @@ import com.alquileres.service.ContratoActualizacionService;
 import com.alquileres.service.ServicioActualizacionService;
 import com.alquileres.service.AlquilerActualizacionService;
 import com.alquileres.service.LoginAttemptService;
+import com.alquileres.service.PasswordResetService;
+import com.alquileres.service.EmailService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -74,6 +78,12 @@ public class AuthController {
 
     @Autowired
     LoginAttemptService loginAttemptService;
+
+    @Autowired
+    PasswordResetService passwordResetService;
+
+    @Autowired
+    EmailService emailService;
 
     @PostMapping("/signin")
     @Operation(summary = "Iniciar sesión")
@@ -249,7 +259,65 @@ public class AuthController {
         return ResponseEntity.ok(new MessageResponse("Usuario registrado exitosamente!"));
     }
 
-    @PostMapping("/signout")
+    @PostMapping("/recuperar-contrasena")
+    @Operation(summary = "Solicitar recuperación de contraseña")
+    public ResponseEntity<?> recuperarContrasena(@Valid @RequestBody RecuperarContrasenaDTO dto) {
+        try {
+            passwordResetService.solicitarRecuperacionContrasena(dto.getEmail());
+            return ResponseEntity.ok(new MessageResponse("Se ha enviado un correo de recuperación. Por favor, revise su bandeja de entrada."));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/resetear-contrasena")
+    @Operation(summary = "Resetear contraseña con token")
+    public ResponseEntity<?> resetearContrasena(@Valid @RequestBody ResetearContrasenaDTO dto) {
+        try {
+            passwordResetService.resetearContrasena(dto.getToken(), dto.getNuevaContrasena(), dto.getConfirmarContrasena());
+            return ResponseEntity.ok(new MessageResponse("Contraseña actualizada exitosamente!"));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/validar-token-reseteo/{token}")
+    @Operation(summary = "Validar token de recuperación")
+    public ResponseEntity<?> validarTokenReset(@PathVariable String token) {
+        boolean valido = passwordResetService.validarToken(token);
+        return ResponseEntity.ok(new MessageResponse(valido ? "Token válido" : "Token inválido o expirado"));
+    }
+
+    @PostMapping("/test-email")
+    @Operation(summary = "Enviar email de prueba")
+    public ResponseEntity<?> enviarEmailPrueba(@RequestParam String destinatario) {
+        try {
+            emailService.enviarEmailPrueba(destinatario);
+            return ResponseEntity.ok(new MessageResponse("Email de prueba enviado a: " + destinatario));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error al enviar email: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/diagnostico-email")
+    @Operation(summary = "Diagnosticar conexión SMTP")
+    public ResponseEntity<?> diagnosticoEmail() {
+        try {
+            return ResponseEntity.ok(new MessageResponse("Conexión SMTP funcionando correctamente"));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(500)
+                    .body(new MessageResponse("Error de conexión: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/logout")
     @Operation(summary = "Cerrar sesión")
     public ResponseEntity<?> logoutUser(HttpServletRequest request) {
         try {
@@ -327,3 +395,6 @@ public class AuthController {
         }
     }
 }
+
+
+

@@ -139,7 +139,7 @@ public class ContratoController {
                         .body(Map.of("error", "El archivo debe ser un PDF válido"));
             }
 
-            // Validar tamaño (máximo 10MB)
+            // Validar tamano (máximo 10MB)
             long maxSize = 10 * 1024 * 1024; // 10MB
             if (file.getSize() > maxSize) {
                 return ResponseEntity.badRequest()

@@ -4,8 +4,11 @@ import com.alquileres.dto.AlquilerDTO;
 import com.alquileres.dto.AlquilerCreateDTO;
 import com.alquileres.dto.RegistroPagoDTO;
 import com.alquileres.dto.NotificacionPagoAlquilerDTO;
+import com.alquileres.dto.AlquilerDetalladoDTO;
 import com.alquileres.model.Alquiler;
 import com.alquileres.model.Contrato;
+import com.alquileres.model.Propietario;
+import com.alquileres.model.Inmueble;
 import com.alquileres.repository.AlquilerRepository;
 import com.alquileres.repository.ContratoRepository;
 import com.alquileres.exception.BusinessException;
@@ -34,6 +37,9 @@ public class AlquilerService {
 
     @Autowired
     private ContratoRepository contratoRepository;
+
+    @Autowired
+    private com.alquileres.repository.PropietarioRepository propietarioRepository;
 
     // Obtener todos los alquileres
     public List<AlquilerDTO> obtenerTodosLosAlquileres() {
@@ -294,6 +300,51 @@ public class AlquilerService {
                    honorarios, alquileresVigentes.size(), sumaTotal);
 
         return honorarios;
+    }
+
+    // Calcular honorario de un alquiler específico (10% solo si está pagado)
+    public BigDecimal calcularHonorarioAlquilerEspecifico(Long alquilerId) {
+        Alquiler alquiler = alquilerRepository.findById(alquilerId)
+                .orElseThrow(() -> new RuntimeException("Alquiler no encontrado"));
+
+        // Solo calcular si el alquiler está pagado
+        if (alquiler.getEstaPagado()) {
+            BigDecimal honorario = alquiler.getMonto().multiply(new BigDecimal("0.1"));
+            logger.info("Honorario calculado para alquiler {}: {} (10% de {})",
+                       alquilerId, honorario, alquiler.getMonto());
+            return honorario;
+        } else {
+            logger.warn("El alquiler {} no está pagado, no se calcula honorario", alquilerId);
+            return BigDecimal.ZERO;
+        }
+    }
+
+    // Obtener información detallada del alquiler con propietario, inmueble y honorarios
+    public AlquilerDetalladoDTO obtenerAlquilerDetallado(Long alquilerId) {
+        Alquiler alquiler = alquilerRepository.findById(alquilerId)
+                .orElseThrow(() -> new RuntimeException("Alquiler no encontrado"));
+
+        Contrato contrato = alquiler.getContrato();
+        Inmueble inmueble = contrato.getInmueble();
+
+        // Obtener propietario usando el propietarioId del inmueble
+        Propietario propietario = propietarioRepository.findById(inmueble.getPropietarioId())
+                .orElseThrow(() -> new RuntimeException("Propietario no encontrado"));
+
+        // Calcular honorarios (10% solo si está pagado)
+        BigDecimal honorarios = alquiler.getEstaPagado()
+            ? alquiler.getMonto().multiply(new BigDecimal("0.1"))
+            : BigDecimal.ZERO;
+
+        return new AlquilerDetalladoDTO(
+            alquilerId,
+            propietario.getApellido(),
+            propietario.getNombre(),
+            inmueble.getDireccion(),
+            alquiler.getMonto(),
+            alquiler.getEstaPagado(),
+            honorarios
+        );
     }
 
     // Obtener notificaciones de pago de alquileres no pagados del mes actual

@@ -22,7 +22,7 @@ public class PagoServicio {
 
     @Pattern(regexp = "^(0[1-9]|1[0-2])/\\d{4}$", message = "El periodo debe tener el formato mm/aaaa (ej: 01/2025)")
     @Column(name = "periodo", length = 7)
-    private String periodo; // Formato: mm/aaaa (ej: 01/2025) - representa el mes/año de la factura
+    private String periodo; // Formato: mm/aaaa (ej: 01/2025) - representa el mes/ano de la factura
 
     @Column(name = "fecha_pago")
     private String fechaPago;

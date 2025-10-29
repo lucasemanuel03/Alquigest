@@ -72,7 +72,7 @@ public class TokenBlacklistService {
     }
 
     /**
-     * Obtiene el tamaño actual de la blacklist (útil para monitoreo)
+     * Obtiene el tamano actual de la blacklist (útil para monitoreo)
      */
     public int getBlacklistSize() {
         return blacklistedTokens.size();

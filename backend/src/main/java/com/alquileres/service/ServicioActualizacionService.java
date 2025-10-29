@@ -73,7 +73,7 @@ public class ServicioActualizacionService {
         try {
             logger.info("=== INICIO procesarPagosPendientes ===");
 
-            // Obtener el mes/año actual
+            // Obtener el mes/ano actual
             String mesActual = YearMonth.now().format(DateTimeFormatter.ofPattern("MM/yyyy"));
             logger.info("Mes actual: {}", mesActual);
 

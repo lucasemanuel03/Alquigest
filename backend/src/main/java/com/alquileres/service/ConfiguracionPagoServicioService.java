@@ -49,7 +49,7 @@ public class ConfiguracionPagoServicioService {
         configuracion.setEsActivo(true);
 
         // Establecer proximoPago como la fecha de inicio para que el primer pago se genere inmediatamente
-        // Después de generar el primer pago, se actualizará a fechaInicio + 1 mes/año
+        // Después de generar el primer pago, se actualizará a fechaInicio + 1 mes/ano
         configuracion.setProximoPago(fechaInicio);
 
         return configuracionPagoServicioRepository.save(configuracion);
@@ -81,7 +81,7 @@ public class ConfiguracionPagoServicioService {
 
     /**
      * Calcula la fecha del próximo pago
-     * Si esAnual = true, suma 1 año
+     * Si esAnual = true, suma 1 ano
      * Si esAnual = false, suma 1 mes
      *
      * @param fechaBase Fecha base para el cálculo
@@ -94,7 +94,7 @@ public class ConfiguracionPagoServicioService {
             LocalDate proximaFecha;
 
             if (Boolean.TRUE.equals(esAnual)) {
-                // Si es anual, sumar 1 año
+                // Si es anual, sumar 1 ano
                 proximaFecha = fecha.plusYears(1);
                 logger.debug("Calculando próximo pago anual. Base: {}, Próximo: {}", fechaBase, proximaFecha);
             } else {
