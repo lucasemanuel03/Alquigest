@@ -1,6 +1,7 @@
 package com.alquileres.model;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,6 +24,12 @@ public class Usuario {
 
     @Column(name = "es_activo", nullable = false)
     private Boolean esActivo = true;
+
+    @Column(name = "password_reset_token", length = 500)
+    private String passwordResetToken;
+
+    @Column(name = "password_reset_token_expiry")
+    private LocalDateTime passwordResetTokenExpiry;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -88,5 +95,21 @@ public class Usuario {
 
     public void setRoles(Set<Rol> roles) {
         this.roles = roles;
+    }
+
+    public String getPasswordResetToken() {
+        return passwordResetToken;
+    }
+
+    public void setPasswordResetToken(String passwordResetToken) {
+        this.passwordResetToken = passwordResetToken;
+    }
+
+    public LocalDateTime getPasswordResetTokenExpiry() {
+        return passwordResetTokenExpiry;
+    }
+
+    public void setPasswordResetTokenExpiry(LocalDateTime passwordResetTokenExpiry) {
+        this.passwordResetTokenExpiry = passwordResetTokenExpiry;
     }
 }
