@@ -130,6 +130,13 @@ public class AlquilerController {
         return ResponseEntity.ok(honorarios);
     }
 
+    // Calcular honorario de un alquiler específico (10% solo si está pagado)
+    @GetMapping("/{id}/honorario")
+    public ResponseEntity<BigDecimal> calcularHonorarioAlquiler(@PathVariable Long id) {
+        BigDecimal honorario = alquilerService.calcularHonorarioAlquilerEspecifico(id);
+        return ResponseEntity.ok(honorario);
+    }
+
     // Obtener notificaciones de pago de alquileres no pagados del mes
     @GetMapping("/notificaciones/mes")
     public ResponseEntity<List<NotificacionPagoAlquilerDTO>> obtenerNotificacionesPagoAlquileresMes() {

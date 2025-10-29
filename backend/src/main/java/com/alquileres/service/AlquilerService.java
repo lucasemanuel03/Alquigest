@@ -296,6 +296,23 @@ public class AlquilerService {
         return honorarios;
     }
 
+    // Calcular honorario de un alquiler específico (10% solo si está pagado)
+    public BigDecimal calcularHonorarioAlquilerEspecifico(Long alquilerId) {
+        Alquiler alquiler = alquilerRepository.findById(alquilerId)
+                .orElseThrow(() -> new RuntimeException("Alquiler no encontrado"));
+
+        // Solo calcular si el alquiler está pagado
+        if (alquiler.getEstaPagado()) {
+            BigDecimal honorario = alquiler.getMonto().multiply(new BigDecimal("0.1"));
+            logger.info("Honorario calculado para alquiler {}: {} (10% de {})",
+                       alquilerId, honorario, alquiler.getMonto());
+            return honorario;
+        } else {
+            logger.warn("El alquiler {} no está pagado, no se calcula honorario", alquilerId);
+            return BigDecimal.ZERO;
+        }
+    }
+
     // Obtener notificaciones de pago de alquileres no pagados del mes actual
     public List<NotificacionPagoAlquilerDTO> obtenerNotificacionesPagoAlquileresMes() {
         List<Alquiler> alquileresNoPagados = alquilerRepository.findAlquileresNoPagadosDelMes();
