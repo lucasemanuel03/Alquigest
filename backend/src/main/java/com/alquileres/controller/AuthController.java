@@ -260,7 +260,7 @@ public class AuthController {
     }
 
     @PostMapping("/recuperar-contrasena")
-    @Operation(summary = "Solicitar recuperación de contrasena")
+    @Operation(summary = "Solicitar recuperación de contraseña")
     public ResponseEntity<?> recuperarContrasena(@Valid @RequestBody RecuperarContrasenaDTO dto) {
         try {
             passwordResetService.solicitarRecuperacionContrasena(dto.getEmail());
@@ -273,11 +273,11 @@ public class AuthController {
     }
 
     @PostMapping("/resetear-contrasena")
-    @Operation(summary = "Resetear contrasena con token")
+    @Operation(summary = "Resetear contraseña con token")
     public ResponseEntity<?> resetearContrasena(@Valid @RequestBody ResetearContrasenaDTO dto) {
         try {
             passwordResetService.resetearContrasena(dto.getToken(), dto.getNuevaContrasena(), dto.getConfirmarContrasena());
-            return ResponseEntity.ok(new MessageResponse("Contrasena actualizada exitosamente!"));
+            return ResponseEntity.ok(new MessageResponse("Contraseña actualizada exitosamente!"));
         } catch (Exception e) {
             return ResponseEntity
                     .badRequest()

@@ -47,12 +47,12 @@ public class PasswordResetService {
         usuarioRepository.save(u);
 
         emailService.enviarEmailRecuperacionContrasena(email, u.getUsername(), token);
-        logger.info("Email de recuperación de contrasena enviado a: {}", email);
+        logger.info("Email de recuperación de contraseña enviado a: {}", email);
     }
 
     public void resetearContrasena(String token, String nuevaContrasena, String confirmarContrasena) {
         if (!nuevaContrasena.equals(confirmarContrasena)) {
-            throw new RuntimeException("Las contrasenas no coinciden");
+            throw new RuntimeException("Las contraseñas no coinciden");
         }
 
         Optional<Usuario> usuario = usuarioRepository.findByPasswordResetToken(token);
@@ -74,7 +74,7 @@ public class PasswordResetService {
         u.setPasswordResetTokenExpiry(null);
         usuarioRepository.save(u);
 
-        logger.info("Contrasena reseteada exitosamente para usuario: {}", u.getUsername());
+        logger.info("Contraseña reseteada exitosamente para usuario: {}", u.getUsername());
     }
 
     public boolean validarToken(String token) {

@@ -19,16 +19,16 @@ public class EmailService {
         try {
             String enlace = "http://localhost:3000/recuperar-contrasena?token=" + token;
             String contenido = "Hola " + usuario + ",\n\n" +
-                    "Ha solicitado recuperar su contrasena. Por favor haga clic en el siguiente enlace:\n" +
+                    "Ha solicitado recuperar su contraseña. Por favor haga clic en el siguiente enlace:\n" +
                     enlace + "\n\n" +
                     "Este enlace expirará en 1 hora.\n\n" +
                     "Si no solicitó esta recuperación, ignore este email.\n\n" +
                     "Saludos,\nAlquigest";
 
-            enviarEmail(destinatario, "Recuperación de Contrasena - Alquigest", contenido);
-            logger.info("Email de recuperación de contrasena enviado a: {}", destinatario);
+            enviarEmail(destinatario, "Recuperación de Contraseña - Alquigest", contenido);
+            logger.info("Email de recuperación de contraseña enviado a: {}", destinatario);
         } catch (Exception e) {
-            logger.error("Error al enviar email de recuperación de contrasena", e);
+            logger.error("Error al enviar email de recuperación de contraseña", e);
             throw new RuntimeException("Error al enviar email de recuperación: " + e.getMessage(), e);
         }
     }
@@ -61,7 +61,7 @@ public class EmailService {
             logger.info("=== EMAIL ENVIADO EXITOSAMENTE ===");
         } catch (org.springframework.mail.MailAuthenticationException e) {
             logger.error("ERROR DE AUTENTICACION SMTP: {}", e.getMessage());
-            logger.error("La contrasena o usuario de Gmail es incorrecto");
+            logger.error("La contraseña o usuario de Gmail es incorrecto");
             logger.error("Stack trace completo:", e);
             throw e;
         } catch (org.springframework.mail.MailSendException e) {
