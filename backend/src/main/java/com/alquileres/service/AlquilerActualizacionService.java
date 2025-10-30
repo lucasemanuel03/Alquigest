@@ -236,9 +236,12 @@ public class AlquilerActualizacionService {
                                     .setScale(2, BigDecimal.ROUND_HALF_UP);
 
                                 com.alquileres.model.AumentoAlquiler aumento =
-                                    aumentoAlquilerService.crearAumentoSinGuardar(
-                                        contrato, montoBase, montoNuevo, porcentajeAumento);
+                                aumentoAlquilerService.crearAumentoSinGuardar(
+                                    contrato, montoBase, montoNuevo, porcentajeAumento);
                                 nuevosAumentos.add(aumento);
+
+                                // ✅ ACTUALIZAR fechaAumento: sumar periodoAumento a la fechaAumento actual
+                                actualizarFechaAumentoContrato(contrato);
 
                             } catch (Exception e) {
                                 logger.error("Error al consultar ICL para contrato ID {}: {}. Se usará el monto sin aumento.",
@@ -263,6 +266,9 @@ public class AlquilerActualizacionService {
                                 aumentoAlquilerService.crearAumentoSinGuardar(
                                     contrato, montoBase, montoNuevo, porcentajeAumento);
                             nuevosAumentos.add(aumento);
+
+                            // ✅ ACTUALIZAR fechaAumento: sumar periodoAumento a la fechaAumento actual
+                            actualizarFechaAumentoContrato(contrato);
                         }
                     } else {
                         montoNuevo = ultimoAlquilerOpt.isPresent()
@@ -373,6 +379,9 @@ public class AlquilerActualizacionService {
                             porcentajeAumento
                         );
 
+                        // ✅ ACTUALIZAR fechaAumento: sumar periodoAumento a la fechaAumento actual
+                        actualizarFechaAumentoContrato(contrato);
+
                     } catch (Exception e) {
                         logger.error("Error al consultar ICL para contrato ID {}: {}. Se usará el monto sin aumento.",
                                    contrato.getId(), e.getMessage());
@@ -403,6 +412,9 @@ public class AlquilerActualizacionService {
                         montoNuevo,
                         porcentajeAumento
                     );
+
+                    // ✅ ACTUALIZAR fechaAumento: sumar periodoAumento a la fechaAumento actual
+                    actualizarFechaAumentoContrato(contrato);
                 }
             } else {
                 // No aplica aumento, usar el monto del último alquiler o del contrato
@@ -432,8 +444,69 @@ public class AlquilerActualizacionService {
     }
 
     /**
+     * Actualiza la fechaAumento de un contrato sumando el periodoAumento
+     * Si la nueva fechaAumento supera la fechaFin del contrato, se establece como "No aumenta más"
+     * ✅ ESTE MÉTODO SE EJECUTA DESPUÉS DE APLICAR UN AUMENTO
+     *
+     * @param contrato El contrato cuya fechaAumento se debe actualizar
+     */
+    private void actualizarFechaAumentoContrato(Contrato contrato) {
+        try {
+            // Validar que tenga periodoAumento configurado
+            if (contrato.getPeriodoAumento() == null || contrato.getPeriodoAumento() <= 0) {
+                logger.warn("Contrato ID {} no tiene periodoAumento válido. No se actualizará fechaAumento.",
+                           contrato.getId());
+                return;
+            }
+
+            // Validar que tenga fechaAumento actual
+            if (contrato.getFechaAumento() == null || contrato.getFechaAumento().isEmpty() ||
+                contrato.getFechaAumento().equalsIgnoreCase("No aumenta más")) {
+                logger.debug("Contrato ID {} no tiene fechaAumento válida para actualizar.",
+                           contrato.getId());
+                return;
+            }
+
+            // Parsear fechaAumento actual
+            LocalDate fechaAumentoActual = LocalDate.parse(contrato.getFechaAumento(), FORMATO_FECHA);
+
+            // Calcular nueva fechaAumento: fechaAumentoActual + periodoAumento (meses)
+            // Siempre establecer como día 1 del mes resultante
+            LocalDate nuevaFechaAumento = fechaAumentoActual.plusMonths(contrato.getPeriodoAumento())
+                .withDayOfMonth(1);
+
+            // Verificar si supera la fechaFin
+            if (contrato.getFechaFin() != null && !contrato.getFechaFin().isEmpty()) {
+                LocalDate fechaFin = LocalDate.parse(contrato.getFechaFin(), FORMATO_FECHA);
+
+                if (nuevaFechaAumento.isAfter(fechaFin)) {
+                    // Si la nueva fechaAumento supera la fechaFin, marcar como "No aumenta más"
+                    contrato.setFechaAumento("No aumenta más");
+                    contratoRepository.save(contrato);
+                    logger.info("Contrato ID {} - FechaAumento actualizada a 'No aumenta más' (superaría fechaFin: {})",
+                               contrato.getId(), fechaFin);
+                    return;
+                }
+            }
+
+            // Actualizar fechaAumento
+            String nuevaFechaAumentoStr = nuevaFechaAumento.format(FORMATO_FECHA);
+            contrato.setFechaAumento(nuevaFechaAumentoStr);
+            contratoRepository.save(contrato);
+
+            logger.info("Contrato ID {} - FechaAumento actualizada de {} a {}",
+                       contrato.getId(), fechaAumentoActual.format(FORMATO_FECHA), nuevaFechaAumentoStr);
+
+        } catch (Exception e) {
+            logger.error("Error al actualizar fechaAumento del contrato ID {}: {}",
+                        contrato.getId(), e.getMessage(), e);
+        }
+    }
+
+    /**
      * Determina si un contrato debe recibir aumento en su próximo alquiler
      * Basado en el atributo fechaAumento del contrato
+     * VALIDACIÓN CORRECTA: Verifica que el mes y año de fechaAumento coincidan con el mes y año actual
      *
      * @param contrato El contrato a evaluar
      * @return true si debe aplicar aumento, false en caso contrario
@@ -455,12 +528,21 @@ public class AlquilerActualizacionService {
             LocalDate fechaAumento = LocalDate.parse(contrato.getFechaAumento(), FORMATO_FECHA);
             LocalDate fechaActual = LocalDate.now();
 
-            // Si la fecha de aumento ya pasó, debe aumentar
-            boolean debeAumentar = !fechaActual.isBefore(fechaAumento);
+            // ✅ VALIDACIÓN CORRECTA: Verificar que el MES y AÑO sean iguales
+            // Si fechaAumento es 2025-06-01 y estamos en junio 2025, debe aumentar
+            // Si fechaAumento es 2025-06-01 y estamos en julio 2025 o posterior, también debe aumentar (aumento atrasado)
+            boolean mesYAnioCoinciden = fechaAumento.getYear() == fechaActual.getYear() &&
+                                        fechaAumento.getMonthValue() == fechaActual.getMonthValue();
+
+            // También permitir aumentos atrasados (si la fecha de aumento ya pasó)
+            boolean aumentoAtrasado = fechaActual.isAfter(fechaAumento);
+
+            boolean debeAumentar = mesYAnioCoinciden || aumentoAtrasado;
 
             if (debeAumentar) {
-                logger.debug("Contrato ID {} debe aplicar aumento. Fecha de aumento: {}, Fecha actual: {}",
-                           contrato.getId(), fechaAumento, fechaActual);
+                logger.debug("Contrato ID {} debe aplicar aumento. Fecha de aumento: {} (mes: {}/año: {}), Fecha actual: {} (mes: {}/año: {})",
+                           contrato.getId(), fechaAumento, fechaAumento.getMonthValue(), fechaAumento.getYear(),
+                           fechaActual, fechaActual.getMonthValue(), fechaActual.getYear());
             }
 
             return debeAumentar;
