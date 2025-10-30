@@ -203,15 +203,6 @@ export default function HistorialContratosPage() {
             )}
           </div>
         </div>
-
-        {/* Spinner mientras se procesan las cards */}
-        {!loading && !isRendering && contratosBD.length > 0 && (
-          <div className="flex flex-col items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-            <p className="text-muted-foreground">Preparando contratos...</p>
-          </div>
-        )}
-
         <div className={`grid gap-6 transition-opacity duration-500 ${isRendering ? 'opacity-100' : 'opacity-0'}`}>
           {contratosBD?.map((contrato) => (
             <Card
@@ -250,7 +241,9 @@ export default function HistorialContratosPage() {
 
                 {/* Estado */}
                 <div className="flex items-center gap-2 justify-end sm:justify-end md:justify-end">
-                  <VencimientoBadge fechaFin={contrato.fechaFin} />
+                  {contrato.estadoContratoId === 1 && (
+                    <VencimientoBadge fechaFin={contrato.fechaFin} />
+                  )}
                   <EstadoBadge estado={contrato.estadoContratoNombre} />
                 </div>
               </CardHeader>
