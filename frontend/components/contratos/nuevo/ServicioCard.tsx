@@ -48,6 +48,7 @@ const ServicioCard: React.FC<ServicioCardProps> = ({ s, updateServicio }) => {
               <Input
                 id={`nroCuenta-${s.tipoServicioId}`}
                 type="text"
+                required
                 inputMode="numeric"
                 value={s.nroCuenta ?? ""}
                 onChange={(e) => {
@@ -77,7 +78,7 @@ const ServicioCard: React.FC<ServicioCardProps> = ({ s, updateServicio }) => {
             <div className="space-y-2 flex-col">
               <Label>Periodicidad</Label>
               <Select
-                value={s.esAnual ? "anual" : "bimestral"}
+                value={s.esAnual ? "anual" : "mestral"}
                 onValueChange={(v) => updateServicio(s.tipoServicioId, { esAnual: v === "anual" })}
               >
                 <SelectTrigger>
@@ -85,7 +86,7 @@ const ServicioCard: React.FC<ServicioCardProps> = ({ s, updateServicio }) => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="anual">Anual</SelectItem>
-                  <SelectItem value="bimestral">Mensual/Bimensual</SelectItem>
+                  <SelectItem value="mestral">Mensual</SelectItem>
                 </SelectContent>
               </Select>
             </div>

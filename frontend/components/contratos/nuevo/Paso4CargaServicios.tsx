@@ -32,7 +32,7 @@ export default function Paso4CargaServicios({ formData, datosAdicionales, servic
         <Blocks className="h-5 w-5" />
         <span className="font-semibold">Servicios del inmueble</span>
       </div>
-      <p>Ingrese los datos de los servicios que serán controlados</p>
+      <p>Ingrese los datos de los servicios que serán controlados, puede cargarlos en otro momento también.</p>
 
       <div className="grid gap-2">
         {serviciosContrato.map((s) => (

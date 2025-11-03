@@ -232,11 +232,12 @@ export default function GenerarReciboPage() {
                               type="number"
                               inputMode='decimal'
                               placeholder="0.00"
+                              min={"0"}
                               value={servicios[servicio.tipoServicioId] ?? ""}
                               onChange={(e) => handleServicioChange(servicio.tipoServicioId, e.target.value)}
                               className="text-sm h-8 w-40"
                               step="0.1"
-                              min={0}
+                              
                             />
                           </div>
                         </div>
