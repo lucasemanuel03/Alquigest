@@ -290,11 +290,11 @@ public class AlquilerService {
         return alquileresCreados;
     }
 
-    // Calcular honorarios (10% de la suma de alquileres vigentes del mes)
+    // Calcular honorarios (10% de la suma de alquileres pagados del mes actual, independientemente de si están activos)
     public BigDecimal calcularHonorarios() {
-        List<Alquiler> alquileresVigentes = alquilerRepository.findAlquileresDelMes();
+        List<Alquiler> alquileresPagados = alquilerRepository.findAlquileresDelMes();
 
-        BigDecimal sumaTotal = alquileresVigentes.stream()
+        BigDecimal sumaTotal = alquileresPagados.stream()
                 .map(Alquiler::getMonto)
                 .filter(monto -> monto != null)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -302,8 +302,8 @@ public class AlquilerService {
         // Calcular el 10% (0.1)
         BigDecimal honorarios = sumaTotal.multiply(new BigDecimal("0.1"));
 
-        logger.info("Honorarios calculados: {} (basados en {} alquileres vigentes del mes con suma total: {})",
-                   honorarios, alquileresVigentes.size(), sumaTotal);
+        logger.info("Honorarios calculados: {} (basados en {} alquileres pagados del mes con suma total: {})",
+                   honorarios, alquileresPagados.size(), sumaTotal);
 
         return honorarios;
     }

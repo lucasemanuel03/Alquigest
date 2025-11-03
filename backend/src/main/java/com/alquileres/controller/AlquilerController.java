@@ -125,7 +125,7 @@ public class AlquilerController {
         return ResponseEntity.ok(existe);
     }
 
-    // Calcular honorarios (10% de la suma de alquileres vigentes del mes)
+    // Calcular honorarios (10% de la suma de alquileres pagados del mes)
     @GetMapping("/honorarios")
     public ResponseEntity<BigDecimal> calcularHonorarios() {
         BigDecimal honorarios = alquilerService.calcularHonorarios();
