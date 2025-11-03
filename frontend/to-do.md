@@ -1,12 +1,12 @@
 ## Cosas para hacer:
 
 ### SPRINT 5 FIX
-- [ ] Clave fiscal mostrar en el detalla propietario solo si es abogada
+- [X] Clave fiscal mostrar en el detalla propietario solo si es abogada
 - [ ] Mostrar estado contrato actual
 - [ ] Agregar en back y front el porcentaje de mora (1%)
 - [ ] Agregar la posibilidad de agregar un nuevo servicio al contrato
 - [ ] Utilizar endpoint tiene contratos vigentes para mostrar contratos de un inmueble
-- [ ] Mercedes Locativas, se muestra para contratos no vigenetes.
+- [x] Mercedes Locativas, se muestra para contratos no vigenetes.
 - [ ] Periodo de aumento me deja ingresar un número mayor que el posible
 
 

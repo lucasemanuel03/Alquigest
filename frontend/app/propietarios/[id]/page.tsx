@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Inmueble } from "@/types/Inmueble";
 import { Propietario } from "@/types/Propietario";
 import BACKEND_URL from "@/utils/backendURL";
+import auth from "@/utils/functions/auth-functions/auth";
 import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken";
 import tiposInmueble from "@/utils/tiposInmuebles";
 import { ArrowLeft, Building, Building2, User } from "lucide-react";
@@ -91,10 +92,12 @@ export default function PropietarioDetalles() {
                                 <h2 className="font-bold">CUIL:</h2>
                                 <p>{propietario?.cuil}</p>
                             </div>
-                            <div className="flex gap-3">
-                                <h2 className="font-bold">Clave Fiscal:</h2>
-                                <p>{propietario?.claveFiscal || "No especifica"}</p>
-                            </div>
+                            {(auth.getUserRoles().includes("ROLE_ADMINISTRADOR") || auth.getUserRoles().includes("ROLE_ABOGADA")) && (
+                                <div className="flex gap-3">
+                                    <h2 className="font-bold">Clave Fiscal:</h2>
+                                    <p>{propietario?.claveFiscal || "No especifica"}</p>
+                                </div>
+                            )}
                             <div className="flex gap-3">
                                 <h2 className="font-bold">Telefono:</h2>
                                 <p>{propietario?.telefono || "No especifica"}</p>
