@@ -26,7 +26,10 @@ Alquigest/
 - **Swagger/OpenAPI** (Documentación de API)
 
 ### Frontend
-- Por definir (React, Vue.js, Angular, etc.)
+- **TypeScript**
+- **React 18 + Next.js 14**
+- **NPM** (Gestión de dependencias)
+- **TailwindCSS**
 
 ## Inicio Rápido
 
@@ -38,7 +41,17 @@ mvn spring-boot:run
 La API estará disponible en: `http://localhost:8081`
 
 ### Frontend
-La carpeta frontend está preparada para el desarrollo futuro de la interfaz de usuario.
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Para construir el proyecto para producción:
+```bash
+npm run build
+npm start
+```
 
 ## Documentación
 
@@ -55,10 +68,15 @@ La carpeta frontend está preparada para el desarrollo futuro de la interfaz de 
 - **Documentación automática** con Swagger
 - **Configuración CORS** para integración frontend
 
-### 🔄 Frontend (En desarrollo)
-- Interfaz de usuario por implementar
+### 🔄 Frontend
 - Integración con API del backend
-- Gestión de inmuebles y propietarios
+- Gestión de inmuebles
+- Gestión de Locatarios
+- Gestión de Locadores
+- Gestión de Pago de servicios de un alquiler
+- Gestión de Alquileres/Contratos Vigentes
+- Historial de Contratos
+- Gestión de usuarios/Autenticación
 
 ## APIs Disponibles
 
@@ -78,6 +96,11 @@ La carpeta frontend está preparada para el desarrollo futuro de la interfaz de 
 
 ## Requisitos
 
+### Backend
 - **Java 17** o superior
 - **Maven 3.6** o superior
 - **Git**
+
+### Frontend
+- [Node.js](https://nodejs.org/) **>=18**
+- [npm](https://www.npmjs.com/) **>=9**
