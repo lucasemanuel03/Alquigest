@@ -52,6 +52,7 @@ export default function NuevoInmuebleModal(props: NuevoInmuebleModalProps) {
   
     // PARA DATOS PROPIETARIOS
     const [propietariosBD, setPropietariosBD] = useState<Propietario[]>([]);
+  const [loadingPropietarios, setLoadingPropietarios] = useState(false);
   
     const [formData, setFormData] = useState({
       propietarioId: "",
@@ -63,18 +64,24 @@ export default function NuevoInmuebleModal(props: NuevoInmuebleModalProps) {
       esAlquilado: "false",
     });
   
-    // Traer propietarios (solo fetch, sin mutar formData directamente)
+    // Cargar propietarios sólo cuando el modal se abre (lazy-load)
+    const cargarPropietarios = async () => {
+      try {
+        setLoadingPropietarios(true);
+        const data = await fetchWithToken(`${BACKEND_URL}/propietarios/activos`);
+        setPropietariosBD(data);
+      } catch (err) {
+        console.error("Error al traer propietarios:", err);
+      } finally {
+        setLoadingPropietarios(false);
+      }
+    };
+
     useEffect(() => {
-      console.log("Ejecutando fetch de propietarios...");
-      fetchWithToken(`${BACKEND_URL}/propietarios/activos`)
-        .then((data) => {
-          console.log("Datos parseados del backend:", data);
-          setPropietariosBD(data);
-        })
-        .catch((err) => {
-          console.error("Error al traer propietarios:", err);
-        });
-    }, []);
+      if (isOpen && propietariosBD.length === 0 && !loadingPropietarios) {
+        cargarPropietarios();
+      }
+    }, [isOpen, propietariosBD.length, loadingPropietarios]);
   
     // Mantener esActivo / esAlquilado consistentes cuando cambie estado
     useEffect(() => {
@@ -305,7 +312,7 @@ export default function NuevoInmuebleModal(props: NuevoInmuebleModalProps) {
       {/* Modal de error */}
       {mostrarError && (
         <ModalError
-          titulo="Error al crear Propietario"
+          titulo="Error al crear Inmueble"
           mensaje={errorCarga}
           onClose={() => setMostrarError(false)} // Restablecer el estado al cerrar el modal
         />
