@@ -3,6 +3,8 @@ package com.alquileres.service;
 import com.alquileres.dto.ActualizacionMontoServicioDTO;
 import com.alquileres.dto.ActualizacionMontosServiciosRequest;
 import com.alquileres.dto.ActualizarPagoServicioRequest;
+import com.alquileres.dto.RegistroPagoBatchRequest;
+import com.alquileres.dto.RegistroPagoBatchResponse;
 import com.alquileres.model.PagoServicio;
 import com.alquileres.repository.ContratoRepository;
 import com.alquileres.repository.PagoServicioRepository;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -194,5 +197,66 @@ public class PagoServicioService {
     public Long contarPagosPendientes() {
         logger.debug("Contando pagos de servicio pendientes");
         return pagoServicioRepository.countPagosPendientes();
+    }
+
+    /**
+     * Registra múltiples pagos de servicio en batch (procesamiento por lotes)
+     * Cada pago se procesa individualmente y el resultado se agrega a la respuesta
+     * Si un pago falla, se registra el error pero se continúa con los demás
+     *
+     * @param request Solicitud con lista de pagos a registrar
+     * @return Respuesta con resumen de procesamiento y detalle de cada pago
+     */
+    @Transactional
+    public RegistroPagoBatchResponse registrarPagosBatch(RegistroPagoBatchRequest request) {
+        logger.info("Iniciando registro de pagos en batch. Total de pagos a procesar: {}",
+                   request.getPagos().size());
+
+        RegistroPagoBatchResponse response = new RegistroPagoBatchResponse();
+        List<RegistroPagoBatchResponse.ResultadoPagoItem> resultados = new ArrayList<>();
+        int exitosos = 0;
+        int fallidos = 0;
+
+        // Procesar cada pago individualmente
+        for (RegistroPagoBatchRequest.RegistroPagoServicioItem item : request.getPagos()) {
+            RegistroPagoBatchResponse.ResultadoPagoItem resultado =
+                new RegistroPagoBatchResponse.ResultadoPagoItem();
+            resultado.setPagoId(item.getPagoId());
+
+            try {
+                // Intentar actualizar el pago usando el método existente
+                PagoServicio pagoActualizado = actualizarPagoServicio(
+                    item.getPagoId(),
+                    item.getDatosPago()
+                );
+
+                resultado.setExitoso(true);
+                resultado.setMensaje("Pago registrado exitosamente");
+                exitosos++;
+
+                logger.debug("Pago ID {} procesado exitosamente en batch", item.getPagoId());
+
+            } catch (Exception e) {
+                resultado.setExitoso(false);
+                resultado.setMensaje("Error: " + e.getMessage());
+                fallidos++;
+
+                logger.error("Error al procesar pago ID {} en batch: {}",
+                           item.getPagoId(), e.getMessage());
+            }
+
+            resultados.add(resultado);
+        }
+
+        // Configurar la respuesta
+        response.setTotalProcesados(request.getPagos().size());
+        response.setExitosos(exitosos);
+        response.setFallidos(fallidos);
+        response.setResultados(resultados);
+
+        logger.info("Procesamiento batch completado. Exitosos: {}, Fallidos: {}, Total: {}",
+                   exitosos, fallidos, request.getPagos().size());
+
+        return response;
     }
 }
