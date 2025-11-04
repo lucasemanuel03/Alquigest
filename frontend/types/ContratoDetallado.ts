@@ -26,4 +26,5 @@ export interface ContratoDetallado {
   direccionPropietario: string;
   estadoContratoNombre: string;
   montoUltimoAlquiler: number;
+  porcentajeHonorario: number;
 }

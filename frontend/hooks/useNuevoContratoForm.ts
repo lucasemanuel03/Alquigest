@@ -26,7 +26,7 @@ const contratoInicial: Contrato = {
   porcentajeAumento: 0,
   estadoContratoId: 1,
   aumentaConIcl: true,
-  pdfPath: '',
+  porcentajeHonorario: 10,
   tipoAumento: '',
   periodoAumento: 1,
   fechaAumento: '',

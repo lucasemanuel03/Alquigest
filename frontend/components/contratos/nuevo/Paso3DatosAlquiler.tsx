@@ -28,7 +28,10 @@ export default function Paso3DatosAlquiler({
         <span className="font-semibold">Paso 3: Datos de Alquiler</span>
       </div>
       <div className="space-y-4 w-fit">
-        <Label>Monto Inicial de Locación *</Label>
+        <Label
+          title='Ingrese el monto inicial estipulado en el contrato sin puntos ni comas. Ejemplo: 50000'
+          className="cursor-help"
+        >Monto Inicial de Locación *</Label>
         <Input
           type="text"
           inputMode="decimal"
@@ -38,6 +41,22 @@ export default function Paso3DatosAlquiler({
           onBlur={onMontoBlur}
           required
         />
+        <Label
+          title='Ingrese el porcentaje del alquiler que corresponderá a los honorarios del estudio. Por defecto es 10%'
+          className="cursor-help"
+        >% de Honorarios</Label>
+        <Input
+          type="number"
+          rightIcon={<Percent className="h-4 w-4" />}
+          placeholder="10%"
+          min={0}
+          max={99}
+          value={formData.porcentajeHonorario}
+          onChange={(e) => onChange('porcentajeHonorario', e.target.value)}
+          required
+        />
+
+
         <Label>Tipo de Aumento *</Label>
         <Select
           value={formData.tipoAumento}

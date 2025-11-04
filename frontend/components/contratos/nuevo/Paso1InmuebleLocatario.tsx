@@ -43,19 +43,21 @@ export default function Paso1InmuebleLocatario({
         <BuildingIcon className="h-5 w-5" />
         <span className="font-semibold">Datos del Inmueble</span>
       </div>
-      <div className="space-y-4">
+      <div className="space-y-4 w-full">
         <Label>Inmueble a Alquilar *
           {(inmuebles.length === 0) && (<p className="text-red-500">Actualmente No hay inmuebles disponibles en el sistema</p>)}
         </Label>
         <div className="flex items-center gap-5">
-         <BusquedaDesplegable
-          items={inmuebles}
-          propiedadesBusqueda={['direccion']}
-          onSelect={(item) => {
-            const propietario = propietarios.find(p => p.id === item.propietarioId);
-            onSelectInmueble(item, propietario);
-          }}
-        />
+          <BusquedaDesplegable
+            items={inmuebles}
+            className='w-full max-w-90'
+            placeholder='Buscar por dirección...'
+            propiedadesBusqueda={['direccion']}
+            onSelect={(item) => {
+              const propietario = propietarios.find(p => p.id === item.propietarioId);
+              onSelectInmueble(item, propietario);
+            }}
+          />
           <div>
             <NuevoInmuebleModal
               text="Nuevo"
@@ -88,11 +90,13 @@ export default function Paso1InmuebleLocatario({
         <Label>Locatario *
           {(inquilinos.length === 0) && (<p className="text-red-500">Actualmente No hay Locatarios activos en el sistema</p>)}
         </Label>
-        <div className="flex items-center gap-5">
-          <div>
+        <div className="flex w-full items-center gap-5">
+          <div className='w-full max-w-90'>
             <BusquedaDesplegable
-              items={inquilinos}
+              items={inquilinos}      
+              placeholder='Buscar por apellido, nombre o CUIL'
               propiedadesBusqueda={['apellido', 'nombre', 'cuil']}
+              getItemLabel={(inq) => `${inq.apellido}, ${inq.nombre} | CUIL: ${inq.cuil}`}
               onSelect={onSelectInquilino}
             />
           </div>

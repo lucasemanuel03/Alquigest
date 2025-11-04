@@ -195,6 +195,11 @@ export default function DetalleContratoPage(){
                                     <p className="text-card-foreground">{formatPrice(contratoBD.monto)}</p>
                                 </div>
 
+                                <div className="flex gap-3">
+                                    <h2 className="font-bold">% Honorarios:</h2>
+                                    <p className="text-card-foreground">{contratoBD.porcentajeHonorario}%</p>
+                                </div>
+
                                 {/* Detalles de Cancelación - Solo si está rescindido */}
                                 {contratoBD.estadoContratoId === 3 && (
                                     <>

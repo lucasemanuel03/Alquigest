@@ -1,6 +1,6 @@
 "use client";
 import { Separator } from '@/components/ui/separator';
-import { BuildingIcon, User, Calendar1Icon, Receipt, ChartColumnIcon, Clock, Blocks, CheckSquareIcon } from 'lucide-react';
+import { BuildingIcon, User, Calendar1Icon, Receipt, ChartColumnIcon, Clock, Blocks, CheckSquareIcon, PercentCircle } from 'lucide-react';
 import { Contrato } from '@/types/Contrato';
 import { DatosAdicionales } from '@/hooks/useNuevoContratoForm';
 import { ServicioContrato, TIPO_SERVICIO_LABEL } from '@/types/ServicioContrato';
@@ -41,6 +41,10 @@ export default function Paso4Resumen({ formData, datosAdicionales, serviciosCont
         <div className="flex items-center gap-2">
           <Receipt className="h-4 w-4" />
           <p><b>Monto Inicial de Alquiler:</b> $ {formatMontoVisual(formData.monto)}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <PercentCircle className="h-4 w-4" />
+          <p><b>Porcentaje Honorarios:</b> {formatMontoVisual(formData.porcentajeHonorario)}%</p>
         </div>
         <div className="flex items-center gap-2">
           <ChartColumnIcon className="h-4 w-4" />

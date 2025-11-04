@@ -6,9 +6,9 @@ export interface Contrato {
     fechaFin: string
     monto: number
     porcentajeAumento: number
+    porcentajeHonorario: number
     estadoContratoId: number
     aumentaConIcl: boolean
-    pdfPath: string
     tipoAumento: string
     periodoAumento: number
     fechaAumento: string
