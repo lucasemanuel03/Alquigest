@@ -19,9 +19,35 @@ public class ConfiguracionPagoServicioService {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfiguracionPagoServicioService.class);
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ISO_LOCAL_DATE;
+    private static final DateTimeFormatter FORMATO_FECHA_USUARIO = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     @Autowired
     private ConfiguracionPagoServicioRepository configuracionPagoServicioRepository;
+
+    /**
+     * Convierte una fecha a formato ISO si viene en formato de usuario
+     * Soporta formatos: dd/MM/yyyy e yyyy-MM-dd
+     */
+    private String normalizarFecha(String fecha) {
+        if (fecha == null || fecha.trim().isEmpty()) {
+            return LocalDate.now().format(FORMATO_FECHA);
+        }
+
+        try {
+            // Intenta parsear como ISO
+            LocalDate date = LocalDate.parse(fecha, FORMATO_FECHA);
+            return date.format(FORMATO_FECHA);
+        } catch (Exception e1) {
+            try {
+                // Intenta parsear como formato de usuario (dd/MM/yyyy)
+                LocalDate date = LocalDate.parse(fecha, FORMATO_FECHA_USUARIO);
+                return date.format(FORMATO_FECHA);
+            } catch (Exception e2) {
+                logger.warn("No se pudo parsear la fecha '{}'. Usando fecha actual.", fecha);
+                return LocalDate.now().format(FORMATO_FECHA);
+            }
+        }
+    }
 
     /**
      * Crea una configuración de pago para un servicio x contrato
@@ -30,10 +56,13 @@ public class ConfiguracionPagoServicioService {
      * que ya están en una transacción (crearServicioYConfiguracion)
      *
      * @param servicioXContrato El servicio x contrato
-     * @param fechaInicio Fecha de inicio del servicio
+     * @param fechaInicio Fecha de inicio del servicio (acepta dd/MM/yyyy o yyyy-MM-dd)
      * @return La configuración creada
      */
     public ConfiguracionPagoServicio crearConfiguracion(ServicioXContrato servicioXContrato, String fechaInicio) {
+        // Normalizar la fecha de entrada
+        String fechaInicioNormalizada = normalizarFecha(fechaInicio);
+
         // Verificar si ya existe una configuración para este servicio
         Optional<ConfiguracionPagoServicio> existente = configuracionPagoServicioRepository
                 .findByServicioXContratoId(servicioXContrato.getId());
@@ -45,12 +74,12 @@ public class ConfiguracionPagoServicioService {
 
         ConfiguracionPagoServicio configuracion = new ConfiguracionPagoServicio();
         configuracion.setServicioXContrato(servicioXContrato);
-        configuracion.setFechaInicio(fechaInicio);
+        configuracion.setFechaInicio(fechaInicioNormalizada);
         configuracion.setEsActivo(true);
 
         // Establecer proximoPago como la fecha de inicio para que el primer pago se genere inmediatamente
         // Después de generar el primer pago, se actualizará a fechaInicio + 1 mes/ano
-        configuracion.setProximoPago(fechaInicio);
+        configuracion.setProximoPago(fechaInicioNormalizada);
 
         return configuracionPagoServicioRepository.save(configuracion);
     }
@@ -62,17 +91,20 @@ public class ConfiguracionPagoServicioService {
      * que ya están en una transacción (generarFacturaParaPeriodo)
      *
      * @param configuracion La configuración a actualizar
-     * @param fechaPagoGenerado Fecha del pago que se acaba de generar
+     * @param fechaPagoGenerado Fecha del pago que se acaba de generar (acepta dd/MM/yyyy o yyyy-MM-dd)
      * @return La configuración actualizada
      */
     public ConfiguracionPagoServicio actualizarDespuesDeGenerarPago(
             ConfiguracionPagoServicio configuracion, String fechaPagoGenerado) {
 
-        configuracion.setUltimoPagoGenerado(fechaPagoGenerado);
+        // Normalizar la fecha de entrada
+        String fechaPagoGeneradoNormalizada = normalizarFecha(fechaPagoGenerado);
+
+        configuracion.setUltimoPagoGenerado(fechaPagoGeneradoNormalizada);
 
         // Calcular el próximo pago basándose en la fecha del último pago generado
         Boolean esAnual = configuracion.getServicioXContrato().getEsAnual();
-        String proximoPago = calcularProximoPago(fechaPagoGenerado, esAnual);
+        String proximoPago = calcularProximoPago(fechaPagoGeneradoNormalizada, esAnual);
 
         configuracion.setProximoPago(proximoPago);
 

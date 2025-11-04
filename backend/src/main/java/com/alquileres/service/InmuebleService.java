@@ -12,6 +12,8 @@ import com.alquileres.repository.ContratoRepository;
 import com.alquileres.exception.BusinessException;
 import com.alquileres.exception.ErrorCodes;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +40,7 @@ public class InmuebleService {
     private ContratoRepository contratoRepository;
 
     // Obtener todos los inmuebles
+    @Cacheable(value = "inmuebles", key = "'all'")
     public List<InmuebleDTO> obtenerTodosLosInmuebles() {
         List<Inmueble> inmuebles = inmuebleRepository.findAll();
         return inmuebles.stream()
@@ -46,6 +49,7 @@ public class InmuebleService {
     }
 
     // Obtener solo inmuebles activos
+    @Cacheable(value = "inmuebles", key = "'activos'")
     public List<InmuebleDTO> obtenerInmueblesActivos() {
         List<Inmueble> inmuebles = inmuebleRepository.findByEsActivoTrue();
         return inmuebles.stream()
@@ -54,6 +58,7 @@ public class InmuebleService {
     }
 
     // Obtener solo inmuebles inactivos
+    @Cacheable(value = "inmuebles", key = "'inactivos'")
     public List<InmuebleDTO> obtenerInmueblesInactivos() {
         List<Inmueble> inmuebles = inmuebleRepository.findByEsActivoFalse();
         return inmuebles.stream()
@@ -62,11 +67,13 @@ public class InmuebleService {
     }
 
     // Contar inmuebles activos
+    @Cacheable(value = "inmuebles", key = "'count_activos'")
     public Long contarInmueblesActivos() {
         return inmuebleRepository.countByEsActivoTrue();
     }
 
     // Obtener inmuebles disponibles (no alquilados)
+    @Cacheable(value = "inmuebles", key = "'disponibles'")
     public List<InmuebleDTO> obtenerInmueblesDisponibles() {
         List<Inmueble> inmuebles = inmuebleRepository.findByEsAlquiladoFalseAndEsActivoTrue();
         return inmuebles.stream()
@@ -75,6 +82,7 @@ public class InmuebleService {
     }
 
     // Obtener inmuebles alquilados
+    @Cacheable(value = "inmuebles", key = "'alquilados'")
     public List<InmuebleDTO> obtenerInmueblesAlquilados() {
         List<Inmueble> inmuebles = inmuebleRepository.findByEsAlquiladoTrueAndEsActivoTrue();
         return inmuebles.stream()
@@ -83,6 +91,7 @@ public class InmuebleService {
     }
 
     // Obtener inmuebles no alquilados
+    @Cacheable(value = "inmuebles", key = "'no_alquilados'")
     public List<InmuebleDTO> obtenerInmueblesNoAlquilados() {
         List<Inmueble> inmuebles = inmuebleRepository.findByEsAlquiladoFalseAndEsActivoTrue();
         return inmuebles.stream()
@@ -91,6 +100,7 @@ public class InmuebleService {
     }
 
     // Obtener inmueble por ID
+    @Cacheable(value = "inmuebles", key = "#id")
     public InmuebleDTO obtenerInmueblePorId(Long id) {
         Optional<Inmueble> inmueble = inmuebleRepository.findById(id);
         if (inmueble.isPresent()) {
@@ -105,6 +115,7 @@ public class InmuebleService {
     }
 
     // Buscar inmuebles por propietario
+    @Cacheable(value = "inmuebles", key = "'propietario_' + #propietarioId")
     public List<InmuebleDTO> buscarPorPropietario(Long propietarioId) {
         List<Inmueble> inmuebles = inmuebleRepository.findByPropietarioId(propietarioId);
         return inmuebles.stream()
@@ -113,6 +124,7 @@ public class InmuebleService {
     }
 
     // Buscar inmuebles por dirección
+    @Cacheable(value = "inmuebles", key = "'direccion_' + #direccion")
     public List<InmuebleDTO> buscarPorDireccion(String direccion) {
         List<Inmueble> inmuebles = inmuebleRepository.findByDireccionContainingIgnoreCase(direccion);
         return inmuebles.stream()
@@ -121,6 +133,7 @@ public class InmuebleService {
     }
 
     // Crear nuevo inmueble
+    @CacheEvict(value = "inmuebles", allEntries = true)
     public InmuebleDTO crearInmueble(InmuebleDTO inmuebleDTO) {
         // Validar que el propietario exista
         if (inmuebleDTO.getPropietarioId() != null) {
@@ -143,6 +156,7 @@ public class InmuebleService {
     }
 
     // Actualizar inmueble
+    @CacheEvict(value = "inmuebles", allEntries = true)
     public InmuebleDTO actualizarInmueble(Long id, InmuebleDTO inmuebleDTO) {
         Optional<Inmueble> inmuebleExistente = inmuebleRepository.findById(id);
 
@@ -198,6 +212,7 @@ public class InmuebleService {
     }
 
     // Eliminar inmueble (borrado lógico)
+    @CacheEvict(value = "inmuebles", allEntries = true)
     public void eliminarInmueble(Long id) {
         Optional<Inmueble> inmueble = inmuebleRepository.findById(id);
         if (!inmueble.isPresent()) {

@@ -30,6 +30,9 @@ import com.alquileres.security.EncryptionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -146,6 +149,7 @@ public class ContratoService {
     }
 
     // Obtener todos los contratos
+    @Cacheable(value = "contratos", key = "'all'")
     public List<ContratoDTO> obtenerTodosLosContratos() {
         List<Contrato> contratos = contratoRepository.findAll();
         return contratos.stream()
@@ -154,6 +158,7 @@ public class ContratoService {
     }
 
     // Obtener contrato por ID
+    @Cacheable(value = "contratos", key = "#id")
     public ContratoDTO obtenerContratoPorId(Long id) {
         Optional<Contrato> contrato = contratoRepository.findById(id);
         if (contrato.isPresent()) {
@@ -164,6 +169,7 @@ public class ContratoService {
     }
 
     // Obtener contratos por inmueble
+    @Cacheable(value = "contratos", key = "'inmueble_' + #inmuebleId")
     public List<ContratoDTO> obtenerContratosPorInmueble(Long inmuebleId) {
         Optional<Inmueble> inmueble = inmuebleRepository.findById(inmuebleId);
         if (!inmueble.isPresent()) {
@@ -177,6 +183,7 @@ public class ContratoService {
     }
 
     // Obtener contratos por inquilino
+    @Cacheable(value = "contratos", key = "'inquilino_' + #inquilinoId")
     public List<ContratoDTO> obtenerContratosPorInquilino(Long inquilinoId) {
         Optional<Inquilino> inquilino = inquilinoRepository.findById(inquilinoId);
         if (!inquilino.isPresent()) {
@@ -190,6 +197,7 @@ public class ContratoService {
     }
 
     // Obtener contratos vigentes
+    @Cacheable(value = "contratos", key = "'vigentes'")
     public List<ContratoDTO> obtenerContratosVigentes() {
         List<Contrato> contratos = contratoRepository.findContratosVigentes();
         return contratos.stream()
@@ -198,6 +206,7 @@ public class ContratoService {
     }
 
     // Obtener contratos no vigentes
+    @Cacheable(value = "contratos", key = "'no_vigentes'")
     public List<ContratoDTO> obtenerContratosNoVigentes() {
         List<Contrato> contratos = contratoRepository.findContratosNoVigentes();
         return contratos.stream()
@@ -206,11 +215,13 @@ public class ContratoService {
     }
 
     // Contar contratos vigentes
+    @Cacheable(value = "contratos", key = "'count_vigentes'")
     public Long contarContratosVigentes() {
         return contratoRepository.countContratosVigentes();
     }
 
     // Obtener contratos que vencen próximamente
+    @Cacheable(value = "contratos-por-vencer", key = "'proximos_' + #diasAntes")
     public List<ContratoDTO> obtenerContratosProximosAVencer(int diasAntes) {
         // Calcular fecha actual y fecha límite como strings en formato ISO
         String fechaActual = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
@@ -222,6 +233,7 @@ public class ContratoService {
     }
 
     // Contar contratos próximos a vencer
+    @Cacheable(value = "contratos-por-vencer", key = "'count_proximos_' + #diasAntes")
     public Long contarContratosProximosAVencer(int diasAntes) {
         // Calcular fecha actual y fecha límite como strings en formato ISO
         String fechaActual = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
@@ -231,6 +243,7 @@ public class ContratoService {
 
     // Crear nuevo contrato
     @Transactional
+    @CacheEvict(value = "contratos", allEntries = true)
     public ContratoDTO crearContrato(ContratoCreateDTO contratoDTO) {
         // ===== OPTIMIZACIÓN: Fetch todas las entidades necesarias en una sola operación =====
         // Validar que existe el inmueble
@@ -399,6 +412,7 @@ public class ContratoService {
 
 
     // Cambiar estado del contrato
+    @CacheEvict(value = {"contratos", "contratos-por-vencer"}, allEntries = true)
     public ContratoDTO terminarContrato(Long id, EstadoContratoUpdateDTO estadoContratoUpdateDTO) {
         // Verificar que existe el contrato
         Optional<Contrato> contratoExistente = contratoRepository.findById(id);
