@@ -3,6 +3,8 @@ package com.alquileres.controller;
 import com.alquileres.dto.ActualizacionMontosServiciosRequest;
 import com.alquileres.dto.PagoServicioResponseDTO;
 import com.alquileres.dto.ActualizarPagoServicioRequest;
+import com.alquileres.dto.RegistroPagoBatchRequest;
+import com.alquileres.dto.RegistroPagoBatchResponse;
 import com.alquileres.model.PagoServicio;
 import com.alquileres.service.PagoServicioService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -171,6 +173,46 @@ public class PagoServicioController {
             return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                    "error", "Error interno del servidor",
+                    "mensaje", e.getMessage()
+                ));
+        }
+    }
+
+    /**
+     * Registra múltiples pagos de servicio en batch (procesamiento por lotes)
+     *
+     * @param request Lista de pagos a registrar con sus datos
+     * @return Resumen del procesamiento con detalle de cada pago
+     */
+    @PutMapping("/batch")
+    @Operation(summary = "Registrar pagos de servicio en batch",
+               description = "Registra múltiples pagos de servicio en una sola operación. " +
+                           "Cada pago se procesa individualmente y el resultado se incluye en la respuesta. " +
+                           "Si un pago falla, se registra el error pero se continúa con los demás pagos.")
+    public ResponseEntity<?> registrarPagosBatch(
+            @Valid @RequestBody RegistroPagoBatchRequest request) {
+        try {
+            RegistroPagoBatchResponse response = pagoServicioService.registrarPagosBatch(request);
+
+            // Si todos fallaron, retornar error 400
+            if (response.getExitosos() == 0 && response.getFallidos() > 0) {
+                return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(response);
+            }
+
+            // Si todos fueron exitosos, retornar 200
+            // Si algunos fueron exitosos y otros fallaron, retornar 207 Multi-Status
+            HttpStatus status = response.getFallidos() > 0 ? HttpStatus.MULTI_STATUS : HttpStatus.OK;
+            return ResponseEntity
+                .status(status)
+                .body(response);
+
         } catch (Exception e) {
             return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
