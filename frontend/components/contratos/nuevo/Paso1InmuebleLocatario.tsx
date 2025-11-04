@@ -11,6 +11,7 @@ import { TIPOS_INMUEBLES } from '@/utils/constantes';
 import { DatosAdicionales } from '@/hooks/useNuevoContratoForm';
 import { Contrato } from '@/types/Contrato';
 import NuevoInmuebleModal from '@/app/inmuebles/nuevo/nuevoInmuebleModal';
+import BusquedaDesplegable from '@/components/busqueda/busqueda-desplegable';
 
 interface Paso1Props {
   inmuebles: any[];
@@ -47,24 +48,14 @@ export default function Paso1InmuebleLocatario({
           {(inmuebles.length === 0) && (<p className="text-red-500">Actualmente No hay inmuebles disponibles en el sistema</p>)}
         </Label>
         <div className="flex items-center gap-5">
-          <Select
-            required
-            value={formData.inmuebleId === 0 ? '' : formData.inmuebleId.toString()}
-            onValueChange={(value) => {
-              const selectedInmueble = inmuebles.find(i => i.id.toString() === value);
-              const propietario = propietarios.find(p => p.id === selectedInmueble?.propietarioId);
-              onSelectInmueble(selectedInmueble, propietario);
-            }}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Seleccionar inmueble" />
-            </SelectTrigger>
-            <SelectContent>
-              {inmuebles.map(inmueble => (
-                <SelectItem key={inmueble.id} value={inmueble.id.toString()}>{inmueble.direccion}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+         <BusquedaDesplegable
+          items={inmuebles}
+          propiedadesBusqueda={['direccion']}
+          onSelect={(item) => {
+            const propietario = propietarios.find(p => p.id === item.propietarioId);
+            onSelectInmueble(item, propietario);
+          }}
+        />
           <div>
             <NuevoInmuebleModal
               text="Nuevo"
@@ -99,25 +90,11 @@ export default function Paso1InmuebleLocatario({
         </Label>
         <div className="flex items-center gap-5">
           <div>
-            <Select
-              required
-              value={formData.inquilinoId === 0 ? '' : formData.inquilinoId.toString()}
-              onValueChange={(value) => {
-                const selectedInquilino = inquilinos.find(i => i.id.toString() === value);
-                onSelectInquilino(selectedInquilino);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccione un locatario" />
-              </SelectTrigger>
-              <SelectContent>
-                {inquilinos.map(inq => (
-                  <SelectItem key={inq.id} value={inq.id.toString()}>
-                    {inq.apellido}, {inq.nombre} | CUIL: {inq.cuil}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <BusquedaDesplegable
+              items={inquilinos}
+              propiedadesBusqueda={['apellido', 'nombre', 'cuil']}
+              onSelect={onSelectInquilino}
+            />
           </div>
           <NuevoInquilinoModal
             text="Nuevo"

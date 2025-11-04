@@ -18,10 +18,13 @@ import ProximoAumentoBadge from "@/components/contratos/proximo-aumento-badge";
 import auth from "@/utils/functions/auth-functions/auth";
 import ModalRegistrarPagoAlquiler from "@/components/modal-registrar-pago-alquiler";
 import VencimientoBadge from "@/components/contratos/vencimiento-badge";
+import { set } from "lodash";
+import BarraBusqueda from "@/components/busqueda/barra-busqueda";
 
 export default function AlquileresPage() {
 
   const [contratosBD, setContatosBD] = useState<ContratoDetallado[]>([])
+  const [contratosMostrar, setContratosMostrar] = useState<ContratoDetallado[]>([])
   const [alquileresPendientes, setAlquileresPendientes] = useState<AlquilerItem[]>([])
   const [loading, setLoading] = useState(true);
   const [isRendering, setIsRendering] = useState(false); // nuevo estado para transición
@@ -72,6 +75,7 @@ export default function AlquileresPage() {
 
       console.log("Datos parseados del backend:", data);
       setContatosBD(data);
+      setContratosMostrar(data); //para busqueda
       setTotalContratos(total);
       setAlquileresNoPagos(alqNoPagos);
       setAlquileresPendientes(alquileresPend);
@@ -222,6 +226,7 @@ export default function AlquileresPage() {
                 )}
               </Button>
               <div className="flex items-center gap-4 flex-wrap">
+                
                 {/* Orden */}
                 <div className="flex items-center gap-2">
                   <p className="text-secondary">Orden:</p>
@@ -268,8 +273,15 @@ export default function AlquileresPage() {
         </div>
         </div>
 
+          <BarraBusqueda 
+            arrayDatos={contratosBD}
+            placeholder="No Disponible [En Desarrollo]..."
+            setDatosFiltrados={setContratosMostrar}
+            propiedadesBusqueda={["direccionInmueble", "nombrePropietario", "apellidoPropietario"]}
+          />
+
         {/* Spinner mientras se procesan las cards */}
-        {!loading && !isRendering && contratosBD.length > 0 && (
+        {!loading && !isRendering && contratosMostrar.length > 0 && (
           <div className="flex flex-col items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
             <p className="text-muted-foreground">Preparando contratos...</p>

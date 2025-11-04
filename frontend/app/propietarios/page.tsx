@@ -14,10 +14,12 @@ import Loading from "@/components/loading"
 import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
 import auth from "@/utils/functions/auth-functions/auth"
 import { Switch } from "@/components/ui/switch"
+import BarraBusqueda from "@/components/busqueda/barra-busqueda"
 
 export default function PropietariosPage() {
   //DATOS REALES
   const [propietariosBD, setPropietariosBD] = useState<Propietario[]>([]);
+  const [propietariosMostrar, setPropietariosMostrar] = useState<Propietario[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtroInactivos, setFiltroInactivos] = useState(false);
   const [isEditOwnerOpen, setIsEditOwnerOpen] = useState(false)
@@ -43,6 +45,7 @@ useEffect(() => {
         a.apellido.localeCompare(b.apellido));
 
       setPropietariosBD(dataOrdenada);
+      setPropietariosMostrar(dataOrdenada);
     } catch (err: any) {
       console.error("Error al traer propietarios:", err.message);
     } finally {
@@ -105,10 +108,17 @@ useEffect(() => {
           </div>
         </div>
 
+        <BarraBusqueda 
+          arrayDatos={propietariosBD}
+          placeholder="Buscar por apellido, nombre  o CUIL ..."
+          setDatosFiltrados={setPropietariosMostrar}
+          propiedadesBusqueda={["apellido", "nombre", "cuil"]}
+        />
+
 
         {/* Owners Grid */}
         <div className={displayStyle}>
-          {propietariosBD.map((propietario) => (
+          {propietariosMostrar.map((propietario) => (
             <Card key={propietario.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex justify-between items-start">

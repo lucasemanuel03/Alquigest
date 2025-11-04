@@ -9,6 +9,12 @@
 - [x] Mercedes Locativas, se muestra para contratos no vigenetes.
 - [ ] Periodo de aumento me deja ingresar un número mayor que el posible
 
+### MEJORAS EN SPRINT 4 5
+- [ ] Búsqueda en todas las pages importantes
+  - [ ] Componente SearchBar que reciba por parámetro:
+    - 1 el array de objetcs
+    - 2 una función callback que le permita al componente padre (la page), setear el array de objetcs filtrados para que la page sea la encargada de mostrar los objetos.
+
 
 ### Contrato - detalle
 - [x] Mostrar motivos de rescincion en detalle Contrato

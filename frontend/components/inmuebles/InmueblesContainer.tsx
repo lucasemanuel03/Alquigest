@@ -11,9 +11,12 @@ import InmueblesGrid from "@/components/inmuebles/InmueblesGrid"
 import auth from "@/utils/functions/auth-functions/auth"
 import ModalEditarInmueble, { EditingInmueble } from "@/components/modal-editar-inmueble"
 import ModalError from "@/components/modal-error"
+import BarraBusqueda from "../busqueda/barra-busqueda"
+import { set } from "lodash"
 
 export default function InmueblesContainer() {
   const [inmueblesBD, setInmueblesBD] = useState<Inmueble[]>([])
+  const [inmueblesMostrar, setInmueblesMostrar] = useState<Inmueble[]>([])
   const [propietariosBD, setPropietariosBD] = useState<Propietario[]>([])
 
   const [loading, setLoading] = useState(true)
@@ -65,6 +68,7 @@ export default function InmueblesContainer() {
       try {
         const data: Inmueble[] = await fetchWithToken(url)
         setInmueblesBD(data)
+        setInmueblesMostrar(data)
         setLoading(false)
       } catch (error) {
         console.error("Error al obtener inmuebles:", error)
@@ -148,8 +152,14 @@ export default function InmueblesContainer() {
         onInmuebleCreado={(nuevo) => setInmueblesBD((prev) => [...prev, nuevo])}
       />
 
+      <BarraBusqueda 
+        arrayDatos={inmueblesBD}
+        placeholder="Buscar por dirección..." 
+        setDatosFiltrados={setInmueblesMostrar} 
+        propiedadesBusqueda={["direccion"]}/>
+
       <InmueblesGrid
-        inmuebles={inmueblesBD}
+        inmuebles={inmueblesMostrar}
         propietarios={propietariosBD}
         canEdit={canEdit}
         onEdit={handleEditInmueble}

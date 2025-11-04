@@ -19,11 +19,13 @@ import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
 import { Switch } from "@/components/ui/switch"
 import auth from "@/utils/functions/auth-functions/auth"
 import ModalError from "@/components/modal-error"
+import BarraBusqueda from "@/components/busqueda/barra-busqueda"
 
 export default function InquilinosPage() {
 
   //DATOS REALES
   const [InquilinosBD, setInquilinosBD] = useState<Inquilino[]>([]);
+  const [inquilinosMostrar, setInquilinosMostrar] = useState<Inquilino[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorCarga, setErrorCarga] = useState("")
   const [mostrarError, setMostrarError] = useState(false)
@@ -142,7 +144,7 @@ export default function InquilinosPage() {
 
   if (loading) return(
     <div>
-      <Loading text="Cargando Locatarios..." tituloHeader="Locatarios"/>
+      <Loading text="Cargando Locatarios..."/>
     </div>
   )
 
@@ -159,7 +161,6 @@ export default function InquilinosPage() {
                 onInquilinoCreado={(nuevo) => setInquilinosBD(prev => [...prev, nuevo])}
               />
           </div>
-
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-3xl font-bold text-foreground mb-2">{filtroInactivos? "Locatarios Inactivos":"Locatarios Activos"}</h2>
@@ -174,10 +175,16 @@ export default function InquilinosPage() {
           </div>
         </div>
 
+        <BarraBusqueda
+            arrayDatos={InquilinosBD}
+            placeholder="Buscar por nombre, apellido o CUIL..."
+            setDatosFiltrados={setInquilinosMostrar}
+            propiedadesBusqueda={["apellido", "nombre", "cuil"]}
+          />
 
         {/* Inquilinos Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {InquilinosBD.map((inquilino) => (
+          {inquilinosMostrar.map((inquilino) => (
             <Card key={inquilino.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex justify-between items-start">
