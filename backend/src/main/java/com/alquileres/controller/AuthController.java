@@ -22,9 +22,12 @@ import com.alquileres.service.PasswordResetService;
 import com.alquileres.service.EmailService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -45,6 +48,15 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/auth")
 @Tag(name = "Autenticación", description = "API para autenticación y registro de usuarios")
 public class AuthController {
+
+    @Value("${app.jwt.cookieName:accessToken}")
+    private String jwtCookieName;
+
+    @Value("${app.jwt.cookieMaxAge:3600}") // 1 hora por defecto
+    private int cookieMaxAge;
+
+    @Value("${app.cors.allowedOrigins:http://localhost:3000}")
+    private String allowedOrigins;
 
     @Autowired
     AuthenticationManager authenticationManager;
@@ -87,7 +99,7 @@ public class AuthController {
 
     @PostMapping("/signin")
     @Operation(summary = "Iniciar sesión")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest, HttpServletResponse response) {
 
         try {
             // Verificar intentos previos y aplicar delay si es necesario
@@ -113,6 +125,15 @@ public class AuthController {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String jwt = jwtUtils.generateJwtToken(authentication);
 
+            // Configurar cookie HttpOnly con el JWT
+            Cookie jwtCookie = new Cookie(jwtCookieName, jwt);
+            jwtCookie.setHttpOnly(true);  // No accesible desde JavaScript
+            jwtCookie.setSecure(false);   // Cambiar a true en producción con HTTPS
+            jwtCookie.setPath("/");
+            jwtCookie.setMaxAge(cookieMaxAge); // Duración en segundos
+            // jwtCookie.setAttribute("SameSite", "Strict"); // Protección CSRF - descomentar si usas Spring 6.1+
+            response.addCookie(jwtCookie);
+
             UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
             List<String> roles = userDetails.getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
@@ -121,7 +142,8 @@ public class AuthController {
             // Obtener permisos basados en los roles del usuario
             Map<String, Boolean> permisos = obtenerPermisosUsuario(userDetails.getId());
 
-            return ResponseEntity.ok(new JwtResponse(jwt,
+            // Devolver datos del usuario sin el token (ahora está en la cookie)
+            return ResponseEntity.ok(new JwtResponse(null, // No enviar token en el body
                     userDetails.getId(),
                     userDetails.getUsername(),
                     userDetails.getEmail(),
@@ -316,16 +338,28 @@ public class AuthController {
 
     @PostMapping("/logout")
     @Operation(summary = "Cerrar sesión")
-    public ResponseEntity<?> logoutUser(HttpServletRequest request) {
+    public ResponseEntity<?> logoutUser(HttpServletRequest request, HttpServletResponse response) {
         try {
-            // Obtener el token del header Authorization
-            String headerAuth = request.getHeader("Authorization");
+            // Limpiar cookie
+            Cookie jwtCookie = new Cookie(jwtCookieName, null);
+            jwtCookie.setHttpOnly(true);
+            jwtCookie.setSecure(false); // Cambiar a true en producción
+            jwtCookie.setPath("/");
+            jwtCookie.setMaxAge(0); // Eliminar cookie
+            response.addCookie(jwtCookie);
 
-            if (headerAuth != null && headerAuth.startsWith("Bearer ")) {
-                String jwt = headerAuth.substring(7);
-
-                // Invalidar el token agregándolo a la blacklist
-                jwtUtils.invalidateToken(jwt);
+            // Obtener el token de la cookie para invalidarlo en la blacklist
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if (jwtCookieName.equals(cookie.getName())) {
+                        String jwt = cookie.getValue();
+                        if (jwt != null && !jwt.isEmpty()) {
+                            jwtUtils.invalidateToken(jwt);
+                        }
+                        break;
+                    }
+                }
             }
 
             // Limpiar el contexto de seguridad
@@ -338,19 +372,78 @@ public class AuthController {
         }
     }
 
+    @GetMapping("/me")
+    @Operation(summary = "Obtener información del usuario autenticado")
+    public ResponseEntity<?> getCurrentUser(HttpServletRequest request) {
+        try {
+            // Obtener el token de la cookie
+            String jwt = null;
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if (jwtCookieName.equals(cookie.getName())) {
+                        jwt = cookie.getValue();
+                        break;
+                    }
+                }
+            }
+
+            if (jwt == null || jwt.isEmpty()) {
+                return ResponseEntity.status(401)
+                        .body(new MessageResponse("No autenticado"));
+            }
+
+            // Validar el token
+            if (!jwtUtils.validateJwtToken(jwt)) {
+                return ResponseEntity.status(401)
+                        .body(new MessageResponse("Token inválido o expirado"));
+            }
+
+            // Obtener el usuario del token
+            String username = jwtUtils.getUserNameFromJwtToken(jwt);
+            UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsService.loadUserByUsername(username);
+
+            List<String> roles = userDetails.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toList());
+
+            // Obtener permisos actualizados
+            Map<String, Boolean> permisos = obtenerPermisosUsuario(userDetails.getId());
+
+            // Devolver datos del usuario sin el token
+            return ResponseEntity.ok(new JwtResponse(null,
+                    userDetails.getId(),
+                    userDetails.getUsername(),
+                    userDetails.getEmail(),
+                    roles,
+                    permisos));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(401)
+                    .body(new MessageResponse("Error al obtener información del usuario: " + e.getMessage()));
+        }
+    }
+
     @PostMapping("/refresh")
     @Operation(summary = "Refrescar token JWT")
-    public ResponseEntity<?> refreshToken(HttpServletRequest request) {
+    public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
         try {
-            // Obtener el token del header Authorization
-            String headerAuth = request.getHeader("Authorization");
+            // Obtener el token de la cookie
+            String jwt = null;
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if (jwtCookieName.equals(cookie.getName())) {
+                        jwt = cookie.getValue();
+                        break;
+                    }
+                }
+            }
 
-            if (headerAuth == null || !headerAuth.startsWith("Bearer ")) {
+            if (jwt == null || jwt.isEmpty()) {
                 return ResponseEntity.badRequest()
                         .body(new MessageResponse("Token no proporcionado"));
             }
-
-            String jwt = headerAuth.substring(7);
 
             // Verificar si el token es válido (no expirado y no en blacklist)
             if (!jwtUtils.validateJwtToken(jwt)) {
@@ -372,6 +465,14 @@ public class AuthController {
             // Generar nuevo token
             String newJwt = jwtUtils.generateJwtToken(authentication);
 
+            // Configurar nueva cookie con el nuevo JWT
+            Cookie jwtCookie = new Cookie(jwtCookieName, newJwt);
+            jwtCookie.setHttpOnly(true);
+            jwtCookie.setSecure(false); // Cambiar a true en producción
+            jwtCookie.setPath("/");
+            jwtCookie.setMaxAge(cookieMaxAge);
+            response.addCookie(jwtCookie);
+
             List<String> roles = userDetails.getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
                     .collect(Collectors.toList());
@@ -379,7 +480,7 @@ public class AuthController {
             // Obtener permisos actualizados
             Map<String, Boolean> permisos = obtenerPermisosUsuario(userDetails.getId());
 
-            return ResponseEntity.ok(new JwtResponse(newJwt,
+            return ResponseEntity.ok(new JwtResponse(null, // No enviar token en el body
                     userDetails.getId(),
                     userDetails.getUsername(),
                     userDetails.getEmail(),
