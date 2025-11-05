@@ -232,4 +232,49 @@ public class ServicioXContratoService {
         return servicioXContratoRepository.findById(servicioId)
                 .map(ServicioXContratoDTO::new);
     }
+
+    /**
+     * Actualiza los datos de un servicio por contrato
+     * Solo se pueden actualizar: nroCuenta, nroContratoServicio, esDeInquilino, esAnual
+     *
+     * @param servicioId ID del servicio a actualizar
+     * @param nroCuenta Nuevo número de cuenta (puede ser null para no modificar)
+     * @param nroContratoServicio Nuevo número de contrato de servicio (puede ser null para no modificar)
+     * @param esDeInquilino Si el servicio está a nombre del inquilino
+     * @param esAnual Si el pago es anual
+     * @return El servicio actualizado
+     */
+    @Transactional
+    public ServicioXContrato actualizarServicio(Integer servicioId, String nroCuenta,
+                                                String nroContratoServicio, Boolean esDeInquilino,
+                                                Boolean esAnual) {
+        // Buscar el servicio
+        ServicioXContrato servicio = servicioXContratoRepository.findById(servicioId)
+                .orElseThrow(() -> new RuntimeException("Servicio no encontrado con ID: " + servicioId));
+
+        // Actualizar los campos permitidos
+        if (nroCuenta != null) {
+            servicio.setNroCuenta(nroCuenta);
+        }
+
+        if (nroContratoServicio != null) {
+            servicio.setNroContratoServicio(nroContratoServicio);
+        }
+
+        if (esDeInquilino != null) {
+            servicio.setEsDeInquilino(esDeInquilino);
+        }
+
+        if (esAnual != null) {
+            servicio.setEsAnual(esAnual);
+        }
+
+        // Guardar los cambios
+        ServicioXContrato servicioActualizado = servicioXContratoRepository.save(servicio);
+
+        logger.info("Servicio actualizado - ID: {}, Contrato: {}, Tipo: {}",
+                   servicioId, servicio.getContrato().getId(), servicio.getTipoServicio().getNombre());
+
+        return servicioActualizado;
+    }
 }

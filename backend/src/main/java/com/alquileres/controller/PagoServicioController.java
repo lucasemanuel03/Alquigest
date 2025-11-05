@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -110,21 +111,25 @@ public class PagoServicioController {
     }
 
     /**
-     * Cuenta la cantidad de pagos de servicio pendientes (no pagados)
+     * Cuenta la cantidad de pagos de servicio del mes actual
+     * Retorna totales activos y pendientes (no pagados)
      *
-     * @return Cantidad de pagos pendientes
+     * @return JSON con serviciosTotales y serviciosPendientes del mes actual
      */
     @GetMapping("/count/pendientes")
-    @Operation(summary = "Contar pagos pendientes",
-               description = "Retorna la cantidad total de pagos de servicios que están pendientes de pago (estaPagado = false)")
-    public ResponseEntity<Long> contarPagosPendientes() {
+    @Operation(summary = "Contar pagos del mes actual",
+               description = "Retorna la cantidad de pagos de servicios activos del mes actual (totales y pendientes)")
+    public ResponseEntity<Map<String, Long>> contarPagosPendientes() {
         try {
-            Long count = pagoServicioService.contarPagosPendientes();
-            return ResponseEntity.ok(count);
+            Map<String, Long> resultado = pagoServicioService.contarPagosPendientes();
+            return ResponseEntity.ok(resultado);
         } catch (Exception e) {
+            Map<String, Long> errorResponse = new HashMap<>();
+            errorResponse.put("serviciosTotales", 0L);
+            errorResponse.put("serviciosPendientes", 0L);
             return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(0L);
+                .body(errorResponse);
         }
     }
 

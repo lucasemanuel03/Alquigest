@@ -11,6 +11,8 @@ import com.alquileres.repository.PagoServicioRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -190,13 +192,36 @@ public class PagoServicioService {
     }
 
     /**
-     * Cuenta la cantidad de pagos de servicio pendientes (no pagados)
+     * Cuenta los pagos de servicio del mes actual
+     * Retorna tanto los totales activos como los pendientes (no pagados)
      *
-     * @return Cantidad de pagos pendientes
+     * @return Mapa con serviciosTotales y serviciosPendientes del mes actual
      */
-    public Long contarPagosPendientes() {
-        logger.debug("Contando pagos de servicio pendientes");
-        return pagoServicioRepository.countPagosPendientes();
+    @Cacheable(value = "pagosPendientes", key = "'count'")
+    public Map<String, Long> contarPagosPendientes() {
+        logger.debug("Contando pagos de servicio del mes actual");
+
+        // Obtener el período actual en formato mm/yyyy
+        java.time.LocalDate fechaActual = java.time.LocalDate.now();
+        String periodoActual = String.format("%02d/%d",
+            fechaActual.getMonthValue(),
+            fechaActual.getYear()
+        );
+
+        // Contar totales activos del mes actual
+        Long serviciosTotales = pagoServicioRepository.countPagosActivosPorPeriodo(periodoActual);
+
+        // Contar pendientes (no pagados) activos del mes actual
+        Long serviciosPendientes = pagoServicioRepository.countPagosPendientesPorPeriodo(periodoActual);
+
+        logger.info("Servicios del mes actual ({}): {} totales, {} pendientes",
+            periodoActual, serviciosTotales, serviciosPendientes);
+
+        Map<String, Long> resultado = new HashMap<>();
+        resultado.put("serviciosTotales", serviciosTotales);
+        resultado.put("serviciosPendientes", serviciosPendientes);
+
+        return resultado;
     }
 
     /**

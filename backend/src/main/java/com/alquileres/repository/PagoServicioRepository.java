@@ -66,4 +66,12 @@ public interface PagoServicioRepository extends JpaRepository<PagoServicio, Inte
     // Buscar todos los pagos no pagados por contrato
     @Query("SELECT p FROM PagoServicio p WHERE p.servicioXContrato.contrato.id = :contratoId AND p.estaPagado = false")
     List<PagoServicio> findPagosNoPagadosByContrato(@Param("contratoId") Long contratoId);
+
+    // Contar pagos activos del mes actual (independientemente si están pagados o no)
+    @Query("SELECT COUNT(p) FROM PagoServicio p WHERE p.servicioXContrato.esActivo = true AND p.periodo = :periodo")
+    Long countPagosActivosPorPeriodo(@Param("periodo") String periodo);
+
+    // Contar pagos activos no pagados del mes actual
+    @Query("SELECT COUNT(p) FROM PagoServicio p WHERE p.servicioXContrato.esActivo = true AND p.estaPagado = false AND p.periodo = :periodo")
+    Long countPagosPendientesPorPeriodo(@Param("periodo") String periodo);
 }

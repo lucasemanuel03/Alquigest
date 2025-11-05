@@ -2,6 +2,7 @@ package com.alquileres.controller;
 
 import com.alquileres.dto.CrearServicioRequest;
 import com.alquileres.dto.FechaInicioRequest;
+import com.alquileres.dto.ActualizarServicioXContratoRequest;
 import com.alquileres.dto.ServicioXContratoResponseDTO;
 import com.alquileres.model.ServicioXContrato;
 import com.alquileres.service.ServicioXContratoService;
@@ -177,6 +178,43 @@ public class ServicioXContratoController {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Error al reactivar el servicio"));
+        }
+    }
+
+    /**
+     * Actualiza los datos de un servicio por contrato
+     *
+     * @param servicioId ID del servicio a actualizar
+     * @param request Datos a actualizar (nroCuenta, nroContratoServicio, esDeInquilino, esAnual)
+     * @return El servicio actualizado
+     */
+    @PutMapping("/{servicioId}")
+    @Operation(summary = "Actualizar servicio por contrato",
+               description = "Actualiza los datos de un servicio: nroCuenta, nroContratoServicio, esDeInquilino y esAnual")
+    public ResponseEntity<?> actualizarServicio(
+            @PathVariable Integer servicioId,
+            @Valid @RequestBody ActualizarServicioXContratoRequest request) {
+        try {
+            ServicioXContrato servicioActualizado = servicioXContratoService.actualizarServicio(
+                    servicioId,
+                    request.getNroCuenta(),
+                    request.getNroContratoServicio(),
+                    request.getEsDeInquilino(),
+                    request.getEsAnual()
+            );
+
+            // Convertir a DTO para la respuesta
+            ServicioXContratoResponseDTO dto = new ServicioXContratoResponseDTO(servicioActualizado);
+
+            return ResponseEntity.ok(dto);
+        } catch (RuntimeException e) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al actualizar el servicio: " + e.getMessage()));
         }
     }
 

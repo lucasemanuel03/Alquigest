@@ -3,6 +3,8 @@ package com.alquileres.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.PositiveOrZero;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -39,6 +41,7 @@ public class PagoServicio {
     @Column(name = "medio_pago", length = 50)
     private String medioPago;
 
+    @PositiveOrZero(message = "El monto debe ser positivo o cero")
     @Column(name = "monto", precision = 12, scale = 2)
     private BigDecimal monto;
 
