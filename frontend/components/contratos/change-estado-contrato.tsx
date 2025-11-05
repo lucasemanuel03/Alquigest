@@ -16,7 +16,6 @@ type MotivoCancelacion = { id: number; nombre: string };
 
 const ESTADOS: Estado[] = [
   { id: 1, nombre: "Vigente" },
-  { id: 2, nombre: "No Vigente" },
   { id: 3, nombre: "Rescindido" },
 ];
 

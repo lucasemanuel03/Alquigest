@@ -7,6 +7,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Inmueble } from "@/types/Inmueble"
 import { TIPOS_INMUEBLES, ESTADOS_INMUEBLE } from "@/utils/constantes"
+import BadgeInmueble from "./badge-inmueble"
 
 type Props = {
   inmueble: Inmueble
@@ -27,14 +28,7 @@ export default function InmuebleCard({ inmueble, propietarioNombre, canEdit, onE
               Córdoba
             </div>
           </div>
-          <div className="flex flex-col items-end space-y-1">
-            <Badge
-              variant={inmueble.esActivo ? "default" : "secondary"}
-              className={inmueble.esActivo ? "bg-accent" : ""}
-            >
-              {ESTADOS_INMUEBLE[inmueble.estado - 1].nombre}
-            </Badge>
-          </div>
+          <BadgeInmueble  estadoInmueble={inmueble.estado} />
         </div>
       </CardHeader>
 

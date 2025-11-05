@@ -84,6 +84,9 @@ export default function ModalEditarInmueble({
               <Label htmlFor="edit-superficie">Superficie</Label>
               <Input
                 id="edit-superficie"
+                type="number"
+                min={0}
+                max={1000}
                 value={editingInmueble.superficie as any}
                 onChange={(e) =>
                   setEditingInmueble({ ...editingInmueble, superficie: e.target.value })

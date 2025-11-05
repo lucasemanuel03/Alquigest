@@ -42,5 +42,4 @@
 
   #### SPRINT 4
   - [ ] Endpoint contratos tenga un atributo montoAlquiler, que sea el valor del ultimo alquiler.
-  - [ ] Problemas en la generación automática de pagos-alquiler, si el contrato se crea con fecha incio anterior al mesa actual
-
+  - [ ] Endpoint /inmuebles/disponibles, que filtre solo los que están activos y que no tenga en cuenta los en reparación (ESTADO ID 2)
