@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Calendar, ArrowLeft, AlertCircle, FileText } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
 import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
 import BACKEND_URL from "@/utils/backendURL"
 import Loading from "@/components/loading";
@@ -21,6 +22,23 @@ import { useAuth } from "@/contexts/AuthProvider"
 export default function AlquileresPage() {
 
   const { hasPermission, hasRole, user } = useAuth();
+  const searchParams = useSearchParams()
+  const router = useRouter()
+
+  // Leer filtro desde URL o usar "vigentes" por defecto
+  const filtroFromURL = searchParams.get("filtro") as "vigentes" | "proximos-vencer" | null
+  const filtrosValidos = ["vigentes", "proximos-vencer"]
+  const filtroInicial = filtroFromURL && filtrosValidos.includes(filtroFromURL) ? filtroFromURL : "vigentes"
+
+  // Leer orden desde URL o usar valores por defecto
+  const campoFromURL = searchParams.get("ordenCampo") as 'direccion' | 'locador' | 'fechaAumento' | null
+  const dirFromURL = searchParams.get("ordenDir") as 'asc' | 'desc' | null
+  const camposValidos = ["direccion", "locador", "fechaAumento"]
+  const dirValidas = ["asc", "desc"]
+  const ordenInicial = {
+    campo: (campoFromURL && camposValidos.includes(campoFromURL) ? campoFromURL : 'direccion') as 'direccion' | 'locador' | 'fechaAumento',
+    dir: (dirFromURL && dirValidas.includes(dirFromURL) ? dirFromURL : 'asc') as 'asc' | 'desc'
+  }
 
   const [contratosBD, setContatosBD] = useState<ContratoDetallado[]>([])
   const [contratosMostrar, setContratosMostrar] = useState<ContratoDetallado[]>([])
@@ -28,11 +46,36 @@ export default function AlquileresPage() {
   const [loading, setLoading] = useState(true);
   const [totalContratos, setTotalContratos] = useState(0)
   const [expandedCard, setExpandedCard] = useState<number | null>(null); // id del contrato expandido
-  const [filtroContrato, setFiltroContrato] = useState<"vigentes" | "proximos-vencer">("vigentes");
+  const [filtroContrato, setFiltroContrato] = useState<"vigentes" | "proximos-vencer">(filtroInicial);
   const [vistaDetallada, setVistaDetallada] = useState<boolean>(false); // false = colapsada, true = detallada
-  const [orden, setOrden] = useState<{campo: 'direccion' | 'locador' | 'fechaAumento', dir: 'asc' | 'desc'}>({ campo: 'direccion', dir: 'asc' });
+  const [orden, setOrden] = useState<{campo: 'direccion' | 'locador' | 'fechaAumento', dir: 'asc' | 'desc'}>(ordenInicial);
   const [modalPagoOpen, setModalPagoOpen] = useState(false);
   const [contratoSeleccionado, setContratoSeleccionado] = useState<ContratoDetallado | null>(null);
+  
+  // Función para actualizar URL con filtro y orden
+  const actualizarURL = (nuevoFiltro?: string, nuevoOrden?: typeof orden) => {
+    const params = new URLSearchParams()
+    const filtro = nuevoFiltro || filtroContrato
+    const ordenActual = nuevoOrden || orden
+    
+    params.set("filtro", filtro)
+    params.set("ordenCampo", ordenActual.campo)
+    params.set("ordenDir", ordenActual.dir)
+    
+    router.push(`/alquileres?${params.toString()}`, { scroll: false })
+  }
+
+  // Función para cambiar filtro y actualizar URL
+  const handleChangeFiltro = (nuevoFiltro: "vigentes" | "proximos-vencer") => {
+    setFiltroContrato(nuevoFiltro)
+    actualizarURL(nuevoFiltro)
+  }
+
+  // Función para cambiar orden y actualizar URL
+  const handleChangeOrden = (nuevoOrden: {campo: 'direccion' | 'locador' | 'fechaAumento', dir: 'asc' | 'desc'}) => {
+    setOrden(nuevoOrden)
+    actualizarURL(undefined, nuevoOrden)
+  }
   
   const toggleCard = (id: number) => {
     // Si la vista es detallada no se colapsa individualmente
@@ -146,9 +189,10 @@ export default function AlquileresPage() {
     <div className="min-h-screen bg-background">
       <main className="container mx-auto px-6 py-8 pt-30">
         <div className="mb-8 flex justify-between gap-3"> 
-          <div> <Button variant="outline" onClick={() => window.history.back()}> 
+          <Link href={"/"}> 
+            <Button variant="outline"> 
             <ArrowLeft className="h-4 w-4 mr-2" /> Volver </Button> 
-          </div> 
+          </Link> 
           <div className="flex items-center space-x-4">
             {hasPermission("crear_contrato") ? (
               <Link href={"/contratos/nuevo"}>
@@ -207,9 +251,9 @@ export default function AlquileresPage() {
                 vistaDetallada={vistaDetallada}
                 setVistaDetallada={setVistaDetallada}
                 orden={orden}
-                setOrden={setOrden}
+                setOrden={handleChangeOrden}
                 filtroContrato={filtroContrato}
-                setFiltroContrato={setFiltroContrato}
+                setFiltroContrato={handleChangeFiltro}
               />
             </div>
           </div>  

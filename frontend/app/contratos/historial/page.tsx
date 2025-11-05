@@ -8,6 +8,7 @@ import { ArrowLeft, ArrowUpDown, Building2, ChevronDown, FileClock, User } from 
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Loading from "@/components/loading";
+import { useSearchParams, useRouter } from "next/navigation";
 
 import {
   DropdownMenu,
@@ -20,17 +21,48 @@ import EstadoBadge from "@/components/contratos/estado-badge";
 import VencimientoBadge from "@/components/contratos/vencimiento-badge";
 
 export default function HistorialContratosPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [contratosBD, setContatosBD] = useState<ContratoDetallado[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRendering, setIsRendering] = useState(false); // nuevo estado para transición
 
-  // 👇 ahora usamos un string en vez de boolean
-  // Filtro por defecto ahora 'vigentes' para mostrar resultados iniciales
-  const [filtroContrato, setFiltroContrato] = useState<"vigentes" | "no-vigentes" | "proximos-vencer">("vigentes");
-  
-  // Estados para ordenamiento
-  const [ordenarPor, setOrdenarPor] = useState<"fechaInicio" | "fechaFin" | "nombrePropietario">("fechaInicio");
-  const [ordenAscendente, setOrdenAscendente] = useState(true);
+  // Leer valores iniciales desde la URL (con validación) y caer a defaults si no existen
+  const filtroFromURL = searchParams.get("filtro") as "vigentes" | "no-vigentes" | "proximos-vencer" | null;
+  const validFiltros = ["vigentes", "no-vigentes", "proximos-vencer"] as const;
+  const filtroInicial = (filtroFromURL && (validFiltros as readonly string[]).includes(filtroFromURL))
+    ? (filtroFromURL as typeof validFiltros[number])
+    : "vigentes";
+
+  const campoFromURL = searchParams.get("ordenCampo") as "fechaInicio" | "fechaFin" | "nombrePropietario" | null;
+  const validCampos = ["fechaInicio", "fechaFin", "nombrePropietario"] as const;
+  const campoInicial = (campoFromURL && (validCampos as readonly string[]).includes(campoFromURL))
+    ? (campoFromURL as typeof validCampos[number])
+    : "fechaInicio";
+
+  const dirFromURL = searchParams.get("ordenDir") as "asc" | "desc" | null;
+  const dirInicial = dirFromURL === "desc" ? "desc" : "asc";
+
+  // Estados controlados por URL
+  const [filtroContrato, setFiltroContrato] = useState<"vigentes" | "no-vigentes" | "proximos-vencer">(filtroInicial);
+  const [ordenarPor, setOrdenarPor] = useState<"fechaInicio" | "fechaFin" | "nombrePropietario">(campoInicial);
+  const [ordenAscendente, setOrdenAscendente] = useState(dirInicial === "asc");
+
+  // Helper para actualizar la URL preservando los valores actuales
+  const actualizarURL = (
+    nuevoFiltro?: "vigentes" | "no-vigentes" | "proximos-vencer",
+    nuevoCampo?: "fechaInicio" | "fechaFin" | "nombrePropietario",
+    nuevaDir?: "asc" | "desc"
+  ) => {
+    const params = new URLSearchParams();
+    const filtro = nuevoFiltro || filtroContrato;
+    const campo = nuevoCampo || ordenarPor;
+    const dir = nuevaDir || (ordenAscendente ? "asc" : "desc");
+    params.set("filtro", filtro);
+    params.set("ordenCampo", campo);
+    params.set("ordenDir", dir);
+    router.push(`/contratos/historial?${params.toString()}`, { scroll: false });
+  };
 
   // Función para ordenar contratos
   const ordenarContratos = (contratos: ContratoDetallado[]) => {
@@ -92,6 +124,20 @@ export default function HistorialContratosPage() {
   // Incluye filtroContrato para refetch al cambiar filtro y mantener orden por defecto
   }, [ordenarPor, ordenAscendente, filtroContrato]);
 
+  // Wrappers que actualizan estado y URL
+  const handleFiltro = (f: "vigentes" | "no-vigentes" | "proximos-vencer") => {
+    setFiltroContrato(f);
+    actualizarURL(f);
+  };
+  const handleOrden = (
+    campo: "fechaInicio" | "fechaFin" | "nombrePropietario",
+    dir: "asc" | "desc"
+  ) => {
+    setOrdenarPor(campo);
+    setOrdenAscendente(dir === "asc");
+    actualizarURL(undefined, campo, dir);
+  };
+
   const getTextoOrdenamiento = () => {
     const tipo = {
       "fechaInicio": "Fecha Inicio",
@@ -119,11 +165,11 @@ export default function HistorialContratosPage() {
     <div className="min-h-screen bg-background">
       <main className="container mx-auto px-6 py-8 pt-30">
         <div className="mb-8 flex justify-between gap-3">
-          <div>
-            <Button variant="outline" onClick={() => window.history.back()}>
+          <Link href={"/"}>
+            <Button variant="outline">
               <ArrowLeft className="h-4 w-4 mr-2" /> Volver
             </Button>
-          </div>
+          </Link>
 
         </div>
 
@@ -147,13 +193,13 @@ export default function HistorialContratosPage() {
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => setFiltroContrato("vigentes")}>
+          <DropdownMenuItem onClick={() => handleFiltro("vigentes")}>
                         Vigentes
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setFiltroContrato("no-vigentes")}>
+          <DropdownMenuItem onClick={() => handleFiltro("no-vigentes")}>
                         No Vigentes
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setFiltroContrato("proximos-vencer")}>
+          <DropdownMenuItem onClick={() => handleFiltro("proximos-vencer")}>
                         Próximos a vencer
                     </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -172,22 +218,22 @@ export default function HistorialContratosPage() {
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                      <DropdownMenuItem onClick={() => { setOrdenarPor("fechaInicio"); setOrdenAscendente(true); }}>
+            <DropdownMenuItem onClick={() => handleOrden("fechaInicio", "asc")}>
                           Fecha Inicio (A-Z)
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => { setOrdenarPor("fechaInicio"); setOrdenAscendente(false); }}>
+            <DropdownMenuItem onClick={() => handleOrden("fechaInicio", "desc")}>
                           Fecha Inicio (Z-A)
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => { setOrdenarPor("fechaFin"); setOrdenAscendente(true); }}>
+            <DropdownMenuItem onClick={() => handleOrden("fechaFin", "asc")}>
                           Fecha Fin (A-Z)
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => { setOrdenarPor("fechaFin"); setOrdenAscendente(false); }}>
+            <DropdownMenuItem onClick={() => handleOrden("fechaFin", "desc")}>
                           Fecha Fin (Z-A)
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => { setOrdenarPor("nombrePropietario"); setOrdenAscendente(true); }}>
+            <DropdownMenuItem onClick={() => handleOrden("nombrePropietario", "asc")}>
                           Nombre Propietario (A-Z)
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => { setOrdenarPor("nombrePropietario"); setOrdenAscendente(false); }}>
+            <DropdownMenuItem onClick={() => handleOrden("nombrePropietario", "desc")}>
                           Nombre Propietario (Z-A)
                       </DropdownMenuItem>
                     </DropdownMenuContent>

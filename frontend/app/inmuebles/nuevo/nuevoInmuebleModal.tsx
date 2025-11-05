@@ -69,23 +69,23 @@ export default function NuevoInmuebleModal(props: NuevoInmuebleModalProps) {
     });
   
     // Cargar propietarios sólo cuando el modal se abre (lazy-load)
-    const cargarPropietarios = async () => {
-      try {
-        setLoadingPropietarios(true);
-        const data = await fetchWithToken(`${BACKEND_URL}/propietarios/activos`);
-        setPropietariosBD(data);
-      } catch (err) {
-        console.error("Error al traer propietarios:", err);
-      } finally {
-        setLoadingPropietarios(false);
-      }
-    };
-
     useEffect(() => {
+      const cargarPropietarios = async () => {
+        try {
+          setLoadingPropietarios(true);
+          const data = await fetchWithToken(`${BACKEND_URL}/propietarios/activos`);
+          setPropietariosBD(data);
+        } catch (err) {
+          console.error("Error al traer propietarios:", err);
+        } finally {
+          setLoadingPropietarios(false);
+        }
+      };
+
       if (isOpen && propietariosBD.length === 0 && !loadingPropietarios) {
         cargarPropietarios();
       }
-    }, [isOpen, propietariosBD.length, loadingPropietarios]);
+    }, [isOpen]); // Solo depende de isOpen
   
     // Mantener esActivo / esAlquilado consistentes cuando cambie estado
     useEffect(() => {

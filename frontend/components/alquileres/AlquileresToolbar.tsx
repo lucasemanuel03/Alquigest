@@ -12,9 +12,9 @@ type Props = {
   vistaDetallada: boolean;
   setVistaDetallada: Dispatch<SetStateAction<boolean>>;
   orden: Orden;
-  setOrden: Dispatch<SetStateAction<Orden>>;
+  setOrden: ((orden: Orden) => void) | Dispatch<SetStateAction<Orden>>;
   filtroContrato: 'vigentes' | 'proximos-vencer';
-  setFiltroContrato: Dispatch<SetStateAction<'vigentes' | 'proximos-vencer'>>;
+  setFiltroContrato: ((filtro: 'vigentes' | 'proximos-vencer') => void) | Dispatch<SetStateAction<'vigentes' | 'proximos-vencer'>>;
 };
 
 export default function AlquileresToolbar({
