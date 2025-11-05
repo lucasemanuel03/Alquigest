@@ -19,7 +19,6 @@ export default function BarraBusqueda({
 
     const [query, setQuery] = useState("");
     const [resultados, setResultados] = useState<any[]>([]);
-    console.log("Array datos en barra de busqueda:", arrayDatos);
 
     const doFilter = (qInput: string) => {
         const q = (qInput ?? "").trim().toLowerCase();

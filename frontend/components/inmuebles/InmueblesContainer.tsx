@@ -44,6 +44,7 @@ export default function InmueblesContainer() {
       try {
         const data = await fetchWithToken(`${BACKEND_URL}/propietarios`)
         setPropietariosBD(data)
+  
       } catch (err) {
         console.error("Error al traer propietarios:", err)
       }
@@ -54,6 +55,8 @@ export default function InmueblesContainer() {
 
   useEffect(() => {
     const fetchInmuebles = async () => {
+
+      setLoading(true)
       
       // Mapear filtro a endpoint
       const endpointMap: Record<FiltroInmuebles, string> = {
@@ -69,6 +72,8 @@ export default function InmueblesContainer() {
         const data: Inmueble[] = await fetchWithToken(url)
         setInmueblesBD(data)
         setInmueblesMostrar(data)
+        console.log("Inmuebles obtenidos:", data);
+        console.log("Inmuebles para mostrar:", inmueblesMostrar);
         setLoading(false)
       } catch (error) {
         console.error("Error al obtener inmuebles:", error)
@@ -99,17 +104,16 @@ export default function InmueblesContainer() {
       }
       let updatedInmueble
 
-      if (editingInmueble.estado === "3") {
+      if (editingInmueble.estado === 3 || editingInmueble.estado === "3") {
         editingInmueble.esActivo = false
         await fetchWithToken(`${BACKEND_URL}/inmuebles/${editingInmueble.id}/desactivar`, { method: "PATCH" })
         updatedInmueble = { ...editingInmueble, esActivo: false }
-      } else {
-        editingInmueble.esActivo = true
+      }
+      
         updatedInmueble = await fetchWithToken(`${BACKEND_URL}/inmuebles/${editingInmueble.id}`, {
           method: "PUT",
-          body: JSON.stringify(editingInmueble),
-        })
-      }
+          body: JSON.stringify(editingInmueble)
+      })
 
       if (!updatedInmueble || !updatedInmueble.id) {
         throw new Error("El servidor no retornó el inmueble actualizado")
