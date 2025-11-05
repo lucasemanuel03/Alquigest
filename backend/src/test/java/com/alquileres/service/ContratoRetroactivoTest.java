@@ -266,7 +266,7 @@ class ContratoRetroactivoTest {
      * de inicio es hoy o en el futuro
      */
     @Test
-    void crearContrato_conFechaInicioHoy_noCreaalquileresRetroactivos() {
+    void crearContrato_conFechaInicioHoy_noCreaAlquileresRetroactivos() {
         // Arrange
         LocalDate hoy = LocalDate.now();
         

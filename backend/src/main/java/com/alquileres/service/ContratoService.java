@@ -13,6 +13,8 @@ import com.alquileres.model.TipoInmueble;
 import com.alquileres.model.CancelacionContrato;
 import com.alquileres.model.MotivoCancelacion;
 import com.alquileres.model.PDF;
+import com.alquileres.model.Alquiler;
+import com.alquileres.model.AumentoAlquiler;
 import com.alquileres.repository.ContratoRepository;
 import com.alquileres.repository.InmuebleRepository;
 import com.alquileres.repository.InquilinoRepository;
@@ -39,6 +41,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -1214,8 +1217,8 @@ public class ContratoService {
         try {
             logger.info("Iniciando creación de alquileres retroactivos para contrato ID: {}", contrato.getId());
             
-            List<com.alquileres.model.Alquiler> alquileresRetroactivos = new java.util.ArrayList<>();
-            List<com.alquileres.model.AumentoAlquiler> aumentosRetroactivos = new java.util.ArrayList<>();
+            List<Alquiler> alquileresRetroactivos = new java.util.ArrayList<>();
+            List<AumentoAlquiler> aumentosRetroactivos = new java.util.ArrayList<>();
             
             // Variables para el control de aumentos
             BigDecimal montoActual = contrato.getMonto();
@@ -1225,7 +1228,7 @@ public class ContratoService {
             LocalDate fechaAlquiler = fechaInicio;
             String fechaVencimientoISO = fechaAlquiler.format(DateTimeFormatter.ISO_LOCAL_DATE);
             
-            com.alquileres.model.Alquiler primerAlquiler = new com.alquileres.model.Alquiler(
+            Alquiler primerAlquiler = new Alquiler(
                 contrato, fechaVencimientoISO, montoActual
             );
             primerAlquiler.setEstaPagado(true);
@@ -1264,7 +1267,7 @@ public class ContratoService {
                 
                 // Crear alquiler para este mes
                 fechaVencimientoISO = fechaAlquiler.format(DateTimeFormatter.ISO_LOCAL_DATE);
-                com.alquileres.model.Alquiler alquiler = new com.alquileres.model.Alquiler(
+                Alquiler alquiler = new Alquiler(
                     contrato, fechaVencimientoISO, montoActual
                 );
                 alquiler.setEstaPagado(true);
@@ -1345,7 +1348,7 @@ public class ContratoService {
      */
     private BigDecimal aplicarAumentoICL(Contrato contrato, BigDecimal montoAnterior, 
                                           LocalDate fechaUltimoAumento, LocalDate fechaSiguienteAumento,
-                                          List<com.alquileres.model.AumentoAlquiler> aumentosRetroactivos) {
+                                          List<AumentoAlquiler> aumentosRetroactivos) {
         try {
             // Formatear fechas para consulta a la API
             String fechaInicioISO = fechaUltimoAumento.withDayOfMonth(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
@@ -1356,15 +1359,15 @@ public class ContratoService {
             
             // Consultar tasa de aumento del BCRA
             BigDecimal tasaAumento = bcraApiClient.obtenerTasaAumentoICL(fechaInicioISO, fechaFinISO);
-            BigDecimal montoNuevo = montoAnterior.multiply(tasaAumento).setScale(2, BigDecimal.ROUND_HALF_UP);
+            BigDecimal montoNuevo = montoAnterior.multiply(tasaAumento).setScale(2, RoundingMode.HALF_UP);
             
             // Calcular porcentaje de aumento
             BigDecimal porcentajeAumento = tasaAumento.subtract(BigDecimal.ONE)
                 .multiply(new BigDecimal("100"))
-                .setScale(2, BigDecimal.ROUND_HALF_UP);
+                .setScale(2, RoundingMode.HALF_UP);
             
             // Crear registro de aumento
-            com.alquileres.model.AumentoAlquiler aumento = 
+            AumentoAlquiler aumento = 
                 aumentoAlquilerService.crearAumentoSinGuardar(
                     contrato, montoAnterior, montoNuevo, porcentajeAumento
                 );
@@ -1396,20 +1399,20 @@ public class ContratoService {
      */
     private BigDecimal aplicarAumentoFijo(Contrato contrato, BigDecimal montoAnterior, 
                                            LocalDate fechaAumento,
-                                           List<com.alquileres.model.AumentoAlquiler> aumentosRetroactivos) {
+                                           List<AumentoAlquiler> aumentosRetroactivos) {
         BigDecimal porcentajeAumento = contrato.getPorcentajeAumento() != null 
             ? contrato.getPorcentajeAumento() 
             : BigDecimal.ZERO;
         
         // Calcular tasa de aumento: 1 + (porcentaje / 100)
         BigDecimal tasaAumento = BigDecimal.ONE.add(
-            porcentajeAumento.divide(new BigDecimal("100"), 10, BigDecimal.ROUND_HALF_UP)
+            porcentajeAumento.divide(new BigDecimal("100"), 10, RoundingMode.HALF_UP)
         );
         
-        BigDecimal montoNuevo = montoAnterior.multiply(tasaAumento).setScale(2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal montoNuevo = montoAnterior.multiply(tasaAumento).setScale(2, RoundingMode.HALF_UP);
         
         // Crear registro de aumento
-        com.alquileres.model.AumentoAlquiler aumento = 
+        AumentoAlquiler aumento = 
             aumentoAlquilerService.crearAumentoSinGuardar(
                 contrato, montoAnterior, montoNuevo, porcentajeAumento
             );
