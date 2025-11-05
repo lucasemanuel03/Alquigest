@@ -159,7 +159,7 @@ public class AlquilerService {
         } else {
             // Si no se proporciona fecha, usar el día 10 del mes actual
             LocalDate fechaActual = LocalDate.now();
-            LocalDate fechaConDia10 = LocalDate.of(fechaActual.getYear(), fechaActual.getMonth(), 10);
+            LocalDate fechaConDia10 = fechaActual.withDayOfMonth(10);
             fechaVencimientoISO = fechaConDia10.format(DateTimeFormatter.ISO_LOCAL_DATE);
         }
 

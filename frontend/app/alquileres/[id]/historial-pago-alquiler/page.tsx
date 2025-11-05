@@ -92,7 +92,7 @@ export default function HistorialPagoAlquilerPage() {
                         <TableCell>{item.apellidoInquilino}, {item.nombreInquilino}</TableCell>
                         <TableCell>{item.direccionInmueble}</TableCell>
                         <TableCell className="font-semibold">${item.monto.toLocaleString()}</TableCell>
-                        <TableCell>{new Date(item.fechaVencimientoPago).toLocaleDateString('es-AR')}</TableCell>
+                        <TableCell>{new Date(item.fechaVencimientoPago + 'T12:00:00').toLocaleDateString('es-AR')}</TableCell>
                         <TableCell>{estadoPago}</TableCell>
                         <TableCell>{item.metodo ?? "-"}</TableCell>
                         <TableCell>{item.titularDePago ?? "-"}</TableCell>
