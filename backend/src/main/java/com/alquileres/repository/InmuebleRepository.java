@@ -29,6 +29,11 @@ public interface InmuebleRepository extends JpaRepository<Inmueble, Long> {
            "WHERE i.esActivo = true AND i.esAlquilado = false AND e.nombre = 'Disponible'")
     List<Inmueble> findInmueblesRealmenteDisponibles();
 
+    // Buscar inmuebles con estado "Inactivo"
+    @Query("SELECT i FROM Inmueble i JOIN EstadoInmueble e ON i.estado = e.id " +
+           "WHERE e.nombre = 'Inactivo'")
+    List<Inmueble> findInmueblesConEstadoInactivo();
+
     // Buscar inmuebles alquilados y activos
     List<Inmueble> findByEsAlquiladoTrueAndEsActivoTrue();
 

@@ -57,10 +57,10 @@ public class InmuebleService {
                 .collect(Collectors.toList());
     }
 
-    // Obtener solo inmuebles inactivos
+    // Obtener solo inmuebles inactivos (con estado "Inactivo")
     @Cacheable(value = "inmuebles", key = "'inactivos'")
     public List<InmuebleDTO> obtenerInmueblesInactivos() {
-        List<Inmueble> inmuebles = inmuebleRepository.findByEsActivoFalse();
+        List<Inmueble> inmuebles = inmuebleRepository.findInmueblesConEstadoInactivo();
         return inmuebles.stream()
                 .map(InmuebleDTO::new)
                 .collect(Collectors.toList());
