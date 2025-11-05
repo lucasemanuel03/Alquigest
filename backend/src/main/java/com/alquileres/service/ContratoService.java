@@ -13,6 +13,8 @@ import com.alquileres.model.TipoInmueble;
 import com.alquileres.model.CancelacionContrato;
 import com.alquileres.model.MotivoCancelacion;
 import com.alquileres.model.PDF;
+import com.alquileres.model.Alquiler;
+import com.alquileres.model.AumentoAlquiler;
 import com.alquileres.repository.ContratoRepository;
 import com.alquileres.repository.InmuebleRepository;
 import com.alquileres.repository.InquilinoRepository;
@@ -26,6 +28,7 @@ import com.alquileres.repository.AlquilerRepository;
 import com.alquileres.exception.BusinessException;
 import com.alquileres.exception.ErrorCodes;
 import com.alquileres.util.FechaUtil;
+import com.alquileres.util.BCRAApiClient;
 import com.alquileres.security.EncryptionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +41,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -91,6 +95,12 @@ public class ContratoService {
 
     @Autowired
     private PDFService pdfService;
+
+    @Autowired
+    private BCRAApiClient bcraApiClient;
+
+    @Autowired
+    private AumentoAlquilerService aumentoAlquilerService;
 
     /**
      * Enriquece un ContratoDTO con información adicional del propietario, inmueble y alquiler
@@ -434,7 +444,20 @@ public class ContratoService {
         // Paso 7: Actualizar estados si el contrato queda vigente
         if ("Vigente".equals(estadoContrato.getNombre())) {
             actualizarEstadosParaContratoVigente(contratoGuardado, inmueble, inquilino, estadoAlquilado);
-            generarPrimerAlquiler(contratoGuardado);
+            
+            // Verificar si la fecha de inicio es anterior a la fecha actual
+            LocalDate fechaInicioDate = LocalDate.parse(fechas.fechaInicio, DateTimeFormatter.ISO_LOCAL_DATE);
+            LocalDate fechaActual = LocalDate.now();
+            
+            if (fechaInicioDate.isBefore(fechaActual)) {
+                // Si la fecha de inicio es anterior a hoy, generar alquileres retroactivos
+                logger.info("Contrato ID {} tiene fecha de inicio en el pasado ({}). Generando alquileres retroactivos.",
+                           contratoGuardado.getId(), fechas.fechaInicio);
+                crearAlquileresRetroactivos(contratoGuardado, fechaInicioDate, fechaActual);
+            } else {
+                // Si la fecha de inicio es hoy o futura, generar solo el primer alquiler
+                generarPrimerAlquiler(contratoGuardado);
+            }
         }
         
         return enrichContratoDTO(contratoGuardado);
@@ -1176,5 +1199,230 @@ public class ContratoService {
                 HttpStatus.INTERNAL_SERVER_ERROR
             );
         }
+    }
+
+    /**
+     * Crea alquileres retroactivos para un contrato con fecha de inicio en el pasado
+     * 
+     * Genera un alquiler por cada mes desde la fecha de inicio hasta el mes anterior al actual.
+     * Aplica aumentos según el periodoAumento configurado y el tipo de aumento (ICL o porcentaje fijo).
+     * Marca todos los alquileres retroactivos como pagados.
+     * 
+     * @param contrato Contrato para el cual crear los alquileres retroactivos
+     * @param fechaInicio Fecha de inicio del contrato (en el pasado)
+     * @param fechaActual Fecha actual
+     */
+    @Transactional
+    private void crearAlquileresRetroactivos(Contrato contrato, LocalDate fechaInicio, LocalDate fechaActual) {
+        try {
+            logger.info("Iniciando creación de alquileres retroactivos para contrato ID: {}", contrato.getId());
+            
+            List<Alquiler> alquileresRetroactivos = new java.util.ArrayList<>();
+            List<AumentoAlquiler> aumentosRetroactivos = new java.util.ArrayList<>();
+            
+            // Variables para el control de aumentos
+            BigDecimal montoActual = contrato.getMonto();
+            LocalDate fechaProximoAumento = calcularFechaProximoAumento(fechaInicio, contrato.getPeriodoAumento());
+            
+            // Crear el primer alquiler con la fecha de inicio del contrato
+            LocalDate fechaAlquiler = fechaInicio;
+            String fechaVencimientoISO = fechaAlquiler.format(DateTimeFormatter.ISO_LOCAL_DATE);
+            
+            Alquiler primerAlquiler = new Alquiler(
+                contrato, fechaVencimientoISO, montoActual
+            );
+            primerAlquiler.setEstaPagado(true);
+            primerAlquiler.setFechaPago(fechaVencimientoISO);
+            primerAlquiler.setEsActivo(true);
+            alquileresRetroactivos.add(primerAlquiler);
+            
+            logger.debug("Primer alquiler retroactivo creado: fecha={}, monto={}", fechaVencimientoISO, montoActual);
+            
+            // Avanzar al siguiente mes (día 1)
+            fechaAlquiler = fechaInicio.plusMonths(1).withDayOfMonth(1);
+            
+            // Crear alquileres para cada mes hasta el mes anterior al actual
+            while (fechaAlquiler.isBefore(fechaActual.withDayOfMonth(1))) {
+                // Verificar si debe aplicar aumento en este mes
+                if (fechaProximoAumento != null && 
+                    !fechaAlquiler.isBefore(fechaProximoAumento.withDayOfMonth(1))) {
+                    
+                    BigDecimal montoAnterior = montoActual;
+                    
+                    // Aplicar aumento según el tipo configurado
+                    if (Boolean.TRUE.equals(contrato.getAumentaConIcl())) {
+                        // Aumento por ICL
+                        montoActual = aplicarAumentoICL(contrato, montoAnterior, fechaProximoAumento, fechaAlquiler, aumentosRetroactivos);
+                    } else {
+                        // Aumento por porcentaje fijo
+                        montoActual = aplicarAumentoFijo(contrato, montoAnterior, fechaAlquiler, aumentosRetroactivos);
+                    }
+                    
+                    // Calcular la siguiente fecha de aumento
+                    fechaProximoAumento = calcularFechaProximoAumento(fechaProximoAumento, contrato.getPeriodoAumento());
+                    
+                    logger.debug("Aumento aplicado en fecha {}: monto anterior={}, monto nuevo={}", 
+                                fechaAlquiler, montoAnterior, montoActual);
+                }
+                
+                // Crear alquiler para este mes
+                fechaVencimientoISO = fechaAlquiler.format(DateTimeFormatter.ISO_LOCAL_DATE);
+                Alquiler alquiler = new Alquiler(
+                    contrato, fechaVencimientoISO, montoActual
+                );
+                alquiler.setEstaPagado(true);
+                alquiler.setFechaPago(fechaVencimientoISO);
+                alquiler.setEsActivo(true);
+                alquileresRetroactivos.add(alquiler);
+                
+                // Avanzar al siguiente mes
+                fechaAlquiler = fechaAlquiler.plusMonths(1);
+            }
+            
+            // Guardar todos los alquileres retroactivos
+            if (!alquileresRetroactivos.isEmpty()) {
+                alquilerRepository.saveAll(alquileresRetroactivos);
+                logger.info("Guardados {} alquileres retroactivos para contrato ID: {}", 
+                           alquileresRetroactivos.size(), contrato.getId());
+            }
+            
+            // Guardar todos los aumentos retroactivos
+            if (!aumentosRetroactivos.isEmpty()) {
+                aumentoAlquilerService.guardarAumentosEnBatch(aumentosRetroactivos);
+                logger.info("Guardados {} aumentos retroactivos para contrato ID: {}", 
+                           aumentosRetroactivos.size(), contrato.getId());
+            }
+            
+            // Actualizar la fechaAumento del contrato para reflejar el próximo aumento
+            if (fechaProximoAumento != null) {
+                String nuevaFechaAumento = fechaProximoAumento.format(DateTimeFormatter.ISO_LOCAL_DATE);
+                
+                // Verificar que no supere la fecha de fin del contrato
+                if (contrato.getFechaFin() != null && !contrato.getFechaFin().isEmpty()) {
+                    LocalDate fechaFin = LocalDate.parse(contrato.getFechaFin(), DateTimeFormatter.ISO_LOCAL_DATE);
+                    if (fechaProximoAumento.isAfter(fechaFin)) {
+                        nuevaFechaAumento = "No aumenta más";
+                    }
+                }
+                
+                contrato.setFechaAumento(nuevaFechaAumento);
+                contratoRepository.save(contrato);
+                logger.info("FechaAumento del contrato ID {} actualizada a: {}", 
+                           contrato.getId(), nuevaFechaAumento);
+            }
+            
+        } catch (Exception e) {
+            logger.error("Error al crear alquileres retroactivos para contrato ID {}: {}", 
+                        contrato.getId(), e.getMessage(), e);
+            throw new BusinessException(
+                ErrorCodes.ERROR_INTERNO,
+                "Error al generar alquileres retroactivos: " + e.getMessage(),
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+    
+    /**
+     * Calcula la fecha del próximo aumento basado en una fecha base y el período de aumento
+     * 
+     * @param fechaBase Fecha base desde la cual calcular
+     * @param periodoAumento Período de aumento en meses
+     * @return Fecha del próximo aumento, o null si no hay período configurado
+     */
+    private LocalDate calcularFechaProximoAumento(LocalDate fechaBase, Integer periodoAumento) {
+        if (periodoAumento == null || periodoAumento <= 0) {
+            return null;
+        }
+        return fechaBase.plusMonths(periodoAumento);
+    }
+    
+    /**
+     * Aplica un aumento basado en ICL consultando la API del BCRA
+     * 
+     * @param contrato Contrato al que se aplica el aumento
+     * @param montoAnterior Monto antes del aumento
+     * @param fechaUltimoAumento Fecha del último aumento
+     * @param fechaSiguienteAumento Fecha del siguiente aumento
+     * @param aumentosRetroactivos Lista donde se agregan los aumentos creados
+     * @return Nuevo monto con el aumento aplicado
+     */
+    private BigDecimal aplicarAumentoICL(Contrato contrato, BigDecimal montoAnterior, 
+                                          LocalDate fechaUltimoAumento, LocalDate fechaSiguienteAumento,
+                                          List<AumentoAlquiler> aumentosRetroactivos) {
+        try {
+            // Formatear fechas para consulta a la API
+            String fechaInicioISO = fechaUltimoAumento.withDayOfMonth(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
+            String fechaFinISO = fechaSiguienteAumento.withDayOfMonth(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
+            
+            logger.debug("Consultando ICL del BCRA para aumento retroactivo: desde {} hasta {}", 
+                        fechaInicioISO, fechaFinISO);
+            
+            // Consultar tasa de aumento del BCRA
+            BigDecimal tasaAumento = bcraApiClient.obtenerTasaAumentoICL(fechaInicioISO, fechaFinISO);
+            BigDecimal montoNuevo = montoAnterior.multiply(tasaAumento).setScale(2, RoundingMode.HALF_UP);
+            
+            // Calcular porcentaje de aumento
+            BigDecimal porcentajeAumento = tasaAumento.subtract(BigDecimal.ONE)
+                .multiply(new BigDecimal("100"))
+                .setScale(2, RoundingMode.HALF_UP);
+            
+            // Crear registro de aumento
+            AumentoAlquiler aumento = 
+                aumentoAlquilerService.crearAumentoSinGuardar(
+                    contrato, montoAnterior, montoNuevo, porcentajeAumento
+                );
+            aumento.setFechaAumento(fechaSiguienteAumento.format(DateTimeFormatter.ISO_LOCAL_DATE));
+            aumento.setDescripcion("Aumento retroactivo por ICL");
+            aumentosRetroactivos.add(aumento);
+            
+            logger.info("Aumento ICL retroactivo calculado: monto anterior={}, monto nuevo={}, tasa={}", 
+                       montoAnterior, montoNuevo, tasaAumento);
+            
+            return montoNuevo;
+            
+        } catch (Exception e) {
+            logger.error("Error al consultar ICL para aumento retroactivo: {}. Se usará el monto sin aumento.", 
+                        e.getMessage());
+            // Si falla la API, retornar el monto anterior sin aumento
+            return montoAnterior;
+        }
+    }
+    
+    /**
+     * Aplica un aumento basado en porcentaje fijo
+     * 
+     * @param contrato Contrato al que se aplica el aumento
+     * @param montoAnterior Monto antes del aumento
+     * @param fechaAumento Fecha del aumento
+     * @param aumentosRetroactivos Lista donde se agregan los aumentos creados
+     * @return Nuevo monto con el aumento aplicado
+     */
+    private BigDecimal aplicarAumentoFijo(Contrato contrato, BigDecimal montoAnterior, 
+                                           LocalDate fechaAumento,
+                                           List<AumentoAlquiler> aumentosRetroactivos) {
+        BigDecimal porcentajeAumento = contrato.getPorcentajeAumento() != null 
+            ? contrato.getPorcentajeAumento() 
+            : BigDecimal.ZERO;
+        
+        // Calcular tasa de aumento: 1 + (porcentaje / 100)
+        BigDecimal tasaAumento = BigDecimal.ONE.add(
+            porcentajeAumento.divide(new BigDecimal("100"), 10, RoundingMode.HALF_UP)
+        );
+        
+        BigDecimal montoNuevo = montoAnterior.multiply(tasaAumento).setScale(2, RoundingMode.HALF_UP);
+        
+        // Crear registro de aumento
+        AumentoAlquiler aumento = 
+            aumentoAlquilerService.crearAumentoSinGuardar(
+                contrato, montoAnterior, montoNuevo, porcentajeAumento
+            );
+        aumento.setFechaAumento(fechaAumento.format(DateTimeFormatter.ISO_LOCAL_DATE));
+        aumento.setDescripcion("Aumento retroactivo por porcentaje fijo");
+        aumentosRetroactivos.add(aumento);
+        
+        logger.info("Aumento fijo retroactivo calculado: monto anterior={}, monto nuevo={}, porcentaje={}%", 
+                   montoAnterior, montoNuevo, porcentajeAumento);
+        
+        return montoNuevo;
     }
 }
