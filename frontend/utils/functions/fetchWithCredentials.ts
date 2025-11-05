@@ -44,7 +44,7 @@ export async function fetchJSON<T = any>(
   endpoint: string,
   options: FetchOptions = {}
 ): Promise<T> {
-  const response = await fetchWithCredentials(endpoint, options);
+  const response = await fetchWithCredentials(`${BACKEND_URL}${endpoint}`, options);
   
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
