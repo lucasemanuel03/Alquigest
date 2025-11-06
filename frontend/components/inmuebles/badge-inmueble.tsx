@@ -7,7 +7,7 @@ export default function BadgeInmueble({ estadoInmueble } : { estadoInmueble: num
       case 1: // Disponible
         return (
           <div className="flex flex-col items-end space-y-1">
-            <Badge className="bg-emerald-500">
+            <Badge className="bg-emerald-600/80">
               {ESTADOS_INMUEBLE[estadoInmueble - 1].nombre}
             </Badge>
           </div>
@@ -15,15 +15,15 @@ export default function BadgeInmueble({ estadoInmueble } : { estadoInmueble: num
       case 2: // En Reparación
         return (
           <div className="flex flex-col items-end space-y-1">
-            <Badge className="bg-yellow-600">
+            <Badge className="bg-orange-600/80">
               {ESTADOS_INMUEBLE[estadoInmueble - 1].nombre}
             </Badge>
           </div>
         );
-      case 4: // No Disponible
+      case 4: // ALQUILADO
         return (
           <div className="flex flex-col items-end space-y-1">
-            <Badge className="bg-orange-500">
+            <Badge className="bg-yellow-600/80">
               {ESTADOS_INMUEBLE[estadoInmueble - 1].nombre}
             </Badge>
           </div>
@@ -31,7 +31,7 @@ export default function BadgeInmueble({ estadoInmueble } : { estadoInmueble: num
       default:
         return (
           <div className="flex flex-col items-end space-y-1">
-            <Badge className="bg-red-500">
+            <Badge variant={"secondary"}>
               {ESTADOS_INMUEBLE[estadoInmueble - 1].nombre}
             </Badge>
           </div>

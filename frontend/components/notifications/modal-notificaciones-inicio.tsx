@@ -28,7 +28,7 @@ export default function ModalNotificacionesInicio({ isOpen, onClose, setNotifica
       try {
         // Obtener cantidad de servicios pendientes
         const cantServicios = await fetchWithToken(`${BACKEND_URL}/pagos-servicios/count/pendientes`)
-        setServiciosPendientes(cantServicios || 0)
+        setServiciosPendientes(cantServicios.serviciosPendientes || 0)
 
         // Obtener cantidad de contratos próximos a vencer
         const cantContratos = await fetchWithToken(`${BACKEND_URL}/contratos/count/proximos-vencer`)
@@ -36,7 +36,7 @@ export default function ModalNotificacionesInicio({ isOpen, onClose, setNotifica
 
         // Mostrar punto de notificación si hay algo pendiente
         if (setNotificationDot) {
-          setNotificationDot((cantServicios > 0) || (cantContratos > 0))
+          setNotificationDot((cantServicios.serviciosPendientes > 0) || (cantContratos > 0))
         }
       } catch (error) {
         console.error("Error al cargar notificaciones:", error)

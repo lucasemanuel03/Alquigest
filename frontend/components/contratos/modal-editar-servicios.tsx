@@ -21,11 +21,11 @@ interface ModalEditarServiciosProps {
 }
 
 const serviciosInicial: ServicioContrato[] = [
-  { tipoServicioId: 1, nroCuenta: null, contratoId: null, nroContrato: '', esDeInquilino: true, esActivo: false, esAnual: false, fechaInicio: '', nroContratoServicio: '' }, // Agua
-  { tipoServicioId: 2, nroCuenta: null, contratoId: null, nroContrato: '', esDeInquilino: true, esActivo: false, esAnual: false, fechaInicio: '', nroContratoServicio: '' }, // Luz
-  { tipoServicioId: 3, nroCuenta: null, contratoId: null, nroContrato: '', esDeInquilino: true, esActivo: false, esAnual: false, fechaInicio: '', nroContratoServicio: '' }, // Gas
-  { tipoServicioId: 4, nroCuenta: null, contratoId: null, nroContrato: '', esDeInquilino: true, esActivo: false, esAnual: true, fechaInicio: '', nroContratoServicio: '' },  // Municipal
-  { tipoServicioId: 5, nroCuenta: null, contratoId: null, nroContrato: '', esDeInquilino: true, esActivo: false, esAnual: true, fechaInicio: '', nroContratoServicio: '' },  // Otros
+  { tipoServicioId: 1, nroCuenta: null, contratoId: null, nroContrato: '', esDeInquilino: true, esActivo: false, esAnual: false, fechaInicio: '', nroContratoServicio: null }, // Agua
+  { tipoServicioId: 2, nroCuenta: null, contratoId: null, nroContrato: '', esDeInquilino: true, esActivo: false, esAnual: false, fechaInicio: '', nroContratoServicio: null }, // Luz
+  { tipoServicioId: 3, nroCuenta: null, contratoId: null, nroContrato: '', esDeInquilino: true, esActivo: false, esAnual: false, fechaInicio: '', nroContratoServicio: null }, // Gas
+  { tipoServicioId: 4, nroCuenta: null, contratoId: null, nroContrato: '', esDeInquilino: true, esActivo: false, esAnual: true, fechaInicio: '', nroContratoServicio: null },  // Municipal
+  { tipoServicioId: 5, nroCuenta: null, contratoId: null, nroContrato: '', esDeInquilino: true, esActivo: false, esAnual: true, fechaInicio: '', nroContratoServicio: null },  // Otros
 ];
 
 export default function ModalEditarServicios({ contratoId, fechaInicioContrato, onServiciosActualizados, disabled = false }: ModalEditarServiciosProps) {

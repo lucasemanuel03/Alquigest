@@ -114,16 +114,28 @@ export default function ServicioPagoCard({ pagoServicio, onPagoRegistrado }: Ser
         {isExpanded && (
           <div className="mt-3 grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
             <div className="space-y-2">
-              <Label>Monto</Label>
+              <Label
+                title="Ingrese el monto del pago, para cargar decimales utilice coma [,]" 
+              >Monto</Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                <Input 
-                  type="number" 
+                <Input
+                  title="Ingrese el monto del pago, para cargar decimales utilice coma [,]" 
+                  type="text"
+                  inputMode="decimal"
                   value={monto} 
-                  onChange={e => setMonto(e.target.value)} 
-                  min={0} 
-                  max={90000000} 
-                  placeholder="10.000"
+                  onChange={e => {
+                    const value = e.target.value;
+                    // Permitir solo números y un punto decimal
+                    if (value === '' || /^\d*\,?\d*$/.test(value)) {
+                      const numValue = parseFloat(value.replace(',', '.'));
+                      // Verificar que no sea negativo y no exceda el máximo
+                      if (value === '' || (!isNaN(numValue) && numValue >= 0 && numValue <= 90000000)) {
+                        setMonto(value);
+                      }
+                    }
+                  }}
+                  placeholder="$10,000"
                   className="pl-8"
                 />
               </div>

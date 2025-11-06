@@ -25,7 +25,7 @@ export default function HomePage() {
   const [contadores, setContadores] = useState({
     cantInmueblesActivos: 0,
     cantContratosVigentes: 0,
-    cantServiciosNoPagos: 0,
+    cantServiciosNoPagos: -99,
     honorariosDelMes: 0,
   })
 
@@ -35,13 +35,13 @@ export default function HomePage() {
     try {
       const cantInmuebles = await fetchJSON<number>('/inmuebles/count/activos');
       const cantContratos = await fetchJSON<number>('/contratos/count/vigentes');
-      //const cantServicios = await fetchJSON('/pagos-servicios/count/pendientes')
+      const cantServicios = await fetchJSON('/pagos-servicios/count/pendientes')
       const honorarios = await fetchJSON<number>('/alquileres/honorarios')
 
       setContadores({
         cantInmueblesActivos: cantInmuebles,
         cantContratosVigentes: cantContratos,
-        cantServiciosNoPagos: -99,
+        cantServiciosNoPagos: cantServicios.serviciosPendientes,
         honorariosDelMes: honorarios
       });
     } catch (err: any) {

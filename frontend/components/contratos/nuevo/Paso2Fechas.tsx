@@ -3,6 +3,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Calendar1Icon } from 'lucide-react';
 import { Contrato } from '@/types/Contrato';
+import { useState } from 'react';
 
 interface Paso2Props {
   formData: Contrato;
@@ -10,6 +11,9 @@ interface Paso2Props {
 }
 
 export default function Paso2Fechas({ formData, onChange }: Paso2Props) {
+  const fechaActual = new Date().toISOString().split('T')[0]
+  formData.fechaInicio = fechaActual
+
   return (
     <>
       <div className="flex items-center gap-2 mb-4">

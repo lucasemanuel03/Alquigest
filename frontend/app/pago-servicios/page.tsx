@@ -16,7 +16,8 @@ export default function PagoServiciosPage() {
   const [loading, setLoading] = useState(true)
   const [isRendering, setIsRendering] = useState(false) // nuevo estado para transición
   const [contadores, setContadores] = useState({
-    cantServiciosNoPagos: 0
+    cantServiciosNoPagos: -1,
+    cantServicios: -1,
   })
 
   useEffect(() => {
@@ -29,14 +30,15 @@ export default function PagoServiciosPage() {
         // Fetch de contratos y contadores en paralelo
         const [data, cantServicios] = await Promise.all([
           fetchWithToken(`${BACKEND_URL}/contratos/vigentes`),
-          //fetchWithToken(`${BACKEND_URL}/pagos-servicios/count/pendientes`)
-          -912
+          fetchWithToken(`${BACKEND_URL}/pagos-servicios/count/pendientes`)
+          
         ])
 
         console.log("Datos parseados del backend:", data)
         setContratos(data)
         setContadores({
-          cantServiciosNoPagos: cantServicios
+          cantServiciosNoPagos: cantServicios.serviciosPendientes,
+          cantServicios: cantServicios.serviciosTotales,
         })
         
         // Dar tiempo para que React procese los datos antes de ocultar loading
@@ -84,7 +86,7 @@ export default function PagoServiciosPage() {
               <Blocks className="h-6 w-6 text-muted-foreground" />
             </CardHeader>
             <CardContent className="flex flex-col items-center justify-center">
-              <div className="text-2xl font-bold font-sans">N/A</div>
+              <div className="text-2xl font-bold font-sans">{contadores.cantServicios}</div>
               <p className="text-xs text-muted-foreground">Bajo control del estudio jurídico</p>
             </CardContent>
           </Card>
@@ -109,9 +111,9 @@ export default function PagoServiciosPage() {
             </CardHeader>
             <CardContent className="flex flex-col items-center justify-center">
               <div className="text-2xl font-bold font-sans text-green-600">
-                N/A
+                {contadores.cantServicios - contadores.cantServiciosNoPagos}
               </div>
-              <p className="text-xs text-muted-foreground">Pagos realizados</p>
+              <p className="text-xs text-muted-foreground">De este mes</p>
             </CardContent>
           </Card>
         </div>

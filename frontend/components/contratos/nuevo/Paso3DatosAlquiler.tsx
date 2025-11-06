@@ -46,13 +46,19 @@ export default function Paso3DatosAlquiler({
           className="cursor-help"
         >% de Honorarios</Label>
         <Input
-          type="number"
+          type="text"
+          inputMode="numeric"
           rightIcon={<Percent className="h-4 w-4" />}
           placeholder="10%"
-          min={0}
-          max={99}
-          value={formData.porcentajeHonorario}
-          onChange={(e) => onChange('porcentajeHonorario', e.target.value)}
+          value={formData.porcentajeHonorario || ''}
+          onChange={(e) => {
+            const onlyDigits = e.target.value.replace(/\D/g, '');
+            const numValue = onlyDigits ? Number(onlyDigits) : null;
+            // Limitar a 99 como máximo
+            if (numValue === null || numValue <= 99) {
+              onChange('porcentajeHonorario', numValue);
+            }
+          }}
           required
         />
 
@@ -83,16 +89,17 @@ export default function Paso3DatosAlquiler({
             </div>
             <div className="relative w-full">
               <Input
-                type="number"
+                type="text"
                 inputMode='decimal'
                 min={0}
                 max={999}
                 value={formData.porcentajeAumento > 0 ? formData.porcentajeAumento : ''}
                 onChange={(e) => {
-                  const valor = e.target.value;
-                  // Solo permite números y limita a 999
-                  if (valor === '' || (!/\D/.test(valor) && parseInt(valor) <= 999)) {
-                    onChange('porcentajeAumento', valor);
+                  const onlyDigits = e.target.value.replace(/\D/g, '');
+                  const numValue = onlyDigits ? Number(onlyDigits) : null;
+                  // Limitar a 99 como máximo
+                  if (numValue === null || numValue <= 999) {
+                    onChange('porcentajeAumento', numValue);
                   }
                 }}
                 placeholder='Ingrese porcentaje'
