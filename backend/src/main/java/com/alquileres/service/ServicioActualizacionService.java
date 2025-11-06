@@ -297,9 +297,7 @@ public class ServicioActualizacionService {
 
         logger.info("Forzando procesamiento de pagos. Último mes procesado era: {}", mesAnterior);
 
-        int resultado = procesarPagosPendientes();
-
-        return resultado;
+        return procesarPagosPendientes();
     }
 
     /**
@@ -392,7 +390,7 @@ public class ServicioActualizacionService {
             Optional<ConfiguracionPagoServicio> configOpt =
                 configuracionPagoServicioRepository.findById(configuracionId);
 
-            if (!configOpt.isPresent()) {
+            if (configOpt.isEmpty()) {
                 logger.warn("Configuración no encontrada con ID: {}", configuracionId);
                 return false;
             }

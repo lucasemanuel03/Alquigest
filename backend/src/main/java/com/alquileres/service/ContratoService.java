@@ -414,7 +414,7 @@ public class ContratoService {
      * @throws BusinessException si hay errores de validación
      */
     @Transactional
-    @CacheEvict(value = "contratos", allEntries = true)
+    @CacheEvict(value = {"contratos", "inmuebles", "inquilinos", "propietarios"}, allEntries = true)
     public ContratoDTO crearContrato(ContratoCreateDTO contratoDTO) {
         // Paso 1: Validar entidades relacionadas
         Inmueble inmueble = validarYObtenerInmueble(contratoDTO.getInmuebleId());
@@ -836,7 +836,7 @@ public class ContratoService {
      * @return ContratoDTO con el contrato actualizado
      * @throws BusinessException si el contrato no existe o el cambio no es válido
      */
-    @CacheEvict(value = {"contratos", "contratos-por-vencer"}, allEntries = true)
+    @CacheEvict(value = {"contratos", "contratos-por-vencer", "inmuebles", "inquilinos"}, allEntries = true)
     public ContratoDTO terminarContrato(Long id, EstadoContratoUpdateDTO estadoContratoUpdateDTO) {
         // Validar existencia del contrato y nuevo estado
         Contrato contrato = contratoRepository.findById(id)
