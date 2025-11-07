@@ -287,4 +287,70 @@ public class PagoServicioService {
 
         return response;
     }
+
+    /**
+     * Obtiene todos los pagos de servicio no pagados del mes actual para un contrato específico
+     * Solo incluye pagos de servicios activos
+     *
+     * @param contratoId ID del contrato
+     * @return Lista de pagos no pagados del mes actual para el contrato
+     */
+    @Transactional(readOnly = true)
+    public List<PagoServicio> obtenerPagosNoPagadosDelMesActual(Long contratoId) {
+        logger.debug("Buscando pagos no pagados del mes actual para contrato ID: {}", contratoId);
+
+        // Verificar que el contrato existe
+        if (!contratoRepository.existsById(contratoId)) {
+            throw new RuntimeException("El contrato con ID " + contratoId + " no existe");
+        }
+
+        // Obtener el período actual en formato mm/yyyy
+        java.time.LocalDate fechaActual = java.time.LocalDate.now();
+        String periodoActual = String.format("%02d/%d",
+            fechaActual.getMonthValue(),
+            fechaActual.getYear()
+        );
+
+        List<PagoServicio> pagosNoPagados = pagoServicioRepository
+            .findPagosNoPagadosPorContratoYPeriodo(contratoId, periodoActual);
+
+        logger.info("Se encontraron {} pagos no pagados para el contrato {} en el período {}",
+            pagosNoPagados.size(), contratoId, periodoActual);
+
+        return pagosNoPagados;
+    }
+
+    /**
+     * Obtiene un mapa con la cantidad de pagos de servicio no pagados del mes actual agrupados por contrato
+     * La clave es el idContrato y el valor es la cantidad de pagos no pagados
+     *
+     * @return Mapa con idContrato como clave y cantidad de pagos no pagados como valor
+     */
+    @Transactional(readOnly = true)
+    public Map<Long, Long> contarPagosNoPagadosDelMesActualPorContrato() {
+        logger.debug("Contando pagos no pagados del mes actual agrupados por contrato");
+
+        // Obtener el período actual en formato mm/yyyy
+        java.time.LocalDate fechaActual = java.time.LocalDate.now();
+        String periodoActual = String.format("%02d/%d",
+            fechaActual.getMonthValue(),
+            fechaActual.getYear()
+        );
+
+        List<Object[]> resultados = pagoServicioRepository
+            .countPagosNoPagadosPorContratoYPeriodo(periodoActual);
+
+        // Convertir List<Object[]> a Map<Long, Long>
+        Map<Long, Long> mapaResultados = new HashMap<>();
+        for (Object[] resultado : resultados) {
+            Long contratoId = (Long) resultado[0];
+            Long cantidad = (Long) resultado[1];
+            mapaResultados.put(contratoId, cantidad);
+        }
+
+        logger.info("Se encontraron {} contratos con pagos no pagados en el período {}",
+            mapaResultados.size(), periodoActual);
+
+        return mapaResultados;
+    }
 }

@@ -227,4 +227,51 @@ public class PagoServicioController {
                 ));
         }
     }
+
+    /**
+     * Obtiene todos los pagos de servicio no pagados del mes actual para un contrato específico
+     *
+     * @param contratoId ID del contrato
+     * @return Lista de pagos no pagados del mes actual para el contrato
+     */
+    @GetMapping("/contrato/{contratoId}/no-pagados/mes-actual")
+    @Operation(summary = "Obtener pagos no pagados del mes actual de un contrato",
+               description = "Retorna todos los pagos de servicios activos que están pendientes (no pagados) para el mes actual de un contrato específico")
+    public ResponseEntity<List<PagoServicioResponseDTO>> obtenerPagosNoPagadosDelMesActual(
+            @PathVariable Long contratoId) {
+        try {
+            List<PagoServicio> pagos = pagoServicioService.obtenerPagosNoPagadosDelMesActual(contratoId);
+            List<PagoServicioResponseDTO> dtos = pagos.stream()
+                    .map(PagoServicioResponseDTO::new)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(dtos);
+        } catch (RuntimeException e) {
+            return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .build();
+        } catch (Exception e) {
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .build();
+        }
+    }
+
+    /**
+     * Obtiene un mapa con la cantidad de pagos no pagados del mes actual agrupados por contrato
+     *
+     * @return JSON con formato {idContrato: cantidadPagosNoPagados}
+     */
+    @GetMapping("/no-pagados/mes-actual/por-contrato")
+    @Operation(summary = "Contar pagos no pagados del mes actual por contrato",
+               description = "Retorna un mapa donde cada clave es un idContrato y el valor es la cantidad de pagos de servicios no pagados del mes actual para ese contrato")
+    public ResponseEntity<Map<Long, Long>> contarPagosNoPagadosDelMesActualPorContrato() {
+        try {
+            Map<Long, Long> resultado = pagoServicioService.contarPagosNoPagadosDelMesActualPorContrato();
+            return ResponseEntity.ok(resultado);
+        } catch (Exception e) {
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new HashMap<>());
+        }
+    }
 }
