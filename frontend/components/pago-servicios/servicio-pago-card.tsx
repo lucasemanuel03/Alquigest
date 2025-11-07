@@ -19,6 +19,7 @@ interface ServicioPagoCardProps {
 
 export default function ServicioPagoCard({ pagoServicio, onPagoRegistrado }: ServicioPagoCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [sePago, setSePago] = useState(false)
   const [monto, setMonto] = useState(pagoServicio.monto || 0)
   // Obtener la fecha actual en formato YYYY-MM-DD
   const fechaActual = new Date().toISOString().split('T')[0]
@@ -48,23 +49,37 @@ export default function ServicioPagoCard({ pagoServicio, onPagoRegistrado }: Ser
         },
         body: JSON.stringify(body)
       })
-
+      /* 
       if (response) {
         alert(`Pago registrado exitosamente: $${monto}`)
+        console.log("Pago registrado:")
         // Actualizar el estado local
         pagoServicio.estaPagado = true
         pagoServicio.monto = parseFloat(monto)
         pagoServicio.fechaPago = fechaPago
         pagoServicio.estaVencido = vencido === "SI"
         setIsExpanded(false)
+        setSePago(true)
         // Notificar al padre para refrescar la lista de no pagados
-        
       }
+        */
+
+      alert(`Pago registrado exitosamente: $${monto}`)
+      console.log("Pago registrado:")
+      // Actualizar el estado local
+      pagoServicio.estaPagado = true
+      pagoServicio.monto = parseFloat(monto)
+      pagoServicio.fechaPago = fechaPago
+      pagoServicio.estaVencido = vencido === "SI"
+      setIsExpanded(false)
+      setSePago(true)
+
     } catch (error) {
       console.error("Error al registrar el pago:", error)
       // alert("Error al registrar el pago. Intente nuevamente.") REVISAR BACKEND DEVUELVE UN 500
     } finally {
       setLoading(false)
+      setSePago(true)
       if (onPagoRegistrado) {
           await onPagoRegistrado()
       }

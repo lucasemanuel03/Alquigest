@@ -11,12 +11,21 @@ import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
 import BACKEND_URL from "@/utils/backendURL"
 import ServicioPagoCard from "@/components/pago-servicios/servicio-pago-card"
 import LoadingSmall from "../loading-sm"
+import { Skeleton } from "../ui/skeleton"
 
 interface ContratoServiciosCardProps {
   contrato: ContratoDetallado
+  cantidadPendientes?: number
+  loadingPendientes?: boolean
+  onPagoRegistrado?: () => void | Promise<void>
 }
 
-export default function ContratoServiciosCard({ contrato }: ContratoServiciosCardProps) {
+export default function ContratoServiciosCard({ 
+  contrato, 
+  cantidadPendientes = 0, 
+  loadingPendientes = false,
+  onPagoRegistrado
+}: ContratoServiciosCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [servicios, setServicios] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
@@ -28,6 +37,12 @@ export default function ContratoServiciosCard({ contrato }: ContratoServiciosCar
       const data = await fetchWithToken(`${BACKEND_URL}/pagos-servicios/contrato/${contrato.id}/no-pagados`)
       setServicios(data)
       setServiciosCargados(true)
+      
+      // Notificar al componente padre que se actualizaron los servicios
+      // (esto se llama después de registrar un pago)
+      if (onPagoRegistrado) {
+        await onPagoRegistrado()
+      }
     } catch (err: any) {
       console.error(`Error al cargar servicios del contrato ${contrato.id}:`, err.message)
     } finally {
@@ -64,7 +79,13 @@ export default function ContratoServiciosCard({ contrato }: ContratoServiciosCar
             </div>
           </div>
           <div className="flex items-center space-x-3">
-            
+            {loadingPendientes ? (
+              <Skeleton className="h-6 w-24" />
+            ) : cantidadPendientes > 0 ? (
+              <Badge variant="destructive" className="text-sm">
+                {cantidadPendientes} pendiente{cantidadPendientes !== 1 ? 's' : ''}
+              </Badge>
+            ) : null}
             <Button variant="ghost" size="lg" onClick={toggleCard}>
               {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </Button>

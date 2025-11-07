@@ -9,54 +9,94 @@ import BACKEND_URL from "@/utils/backendURL"
 import Loading from "@/components/loading"
 import ContratoServiciosCard from "@/components/pago-servicios/contrato-servicios-card"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 
 
 export default function PagoServiciosPage() {
   const [contratos, setContratos] = useState<ContratoDetallado[]>([])
   const [loading, setLoading] = useState(true)
-  const [isRendering, setIsRendering] = useState(false) // nuevo estado para transición
+  const [contratosServiciosNoPagos, setContratosServiciosNoPagos] = useState<Record<string, number>>({})
+  const [loadingContadores, setLoadingContadores] = useState(true)
+  const [loadingPendientes, setLoadingPendientes] = useState(true)
   const [contadores, setContadores] = useState({
-    cantServiciosNoPagos: -1,
-    cantServicios: -1,
+    cantServiciosNoPagos: 0,
+    cantServicios: 0,
   })
 
   useEffect(() => {
-    const fetchTodosLosDatos = async () => {
-      console.log("Ejecutando fetch de Contratos y Contadores...")
+    // Fetch principal: contratos (bloquea el loading principal)
+    const fetchContratos = async () => {
+      console.log("Ejecutando fetch de Contratos...")
       setLoading(true)
-      setIsRendering(false)
       
       try {
-        // Fetch de contratos y contadores en paralelo
-        const [data, cantServicios] = await Promise.all([
-          fetchWithToken(`${BACKEND_URL}/contratos/vigentes`),
-          fetchWithToken(`${BACKEND_URL}/pagos-servicios/count/pendientes`)
-          
-        ])
-
-        console.log("Datos parseados del backend:", data)
+        const data = await fetchWithToken(`${BACKEND_URL}/contratos/vigentes`)
+        console.log("Contratos parseados del backend:", data)
         setContratos(data)
-        setContadores({
-          cantServiciosNoPagos: cantServicios.serviciosPendientes,
-          cantServicios: cantServicios.serviciosTotales,
-        })
-        
-        // Dar tiempo para que React procese los datos antes de ocultar loading
-        setTimeout(() => {
-          setLoading(false)
-          // Activar animación de fade-in
-          requestAnimationFrame(() => {
-            setIsRendering(true)
-          })
-        }, 100)
       } catch (err: any) {
-        console.error("Error al traer datos:", err.message)
+        console.error("Error al traer contratos:", err.message)
+      } finally {
         setLoading(false)
       }
     }
 
-    fetchTodosLosDatos()
+    // Fetch secundario: contadores (en background)
+    const fetchContadores = async () => {
+      setLoadingContadores(true)
+      try {
+        const cantServicios = await fetchWithToken(`${BACKEND_URL}/pagos-servicios/count/pendientes`)
+        setContadores({
+          cantServiciosNoPagos: cantServicios.serviciosPendientes,
+          cantServicios: cantServicios.serviciosTotales,
+        })
+      } catch (err: any) {
+        console.error("Error al traer contadores:", err.message)
+      } finally {
+        setLoadingContadores(false)
+      }
+    }
+
+    // Fetch secundario: servicios no pagados por contrato (en background)
+    const fetchServiciosNoPagados = async () => {
+      setLoadingPendientes(true)
+      try {
+        const data = await fetchWithToken(`${BACKEND_URL}/pagos-servicios/no-pagados/mes-actual/por-contrato`)
+        setContratosServiciosNoPagos(data)
+      } catch (err: any) {
+        console.error("Error al traer servicios no pagados:", err.message)
+      } finally {
+        setLoadingPendientes(false)
+      }
+    }
+
+    fetchContratos()
+    fetchContadores()
+    fetchServiciosNoPagados()
   }, [])
+
+  // Función para refrescar los datos cuando se registra un pago
+  const handlePagoRegistrado = async (contratoId: number) => {
+    console.log(`Pago registrado para contrato ${contratoId}, actualizando contadores...`)
+    
+    // Refrescar contadores
+    try {
+      const cantServicios = await fetchWithToken(`${BACKEND_URL}/pagos-servicios/count/pendientes`)
+      setContadores({
+        cantServiciosNoPagos: cantServicios.serviciosPendientes,
+        cantServicios: cantServicios.serviciosTotales,
+      })
+    } catch (err: any) {
+      console.error("Error al refrescar contadores:", err.message)
+    }
+
+    // Refrescar badges de pendientes por contrato
+    try {
+      const data = await fetchWithToken(`${BACKEND_URL}/pagos-servicios/no-pagados/mes-actual/por-contrato`)
+      setContratosServiciosNoPagos(data)
+    } catch (err: any) {
+      console.error("Error al refrescar servicios no pagados:", err.message)
+    }
+  }
 
   if(loading){
       return(
@@ -86,8 +126,17 @@ export default function PagoServiciosPage() {
               <Blocks className="h-6 w-6 text-muted-foreground" />
             </CardHeader>
             <CardContent className="flex flex-col items-center justify-center">
-              <div className="text-2xl font-bold font-sans">{contadores.cantServicios}</div>
-              <p className="text-xs text-muted-foreground">Bajo control del estudio jurídico</p>
+              {loadingContadores ? (
+                <>
+                  <Skeleton className="h-8 w-16 mb-2" />
+                  <Skeleton className="h-3 w-40" />
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold font-sans">{contadores.cantServicios}</div>
+                  <p className="text-xs text-muted-foreground">Bajo control del estudio jurídico</p>
+                </>
+              )}
             </CardContent>
           </Card>
 
@@ -97,10 +146,19 @@ export default function PagoServiciosPage() {
               <CreditCard className="h-6 w-6 text-red-400" />
             </CardHeader>
             <CardContent className="flex flex-col items-center justify-center">
-              <div className="text-2xl font-bold  text-red-400 font-sans">
-                {contadores.cantServiciosNoPagos}
-              </div>
-              <p className="text-sm text-muted-foreground">Aún no pagados</p>
+              {loadingContadores ? (
+                <>
+                  <Skeleton className="h-8 w-16 mb-2" />
+                  <Skeleton className="h-3 w-32" />
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-red-400 font-sans">
+                    {contadores.cantServiciosNoPagos}
+                  </div>
+                  <p className="text-sm text-muted-foreground">Aún no pagados</p>
+                </>
+              )}
             </CardContent>
           </Card>
 
@@ -110,10 +168,19 @@ export default function PagoServiciosPage() {
               <CreditCard className="h-6 w-6 text-green-500" />
             </CardHeader>
             <CardContent className="flex flex-col items-center justify-center">
-              <div className="text-2xl font-bold font-sans text-green-600">
-                {contadores.cantServicios - contadores.cantServiciosNoPagos}
-              </div>
-              <p className="text-xs text-muted-foreground">De este mes</p>
+              {loadingContadores ? (
+                <>
+                  <Skeleton className="h-8 w-16 mb-2" />
+                  <Skeleton className="h-3 w-24" />
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold font-sans text-green-600">
+                    {contadores.cantServicios - contadores.cantServiciosNoPagos}
+                  </div>
+                  <p className="text-xs text-muted-foreground">De este mes</p>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -127,18 +194,16 @@ export default function PagoServiciosPage() {
             <p className="text-lg text-secondary">No hay contratos con servicios bajo control actualmente</p>
           )}
 
-          {/* Spinner mientras se procesan las cards */}
-          {!loading && !isRendering && contratos.length > 0 && (
-            <div className="flex flex-col items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-              <p className="text-muted-foreground">Preparando contratos...</p>
-            </div>
-          )}
-
-          {/* Cards con fade-in */}
-          <div className={`space-y-6 transition-opacity duration-500 ${isRendering ? 'opacity-100' : 'opacity-0'}`}>
+          {/* Cards de contratos */}
+          <div className="space-y-6">
             {contratos.map((contrato: ContratoDetallado) => (
-              <ContratoServiciosCard key={contrato.id} contrato={contrato} />
+              <ContratoServiciosCard 
+                key={contrato.id} 
+                contrato={contrato} 
+                cantidadPendientes={contratosServiciosNoPagos[contrato.id.toString()] || 0}
+                loadingPendientes={loadingPendientes}
+                onPagoRegistrado={() => handlePagoRegistrado(contrato.id)}
+              />
             ))}
           </div>
         </div>

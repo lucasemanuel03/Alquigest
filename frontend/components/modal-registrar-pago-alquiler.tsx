@@ -107,7 +107,7 @@ export default function ModalRegistrarPagoAlquiler({
     }
     
     // Validaciones básicas
-    if (!formData.cuentaBanco || !formData.titularDePago || !formData.metodo) {
+    if ( !formData.titularDePago || !formData.metodo) {
       setModalError({
         titulo: "Error",
         mensaje: "Por favor complete todos los campos obligatorios"
@@ -305,7 +305,6 @@ export default function ModalRegistrarPagoAlquiler({
                       placeholder="Número de cuenta o CBU"
                       value={formData.cuentaBanco}
                       onChange={(e) => handleChange("cuentaBanco", e.target.value)}
-                      required
                     />
                   </div>
 
@@ -386,10 +385,6 @@ export default function ModalRegistrarPagoAlquiler({
               {/* Resumen del pago */}
               <div className="bg-muted/50 p-4 rounded-lg space-y-3">
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Pago #</p>
-                    <p className="font-semibold">{pagoSeleccionado.id}</p>
-                  </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Monto</p>
                     <p className="font-bold text-green-600">
