@@ -3,14 +3,12 @@ package com.alquileres.service;
 import com.alquileres.dto.PropietarioDTO;
 import com.alquileres.model.Propietario;
 import com.alquileres.repository.PropietarioRepository;
-import com.alquileres.repository.InmuebleRepository;
 import com.alquileres.repository.ContratoRepository;
 import com.alquileres.security.EncryptionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 import com.alquileres.exception.BusinessException;
 import com.alquileres.exception.ErrorCodes;
 import org.slf4j.Logger;
@@ -29,13 +27,14 @@ public class PropietarioService {
     private PropietarioRepository propietarioRepository;
 
     @Autowired
-    private InmuebleRepository inmuebleRepository;
+    private InmuebleService inmuebleService;
 
     @Autowired
     private ContratoRepository contratoRepository;
 
     @Autowired
     private EncryptionService encryptionService;
+
 
     @Autowired
     private com.alquileres.repository.UsuarioRepository usuarioRepository;
@@ -188,7 +187,7 @@ public class PropietarioService {
     public PropietarioDTO actualizarPropietario(Long id, PropietarioDTO propietarioDTO) {
         Optional<Propietario> propietarioExistente = propietarioRepository.findById(id);
 
-        if (!propietarioExistente.isPresent()) {
+        if (propietarioExistente.isEmpty()) {
             throw new BusinessException(
                 ErrorCodes.PROPIETARIO_NO_ENCONTRADO,
                 "No se encontró el propietario con ID: " + id,
@@ -255,7 +254,7 @@ public class PropietarioService {
     public void desactivarPropietario(Long id) {
         Optional<Propietario> propietario = propietarioRepository.findById(id);
 
-        if (!propietario.isPresent()) {
+        if (propietario.isEmpty()) {
             throw new BusinessException(
                 ErrorCodes.PROPIETARIO_NO_ENCONTRADO,
                 "No se encontró el propietario con ID: " + id,
@@ -273,19 +272,22 @@ public class PropietarioService {
             );
         }
 
+        // Desactivar propietario
         Propietario prop = propietario.get();
         prop.setEsActivo(false);
         propietarioRepository.save(prop);
 
-        // Desactivar todos los inmuebles relacionados
-        inmuebleRepository.desactivarInmueblesPorPropietario(id);
+        // Desactivar todos los inmuebles del propietario
+        int inmueblesDesactivados = inmuebleService.desactivarInmueblesPorPropietario(id);
+
+        logger.info("Propietario ID {} desactivado. Se desactivaron {} inmuebles.", id, inmueblesDesactivados);
     }
 
     // Activar propietario (reactivación)
     public void activarPropietario(Long id) {
         Optional<Propietario> propietario = propietarioRepository.findById(id);
 
-        if (!propietario.isPresent()) {
+        if (propietario.isEmpty()) {
             throw new BusinessException(
                 ErrorCodes.PROPIETARIO_NO_ENCONTRADO,
                 "No se encontró el propietario con ID: " + id,

@@ -248,6 +248,34 @@ public class InmuebleService {
         inmuebleRepository.save(i);
     }
 
+    /**
+     * Desactiva todos los inmuebles de un propietario
+     * Cambia el estado a "Inactivo" y setea esActivo = false
+     *
+     * @param propietarioId ID del propietario
+     * @return Cantidad de inmuebles desactivados
+     */
+    @CacheEvict(value = "inmuebles", allEntries = true)
+    public int desactivarInmueblesPorPropietario(Long propietarioId) {
+        // Obtener el estado "Inactivo"
+        EstadoInmueble estadoInactivo = estadoInmuebleRepository.findByNombre("Inactivo")
+            .orElseThrow(() -> new BusinessException(
+                ErrorCodes.ESTADO_INMUEBLE_NO_ENCONTRADO,
+                "Estado 'Inactivo' no encontrado en el sistema",
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ));
+
+        // Obtener todos los inmuebles del propietario y desactivarlos
+        List<Inmueble> inmuebles = inmuebleRepository.findByPropietarioId(propietarioId);
+        for (Inmueble inmueble : inmuebles) {
+            inmueble.setEsActivo(false);
+            inmueble.setEstado(estadoInactivo.getId());
+            inmuebleRepository.save(inmueble);
+        }
+
+        return inmuebles.size();
+    }
+
     // Marcar inmueble como alquilado
     public InmuebleDTO marcarComoAlquilado(Long id) {
         Optional<Inmueble> inmueble = inmuebleRepository.findById(id);
