@@ -159,7 +159,7 @@ export default function InquilinosPage() {
         <div className="mb-8 flex flex-col gap-5">
           <div className="mt-8 flex items-center justify-between">
             <Link href="/">
-              <Button variant="outline">← Volver a Inicio</Button>
+              <Button variant="outline">← Volver</Button>
             </Link>
             <NuevoInquilinoModal
                 onInquilinoCreado={(nuevo) => setInquilinosBD(prev => [...prev, nuevo])}

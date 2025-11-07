@@ -35,7 +35,7 @@ export default function InmueblesHeader({ filtro, onChangeFiltro, count, onInmue
         <Link href="/">
           <Button variant="outline">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver a Inicio
+            Volver
           </Button>
         </Link>
         <NuevoInmuebleModal text="Nuevo" onInmuebleCreado={onInmuebleCreado} />

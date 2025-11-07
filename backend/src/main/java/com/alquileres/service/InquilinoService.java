@@ -113,35 +113,6 @@ public class InquilinoService {
                 .collect(Collectors.toList());
     }
 
-    // Buscar inquilinos por apellido
-    public List<InquilinoDTO> buscarPorApellido(String apellido) {
-        List<Inquilino> inquilinos = inquilinoRepository.findByApellidoContainingIgnoreCase(apellido);
-        return inquilinos.stream()
-                .map(InquilinoDTO::new)
-                .collect(Collectors.toList());
-    }
-
-    // Buscar inquilinos por nombre y apellido
-    public List<InquilinoDTO> buscarPorNombreYApellido(String nombre, String apellido) {
-        List<Inquilino> inquilinos = inquilinoRepository
-                .findByNombreContainingIgnoreCaseAndApellidoContainingIgnoreCase(
-                        nombre != null ? nombre : "",
-                        apellido != null ? apellido : ""
-                );
-        return inquilinos.stream()
-                .map(InquilinoDTO::new)
-                .collect(Collectors.toList());
-    }
-
-    // Buscar inquilinos por nombre O apellido (búsqueda general)
-    public List<InquilinoDTO> buscarPorNombreOApellido(String termino) {
-        List<Inquilino> inquilinos = inquilinoRepository
-                .findByNombreContainingIgnoreCaseOrApellidoContainingIgnoreCase(termino, termino);
-        return inquilinos.stream()
-                .map(InquilinoDTO::new)
-                .collect(Collectors.toList());
-    }
-
     // Crear nuevo inquilino
     @CacheEvict(value = "inquilinos", allEntries = true)
     public InquilinoDTO crearInquilino(InquilinoDTO inquilinoDTO) {
@@ -165,7 +136,7 @@ public class InquilinoService {
     public InquilinoDTO actualizarInquilino(Long id, InquilinoDTO inquilinoDTO) {
         Optional<Inquilino> inquilinoExistente = inquilinoRepository.findById(id);
 
-        if (!inquilinoExistente.isPresent()) {
+        if (inquilinoExistente.isEmpty()) {
             throw new BusinessException(
                 ErrorCodes.INQUILINO_NO_ENCONTRADO,
                 "No se encontró el inquilino con ID: " + id,
@@ -196,9 +167,9 @@ public class InquilinoService {
 
     // Eliminar inquilino (borrado lógico)
     @CacheEvict(value = "inquilinos", allEntries = true)
-    public void eliminarInquilino(Long id) {
+    public void desactivarInquilino(Long id) {
         Optional<Inquilino> inquilino = inquilinoRepository.findById(id);
-        if (!inquilino.isPresent()) {
+        if (inquilino.isEmpty()) {
             throw new BusinessException(
                 ErrorCodes.INQUILINO_NO_ENCONTRADO,
                 "No se encontró el inquilino con ID: " + id,
@@ -221,11 +192,6 @@ public class InquilinoService {
         // Proceder con la eliminación lógica
         i.setEsActivo(false);
         inquilinoRepository.save(i);
-    }
-
-    // Alias para desactivar inquilino (método usado por el controller)
-    public void desactivarInquilino(Long id) {
-        eliminarInquilino(id);
     }
 
     // Activar inquilino (reactivación)

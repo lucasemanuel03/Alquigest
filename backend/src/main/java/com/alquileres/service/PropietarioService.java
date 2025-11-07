@@ -35,7 +35,6 @@ public class PropietarioService {
     @Autowired
     private EncryptionService encryptionService;
 
-
     @Autowired
     private com.alquileres.repository.UsuarioRepository usuarioRepository;
 

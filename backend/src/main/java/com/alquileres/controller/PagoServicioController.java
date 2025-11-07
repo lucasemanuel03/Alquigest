@@ -137,7 +137,7 @@ public class PagoServicioController {
      * Obtiene un pago de servicio por su ID
      *
      * @param pagoId ID del pago
-     * @return Pago encontrado
+     * @return Pago encontrado como DTO
      */
     @GetMapping("/{pagoId}")
     @Operation(summary = "Obtener un pago de servicio por ID",
@@ -145,7 +145,8 @@ public class PagoServicioController {
     public ResponseEntity<?> obtenerPagoPorId(@PathVariable Integer pagoId) {
         try {
             PagoServicio pago = pagoServicioService.obtenerPagoPorId(pagoId);
-            return ResponseEntity.ok(pago);
+            PagoServicioResponseDTO dto = new PagoServicioResponseDTO(pago);
+            return ResponseEntity.ok(dto);
         } catch (RuntimeException e) {
             return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
@@ -162,7 +163,7 @@ public class PagoServicioController {
      *
      * @param pagoId ID del pago a actualizar
      * @param request Datos a actualizar
-     * @return Pago actualizado
+     * @return Pago actualizado como DTO
      */
     @PutMapping("/{pagoId}")
     @Operation(summary = "Actualizar un pago de servicio",
@@ -173,7 +174,8 @@ public class PagoServicioController {
             @Valid @RequestBody ActualizarPagoServicioRequest request) {
         try {
             PagoServicio pagoActualizado = pagoServicioService.actualizarPagoServicio(pagoId, request);
-            return ResponseEntity.ok(pagoActualizado);
+            PagoServicioResponseDTO dto = new PagoServicioResponseDTO(pagoActualizado);
+            return ResponseEntity.ok(dto);
         } catch (RuntimeException e) {
             return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
