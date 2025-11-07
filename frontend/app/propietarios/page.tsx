@@ -81,7 +81,7 @@ useEffect(() => {
             <Link href="/">
               <Button variant="outline"> 
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Volver a Inicio</Button>
+                Volver</Button>
             </Link>            
             <NuevoPropietarioModal
                 text="Nuevo"
