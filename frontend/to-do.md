@@ -10,7 +10,7 @@
 - [ ] Periodo de aumento me deja ingresar un número mayor que el posible
 - [x] Inquilino FetchWithCredentials cambia por FetchWitchToken
 - [x] Porcentaje fijo, no permite crear un contrato de ese estilo
-- [ ] Pago masivo en servicios
+- [x] Pago masivo en servicios
 
 ### MEJORAS EN SPRINT 4 5
 - [x] Búsqueda en todas las pages importantes

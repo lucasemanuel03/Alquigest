@@ -88,10 +88,12 @@ export default function QuickActions() {
             </DropdownMenuItem>
             {/* Generar Informe */}
             <DropdownMenuItem>
-              <Button variant="outline" size="sm" disabled>
-                <FileText className="h-5 w-5 mr-2" />
-                Generar Informe
-              </Button>
+              <Link href={"/informes"}>
+                <Button variant="outline" size="sm">
+                  <FileText className="h-5 w-5 mr-2" />
+                  Generar Informe
+                </Button>
+              </Link>
             </DropdownMenuItem>
             
           </DropdownMenuContent>

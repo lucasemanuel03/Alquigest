@@ -13,6 +13,7 @@ import ServicioPagoCard from "@/components/pago-servicios/servicio-pago-card"
 import BotonPagoModal, { PagoResumenItem } from "@/components/pago-servicios/BotonPagoModal"
 import LoadingSmall from "../loading-sm"
 import { Skeleton } from "../ui/skeleton"
+import InmuebleIcon from "../inmueble-icon"
 
 interface ContratoServiciosCardProps {
   contrato: ContratoDetallado
@@ -154,9 +155,9 @@ export default function ContratoServiciosCard({
       <CardHeader onClick={toggleCard} className="cursor-pointer">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Building2 className="h-7 w-7 text-primary" />
+            <InmuebleIcon tipoInmuebleString={contrato.tipoInmueble} className="h-7 w-7 text-primary" />
             <div>
-              <CardTitle className="text-lg">Nro.{contrato.id} | {contrato.direccionInmueble}</CardTitle>
+              <CardTitle className="text-lg">{contrato.direccionInmueble}</CardTitle>
               <CardDescription className="font-sans text-base flex gap-5">
                 <div>
                   Locador: {contrato.apellidoPropietario}, {contrato.nombrePropietario}
