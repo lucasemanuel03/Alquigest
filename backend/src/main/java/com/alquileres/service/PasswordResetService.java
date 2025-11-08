@@ -3,7 +3,6 @@ package com.alquileres.service;
 import com.alquileres.model.Usuario;
 import com.alquileres.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
@@ -11,7 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class PasswordResetService {
@@ -19,19 +17,19 @@ public class PasswordResetService {
     private static final Logger logger = LoggerFactory.getLogger(PasswordResetService.class);
 
     private final UsuarioRepository usuarioRepository;
-    private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
+    private final AsyncPasswordResetProcessor asyncProcessor;
 
     @Value("${app.password-reset-token-expiration-ms:3600000}")
     private long tokenExpirationTime;
 
     public PasswordResetService(
             UsuarioRepository usuarioRepository,
-            EmailService emailService,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            AsyncPasswordResetProcessor asyncProcessor) {
         this.usuarioRepository = usuarioRepository;
-        this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
+        this.asyncProcessor = asyncProcessor;
     }
 
     /**
@@ -42,45 +40,13 @@ public class PasswordResetService {
      * @param email Email del usuario
      */
     public void solicitarRecuperacionContrasena(String email) {
-        // Delegar el procesamiento real a un método asíncrono
-        procesarRecuperacionAsync(email);
+        // Delegar el procesamiento real a un servicio asíncrono separado
+        asyncProcessor.procesarRecuperacionAsync(email);
 
         // Retornar inmediatamente sin revelar información
         logger.info("Solicitud de recuperación de contraseña recibida para: {}", email);
     }
 
-    /**
-     * Procesa la recuperación de contraseña de forma asíncrona.
-     * Se ejecuta en un hilo separado, por lo que no bloquea la respuesta al cliente.
-     *
-     * @param email Email del usuario
-     */
-    @Async
-    protected void procesarRecuperacionAsync(String email) {
-        try {
-            Optional<Usuario> usuario = usuarioRepository.findByEmail(email);
-
-            if (usuario.isEmpty()) {
-                logger.warn("Intento de recuperación con email no registrado: {}", email);
-                // No hacer nada, pero tampoco revelar que el email no existe
-                return;
-            }
-
-            Usuario u = usuario.get();
-            String token = UUID.randomUUID().toString();
-            LocalDateTime expiryDate = LocalDateTime.now().plusNanos(tokenExpirationTime * 1_000_000L);
-
-            u.setPasswordResetToken(token);
-            u.setPasswordResetTokenExpiry(expiryDate);
-            usuarioRepository.save(u);
-
-            emailService.enviarEmailRecuperacionContrasena(email, u.getUsername(), token);
-            logger.info("Email de recuperación de contraseña enviado a: {}", email);
-
-        } catch (Exception e) {
-            logger.error("Error al procesar recuperación de contraseña para {}: {}", email, e.getMessage(), e);
-        }
-    }
 
     public void resetearContrasena(String token, String nuevaContrasena, String confirmarContrasena) {
         if (!nuevaContrasena.equals(confirmarContrasena)) {
