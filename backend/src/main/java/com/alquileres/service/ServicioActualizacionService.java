@@ -481,8 +481,10 @@ public class ServicioActualizacionService {
             // Para cada contrato vigente
             for (Contrato contrato : contratosVigentes) {
                 // OPTIMIZACIÓN: Filtrar en memoria en lugar de BD
+                // Solo considerar servicios activos (esActivo=true)
                 boolean tieneServicios = todosLosServicios.stream()
-                    .anyMatch(s -> s.getContrato().getId().equals(contrato.getId()));
+                    .anyMatch(s -> s.getContrato().getId().equals(contrato.getId())
+                        && Boolean.TRUE.equals(s.getEsActivo()));
 
                 // Si el contrato no tiene servicios, crear uno para cada tipo
                 if (!tieneServicios) {
