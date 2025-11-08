@@ -1,23 +1,31 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ChevronDown, ChevronUp, Import } from "lucide-react"
+import { CheckSquare, ChevronDown, ChevronUp } from "lucide-react"
 import TipoServicioIcon from "@/components/tipoServicioIcon"
 import { Badge } from "../ui/badge"
 import BACKEND_URL from "@/utils/backendURL"
 import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
+import BotonPagoModal, { PagoResumenItem } from "@/components/pago-servicios/BotonPagoModal"
 
 interface ServicioPagoCardProps {
   pagoServicio: any
   onPagoRegistrado?: () => void | Promise<void>
+  onDatosPagoChange?: (datos: {
+    fechaPagoISO: string
+    vencido: "SI" | "NO"
+    medioPago: string
+    monto: string | number
+    pdfPath?: string
+  } | null) => void
 }
 
-export default function ServicioPagoCard({ pagoServicio, onPagoRegistrado }: ServicioPagoCardProps) {
+export default function ServicioPagoCard({ pagoServicio, onPagoRegistrado, onDatosPagoChange }: ServicioPagoCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [sePago, setSePago] = useState(false)
   const [monto, setMonto] = useState(pagoServicio.monto || 0)
@@ -28,61 +36,52 @@ export default function ServicioPagoCard({ pagoServicio, onPagoRegistrado }: Ser
   const [medioPago, setMedioPago] = useState("No especificado")
   const [loading, setLoading] = useState(false)
 
-  const handleRegistrarPago = async () => {
+  // Notificar cambios al padre para batch
+  useEffect(() => {
+    if (!onDatosPagoChange) return
+    if (sePago) {
+      // Si ya se pagó individualmente, quitar de batch
+      onDatosPagoChange(null)
+      return
+    }
+    onDatosPagoChange({
+      fechaPagoISO: fechaPago,
+      vencido: vencido as "SI" | "NO",
+      medioPago,
+      monto,
+      pdfPath: pagoServicio.pdfPath || ""
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [monto, fechaPago, vencido, medioPago, sePago])
+
+  const confirmarPagoIndividual = async () => {
     setLoading(true)
     try {
-      // Construir el body para el PUT
       const body = {
         periodo: pagoServicio.periodo,
-        fechaPago: fechaPago.split('-').reverse().join('/'), // Convertir de YYYY-MM-DD a DD/MM/YYYY
+        fechaPago: fechaPago.split('-').reverse().join('/'),
         estaPagado: true,
         estaVencido: vencido === "SI",
         pdfPath: pagoServicio.pdfPath || "",
         medioPago: medioPago,
-        monto: parseFloat(monto)
+        monto: parseFloat(String(monto).replace(',', '.'))
       }
-
-      const response = await fetchWithToken(`${BACKEND_URL}/pagos-servicios/${pagoServicio.id}`, {
+      await fetchWithToken(`${BACKEND_URL}/pagos-servicios/${pagoServicio.id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body)
       })
-      /* 
-      if (response) {
-        alert(`Pago registrado exitosamente: $${monto}`)
-        console.log("Pago registrado:")
-        // Actualizar el estado local
-        pagoServicio.estaPagado = true
-        pagoServicio.monto = parseFloat(monto)
-        pagoServicio.fechaPago = fechaPago
-        pagoServicio.estaVencido = vencido === "SI"
-        setIsExpanded(false)
-        setSePago(true)
-        // Notificar al padre para refrescar la lista de no pagados
-      }
-        */
-
-      alert(`Pago registrado exitosamente: $${monto}`)
-      console.log("Pago registrado:")
-      // Actualizar el estado local
+      // Actualizar estado local
       pagoServicio.estaPagado = true
-      pagoServicio.monto = parseFloat(monto)
+      pagoServicio.monto = body.monto
       pagoServicio.fechaPago = fechaPago
-      pagoServicio.estaVencido = vencido === "SI"
+      pagoServicio.estaVencido = body.estaVencido
       setIsExpanded(false)
       setSePago(true)
-
-    } catch (error) {
-      console.error("Error al registrar el pago:", error)
-      // alert("Error al registrar el pago. Intente nuevamente.") REVISAR BACKEND DEVUELVE UN 500
+      if (onDatosPagoChange) onDatosPagoChange(null)
+      if (onPagoRegistrado) await onPagoRegistrado()
     } finally {
       setLoading(false)
-      setSePago(true)
-      if (onPagoRegistrado) {
-          await onPagoRegistrado()
-      }
     }
   }
 
@@ -186,12 +185,23 @@ export default function ServicioPagoCard({ pagoServicio, onPagoRegistrado }: Ser
               </Select>
             </div>
             <div className="flex justify-end">
-              <Button onClick={handleRegistrarPago} 
-                      disabled={loading || pagoServicio.estaPagado || !monto} 
-                      className="w-fit bg-emerald-600 hover:bg-emerald-700">
-                <Import/>
-                {loading ? "Registrando..." : "Registrar pago"}
-              </Button>
+              <BotonPagoModal
+                triggerLabel={loading ? "Procesando..." : "Registrar pago"}
+                items={[{
+                  id: pagoServicio.id,
+                  titulo: pagoServicio.servicioXContrato.tipoServicio.nombre,
+                  subtitulo: `${pagoServicio.periodo} | ${medioPago}${vencido === 'SI' ? ' | Vencido' : ''}`,
+                  monto: typeof monto === 'number' ? monto : parseFloat(String(monto).replace(',', '.'))
+                }]}
+                onConfirm={confirmarPagoIndividual}
+                isDisabled={loading || pagoServicio.estaPagado || !monto || parseFloat(String(monto).replace(',', '.')) <= 0}
+                confirmLabel="Confirmar pago"
+                iconLabel={<CheckSquare/>}
+                cancelLabel="Cancelar"
+                title="Confirmar pago del servicio"
+                description="Verificá los datos del servicio antes de registrar el pago."
+                className="bg-emerald-600 hover:bg-emerald-700"
+              />
             </div>
           </div>
         )}

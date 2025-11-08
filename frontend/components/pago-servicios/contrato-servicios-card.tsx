@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -10,6 +10,7 @@ import { ContratoDetallado } from "@/types/ContratoDetallado"
 import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
 import BACKEND_URL from "@/utils/backendURL"
 import ServicioPagoCard from "@/components/pago-servicios/servicio-pago-card"
+import BotonPagoModal, { PagoResumenItem } from "@/components/pago-servicios/BotonPagoModal"
 import LoadingSmall from "../loading-sm"
 import { Skeleton } from "../ui/skeleton"
 
@@ -30,6 +31,21 @@ export default function ContratoServiciosCard({
   const [servicios, setServicios] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [serviciosCargados, setServiciosCargados] = useState(false)
+  const [registrandoBatch, setRegistrandoBatch] = useState(false)
+
+  // Estado local para acumular pagos masivos (por pagoId)
+  type DatosPagoBatch = {
+    periodo: string
+    fechaPago: string // DD/MM/YYYY
+    estaPagado: boolean
+    estaVencido: boolean
+    pdfPath: string
+    medioPago: string
+    monto: number
+  }
+  const [pagosBatch, setPagosBatch] = useState<Record<number, DatosPagoBatch>>({})
+
+  const cantidadSeleccionados = useMemo(() => Object.keys(pagosBatch).length, [pagosBatch])
 
   const fetchServiciosNoPagados = async () => {
     setLoading(true)
@@ -57,6 +73,79 @@ export default function ContratoServiciosCard({
     // Si se está expandiendo y no se han cargado los servicios, cargarlos
     if (expanding && !serviciosCargados) {
       await fetchServiciosNoPagados()
+    }
+  }
+
+  // Callback para que cada ServicioPagoCard nos informe sus datos para batch
+  const handleDatosPagoChange = (
+    pagoId: number,
+    datos: {
+      periodo: string
+      fechaPagoISO: string // YYYY-MM-DD
+      vencido: string // "SI" | "NO"
+      medioPago: string
+      monto: string | number
+      pdfPath?: string
+    } | null
+  ) => {
+    setPagosBatch(prev => {
+      const next = { ...prev }
+      if (!datos) {
+        delete next[pagoId]
+        return next
+      }
+      // Validaciones mínimas
+      const montoNum = typeof datos.monto === 'number' ? datos.monto : parseFloat(String(datos.monto).replace(',', '.'))
+      const fechaOk = !!datos.fechaPagoISO
+      if (!fechaOk || isNaN(montoNum) || montoNum <= 0) {
+        delete next[pagoId]
+        return next
+      }
+      const fechaDDMMYYYY = datos.fechaPagoISO.split('-').reverse().join('/')
+      next[pagoId] = {
+        periodo: datos.periodo,
+        fechaPago: fechaDDMMYYYY,
+        estaPagado: true,
+        estaVencido: datos.vencido === 'SI',
+        pdfPath: datos.pdfPath || '',
+        medioPago: datos.medioPago || 'No especificado',
+        monto: montoNum
+      }
+      return next
+    })
+  }
+
+  // Registrar pagos masivos
+  const resumenBatch: PagoResumenItem[] = Object.entries(pagosBatch).map(([pagoId, datos]) => ({
+    id: pagoId,
+    titulo: `Servicio #${pagoId}`,
+    subtitulo: `${datos.periodo} | ${datos.medioPago}${datos.estaVencido ? ' | Vencido' : ''}`,
+    monto: datos.monto,
+  }))
+
+  const confirmarBatch = async () => {
+    if (cantidadSeleccionados === 0) return
+    setRegistrandoBatch(true)
+    try {
+      const body = {
+        pagos: Object.entries(pagosBatch).map(([pagoId, datosPago]) => ({
+          pagoId: Number(pagoId),
+          datosPago,
+        }))
+      }
+      await fetchWithToken(`${BACKEND_URL}/pagos-servicios/batch`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      })
+      setPagosBatch({})
+      await fetchServiciosNoPagados()
+      if (onPagoRegistrado) await onPagoRegistrado()
+    } catch (e) {
+      console.error('Error registrando pagos masivos', e)
+      throw e
+    } finally {
+      setRegistrandoBatch(false)
     }
   }
 
@@ -112,11 +201,38 @@ export default function ContratoServiciosCard({
                     key={pagoServicio.id}
                     pagoServicio={pagoServicio}
                     onPagoRegistrado={fetchServiciosNoPagados}
+                    onDatosPagoChange={(datos) =>
+                      handleDatosPagoChange(
+                        pagoServicio.id,
+                        datos
+                          ? {
+                              periodo: pagoServicio.periodo,
+                              fechaPagoISO: datos.fechaPagoISO,
+                              vencido: datos.vencido,
+                              medioPago: datos.medioPago,
+                              monto: datos.monto,
+                              pdfPath: datos.pdfPath,
+                            }
+                          : null
+                      )
+                    }
                   />
                 ))}
               </div>
             )}
             <div className="pt-4 border-t flex justify-end gap-5 items-center">
+              <BotonPagoModal
+                triggerLabel={registrandoBatch ? 'Procesando...' : `Registrar Pagos${cantidadSeleccionados > 0 ? ` (${cantidadSeleccionados})` : ''}`}
+                items={resumenBatch}
+                onConfirm={confirmarBatch}
+                isDisabled={registrandoBatch || cantidadSeleccionados === 0}
+                confirmLabel="Confirmar pagos"
+                cancelLabel="Cancelar"
+                title="Confirmación de pagos masivos"
+                description="Revisa los servicios y montos a registrar. Esta acción marcará como pagados todos los servicios listados."
+                triggerVariant="default"
+                className="bg-emerald-600 hover:bg-emerald-700"
+              />
                  {/* Aquí va el botón HISTORIAL */}
               <Link href={`/contratos/${contrato.id}/historial-pagos-servicios`}>
                 <Button variant={"outline"}>
