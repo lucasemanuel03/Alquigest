@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   Notebook,
   FileClock,
+  FileChartColumnIncreasing,
 } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
@@ -68,10 +69,10 @@ export default function HomePage() {
       {/* Main Content */}
       <main className="container mx-auto px-6 py-8 pt-30">
         {/* Welcome Section */}
-        <div className="mb-12 flex justify-between gap-6">
+        <div className="mb-8 flex justify-between gap-6">
           <div>
-            <h2 className="text-3xl font-bold text-foreground mb-2 ">¡Bienvenido!</h2>
-            <p className="text-muted-foreground font-sans text-xs md:text-lg">
+            <h2 className="text-2xl font-bold text-foreground mb-2 ">¡Bienvenido!</h2>
+            <p className="text-muted-foreground font-sans text-xs md:text-sm">
               Gestione alquileres de forma simple.
             </p>
           </div>
@@ -79,7 +80,7 @@ export default function HomePage() {
         </div>
 
         {/* Cards DATOS ACTUALES */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-10">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
           <EstadisticaCard
             titulo="Facturas Pendientes"
             valor={contadores.cantServiciosNoPagos}
@@ -118,7 +119,7 @@ export default function HomePage() {
         </div>
 
         {/* Main Navigation Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-7">
           {/* Propietarios Card - Most Important (2 columns) */}
           <Link href="/propietarios" className="group lg:col-span-2">
             <Card className=" h-full transition-all duration-200 hover:shadow-lg hover:scale-105 border-2 border-[var(--amarillo-alqui)]/20 hover:border-[var(--amarillo-alqui)]">
@@ -126,16 +127,11 @@ export default function HomePage() {
                 <div className="mx-auto mb-4 p-4 bg-accent/10 rounded-full w-fit group-hover:bg-accent/20 transition-colors">
                   <Users className="h-12 w-12 text-accent" />
                 </div>
-                <CardTitle className="text-2xl md:text-3xl font-bold">Locadores</CardTitle>
+                <CardTitle className="text-2xl md:text-2xl font-bold">Locadores</CardTitle>
                 <CardDescription className="text-base">
                   Visualice y gestione la información de los propietarios/locadores
                 </CardDescription>
               </CardHeader>
-              <CardContent className="text-center">
-                <Button className="w-full bg-[var(--amarillo-alqui)]/80 hover:bg-[var(--amarillo-alqui)] text-black">
-                  Ir a Locadores
-                </Button>
-              </CardContent>
             </Card>
           </Link>
 
@@ -146,13 +142,10 @@ export default function HomePage() {
                 <div className="mx-auto mb-4 p-4 bg-green-500/10 rounded-full w-fit group-hover:bg-green-500/20 transition-colors">
                   <CreditCard className="h-12 w-12 text-green-600" />
                 </div>
-                <CardTitle className="text-2xl md:text-3xl font-bold">Pago de Servicios</CardTitle>
+                <CardTitle className="text-2xl md:text-2xl font-bold">Pago de Servicios</CardTitle>
                 <CardDescription className="text-base">Gestiona los pagos de servicios de cada contrato controlados por el estudio jurídico</CardDescription>
                 
               </CardHeader>
-              <CardContent className="text-center">
-                <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">Ir a Pagos</Button>
-              </CardContent>
             </Card>
           </Link>
 
@@ -163,33 +156,25 @@ export default function HomePage() {
                 <div className="mx-auto mb-4 p-4 bg-[var(--amarillo-alqui)]/10 rounded-full w-fit group-hover:bg-[var(--amarillo-alqui)]/20 transition-colors">
                   <Notebook className="h-12 w-12 text-[var(--amarillo-alqui)]" />
                 </div>
-                <CardTitle className="text-2xl md:text-3xl font-bold">Alquileres Vigentes</CardTitle>
+                <CardTitle className="text-2xl md:text-2xl font-bold">Alquileres Vigentes</CardTitle>
                 <CardDescription className="text-base">Visualice y administre la información de los contratos de alquiler vigentes</CardDescription>
               </CardHeader>
-              <CardContent className="text-center">
-                <Button className="w-full bg-[var(--amarillo-alqui)]/80 hover:bg-[var(--amarillo-alqui)] text-black">Ir a Alquileres</Button>
-              </CardContent>
             </Card>
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mt-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-7 mt-8">
 
           {/* Inquilinos Card */}
           <Link href="/inquilinos" className="group">
             <Card className="h-full transition-all duration-200 hover:shadow-lg hover:scale-105">
               <CardHeader className="text-center pb-2">
                 <div className="mx-auto mb-4 p-4 bg-secondary/10 rounded-full w-fit group-hover:bg-secondary/20 transition-colors">
-                  <Users className="h-10 w-10 text-secondary" />
+                  <Users className="h-7 w-7 text-secondary" />
                 </div>
                 <CardTitle className="text-xl font-bold">Locatarios</CardTitle>
                 <CardDescription className="text-base">Administra la información de los inquilinos/locatarios</CardDescription>
               </CardHeader>
-              <CardContent className="text-center">
-                <Button variant="outline" className="w-full bg-transparent">
-                  Ver Locatarios
-                </Button>
-              </CardContent>
             </Card>
           </Link>
           
@@ -198,34 +183,24 @@ export default function HomePage() {
             <Card className="h-full transition-all duration-200 hover:shadow-lg hover:scale-105">
               <CardHeader className="text-center pb-2">
                 <div className="mx-auto mb-4 p-4 bg-primary/10 rounded-full w-fit group-hover:bg-primary/20 transition-colors">
-                  <Building2 className="h-10 w-10 text-secondary" />
+                  <Building2 className="h-7 w-7 text-secondary" />
                 </div>
                 <CardTitle className="text-xl font-bold">Inmuebles</CardTitle>
                 <CardDescription className="text-base">Administra la información de inmuebles a cargo</CardDescription>
               </CardHeader>
-              <CardContent className="text-center">
-                <Button variant="outline" className="w-full bg-transparent">
-                  Ver Inmuebles
-                </Button>
-              </CardContent>
             </Card>
           </Link>
 
           {/* Contratos Card */}
-          <Link href="/contratos/historial" className="group">
+          <Link href="/informe" className="group">
             <Card className="h-full transition-all duration-200 hover:shadow-lg hover:scale-105">
               <CardHeader className="text-center pb-2">
                 <div className="mx-auto mb-4 p-4 bg-secondary/10 rounded-full w-fit group-hover:bg-secondary/20 transition-colors">
-                  <FileClock className="h-10 w-10 text-secondary" />
+                  <FileChartColumnIncreasing className="h-7 w-7 text-secondary" />
                 </div>
-                <CardTitle className="text-xl font-bold">Historial de Contratos</CardTitle>
-                <CardDescription className="text-base">Visualice el historial de contratos registrados</CardDescription>
+                <CardTitle className="text-xl font-bold">Reportes e Informes</CardTitle>
+                <CardDescription className="text-base">Visualice y exporte informes mensuales</CardDescription>
               </CardHeader>
-              <CardContent className="text-center">
-                <Button variant="outline" className="w-full bg-transparent">
-                  Ver Historial
-                </Button>
-              </CardContent>
             </Card>
           </Link>
 
