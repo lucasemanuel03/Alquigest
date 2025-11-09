@@ -1,9 +1,13 @@
 package com.alquileres.controller;
 
+import com.alquileres.dto.ActualizarServicioContratoRequest;
+import com.alquileres.dto.CrearServicioRequest;
+import com.alquileres.dto.ServicioContratoDTO;
 import com.alquileres.model.ServicioContrato;
 import com.alquileres.service.ServicioContratoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,41 +27,73 @@ public class ServicioContratoController {
 
     @GetMapping("/contrato/{contratoId}")
     @Operation(summary = "Obtener servicios por contrato", description = "Obtiene todos los servicios de un contrato")
-    public ResponseEntity<List<ServicioContrato>> getServiciosByContrato(@PathVariable Long contratoId) {
-        List<ServicioContrato> servicios = servicioContratoService.getServiciosByContrato(contratoId);
+    public ResponseEntity<List<ServicioContratoDTO>> getServiciosByContrato(@PathVariable Long contratoId) {
+        List<ServicioContratoDTO> servicios = servicioContratoService.getServiciosByContrato(contratoId)
+                .stream()
+                .map(ServicioContratoDTO::new)
+                .toList();
         return ResponseEntity.ok(servicios);
     }
 
     @GetMapping("/contrato/{contratoId}/activos")
     @Operation(summary = "Obtener servicios activos por contrato", description = "Obtiene todos los servicios activos de un contrato")
-    public ResponseEntity<List<ServicioContrato>> getServiciosActivosByContrato(@PathVariable Long contratoId) {
-        List<ServicioContrato> servicios = servicioContratoService.getServiciosActivosByContrato(contratoId);
+    public ResponseEntity<List<ServicioContratoDTO>> getServiciosActivosByContrato(@PathVariable Long contratoId) {
+        List<ServicioContratoDTO> servicios = servicioContratoService.getServiciosActivosByContrato(contratoId)
+                .stream()
+                .map(ServicioContratoDTO::new)
+                .toList();
         return ResponseEntity.ok(servicios);
     }
 
     @PostMapping
-    @Operation(summary = "Crear servicio", description = "Crea un nuevo servicio para un contrato")
-    public ResponseEntity<ServicioContrato> crearServicio(
-            @RequestParam Long contratoId,
-            @RequestParam Integer tipoServicioId,
-            @RequestParam(required = false) Boolean esDeInquilino,
-            @RequestParam(required = false) Boolean esAnual) {
-        ServicioContrato servicio = servicioContratoService.crearServicio(contratoId, tipoServicioId, esDeInquilino, esAnual);
-        return ResponseEntity.status(HttpStatus.CREATED).body(servicio);
+    @Operation(summary = "Crear servicios en lote", description = "Crea uno o varios servicios para un contrato")
+    public ResponseEntity<List<ServicioContratoDTO>> crearServicios(@Valid @RequestBody List<CrearServicioRequest> requests) {
+        List<ServicioContratoDTO> serviciosCreados = requests.stream()
+                .map(request -> servicioContratoService.crearServicioCompleto(
+                        request.getContratoId(),
+                        request.getTipoServicioId(),
+                        request.getNroCuenta(),
+                        request.getNroContrato(),
+                        request.getNroContratoServicio(),
+                        request.getEsDeInquilino(),
+                        request.getEsAnual(),
+                        request.getFechaInicio()
+                ))
+                .map(ServicioContratoDTO::new)
+                .toList();
+        return ResponseEntity.status(HttpStatus.CREATED).body(serviciosCreados);
+    }
+
+    @PostMapping("/single")
+    @Operation(summary = "Crear un servicio", description = "Crea un nuevo servicio para un contrato")
+    public ResponseEntity<ServicioContratoDTO> crearServicioIndividual(@Valid @RequestBody CrearServicioRequest request) {
+        ServicioContrato servicio = servicioContratoService.crearServicioCompleto(
+                request.getContratoId(),
+                request.getTipoServicioId(),
+                request.getNroCuenta(),
+                request.getNroContrato(),
+                request.getNroContratoServicio(),
+                request.getEsDeInquilino(),
+                request.getEsAnual(),
+                request.getFechaInicio()
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ServicioContratoDTO(servicio));
     }
 
     @PutMapping("/{servicioId}")
     @Operation(summary = "Actualizar servicio", description = "Actualiza los datos de un servicio")
-    public ResponseEntity<ServicioContrato> actualizarServicio(
+    public ResponseEntity<ServicioContratoDTO> actualizarServicio(
             @PathVariable Integer servicioId,
-            @RequestParam(required = false) String nroCuenta,
-            @RequestParam(required = false) String nroContrato,
-            @RequestParam(required = false) String nroContratoServicio,
-            @RequestParam(required = false) Boolean esDeInquilino,
-            @RequestParam(required = false) Boolean esAnual) {
+            @Valid @RequestBody ActualizarServicioContratoRequest request) {
         ServicioContrato servicio = servicioContratoService.actualizarServicio(
-                servicioId, nroCuenta, nroContrato, nroContratoServicio, esDeInquilino, esAnual);
-        return ResponseEntity.ok(servicio);
+                servicioId,
+                request.getNroCuenta(),
+                null, // nroContrato ya no se usa
+                request.getNroContratoServicio(),
+                request.getEsDeInquilino(),
+                request.getEsAnual()
+        );
+        return ResponseEntity.ok(new ServicioContratoDTO(servicio));
     }
 
     @DeleteMapping("/{servicioId}")

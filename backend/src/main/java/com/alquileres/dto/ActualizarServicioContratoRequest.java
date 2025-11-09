@@ -2,7 +2,7 @@ package com.alquileres.dto;
 
 import jakarta.validation.constraints.NotNull;
 
-public class ActualizarServicioXContratoRequest {
+public class ActualizarServicioContratoRequest {
 
     private String nroCuenta;
     private String nroContratoServicio;
@@ -13,10 +13,10 @@ public class ActualizarServicioXContratoRequest {
     @NotNull(message = "El campo esAnual es obligatorio")
     private Boolean esAnual;
 
-    public ActualizarServicioXContratoRequest() {
+    public ActualizarServicioContratoRequest() {
     }
 
-    public ActualizarServicioXContratoRequest(String nroCuenta, String nroContratoServicio,
+    public ActualizarServicioContratoRequest(String nroCuenta, String nroContratoServicio,
                                                Boolean esDeInquilino, Boolean esAnual) {
         this.nroCuenta = nroCuenta;
         this.nroContratoServicio = nroContratoServicio;

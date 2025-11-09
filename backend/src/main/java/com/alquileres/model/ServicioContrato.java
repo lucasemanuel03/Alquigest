@@ -1,5 +1,6 @@
 package com.alquileres.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "servicio_contrato")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ServicioContrato {
 
     @Id
@@ -22,11 +24,13 @@ public class ServicioContrato {
     @NotNull(message = "El contrato es obligatorio")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contrato_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "servicios", "alquileres"})
     private Contrato contrato;
 
     @NotNull(message = "El tipo de servicio es obligatorio")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tipo_servicio_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private TipoServicio tipoServicio;
 
     @Column(name = "es_de_inquilino", nullable = false)
