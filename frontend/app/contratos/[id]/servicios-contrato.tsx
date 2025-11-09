@@ -65,8 +65,8 @@ export default function ServiciosContratoPage({esVigente, idContrato, fechaInici
                         {serviciosContrato.map((servicio) => (
                             <div key={servicio.id} className="mb-4 p-4 border rounded-xl shadow-sm bg-card">
                                 <div className="flex gap-2 items-center mb-4">
-                                    <TipoServicioIcon tipoServicio={servicio.tipoServicio.id} className="h-7 w-7" />
-                                    <h3 className="text-lg font-semibold">{servicio.tipoServicio.nombre}</h3>
+                                    <TipoServicioIcon tipoServicio={servicio.tipoServicioId} className="h-7 w-7" />
+                                    <h3 className="text-lg font-semibold">{servicio.tipoServicioNombre}</h3>
                                 </div>
                                 <div className="flex flex-col gap-2">
                                     <p><span className="font-semibold">Número de Cuenta:</span> {servicio.nroCuenta || "No asignado"}</p>
