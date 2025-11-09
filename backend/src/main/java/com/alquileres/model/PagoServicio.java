@@ -17,10 +17,10 @@ public class PagoServicio {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
-    @NotNull(message = "El servicio x contrato es obligatorio")
+    @NotNull(message = "El servicio contrato es obligatorio")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "servicio_x_contrato_id", nullable = false)
-    private ServicioXContrato servicioXContrato;
+    @JoinColumn(name = "servicio_contrato_id", nullable = false)
+    private ServicioContrato servicioContrato;
 
     @Pattern(regexp = "^(0[1-9]|1[0-2])/\\d{4}$", message = "El periodo debe tener el formato mm/aaaa (ej: 01/2025)")
     @Column(name = "periodo", length = 7)
@@ -56,8 +56,8 @@ public class PagoServicio {
     }
 
     // Constructor con parámetros principales
-    public PagoServicio(ServicioXContrato servicioXContrato, String periodo, String fechaVencimiento, BigDecimal monto) {
-        this.servicioXContrato = servicioXContrato;
+    public PagoServicio(ServicioContrato servicioContrato, String periodo, String fechaVencimiento, BigDecimal monto) {
+        this.servicioContrato = servicioContrato;
         this.periodo = periodo;
         this.monto = monto;
         this.estaPagado = false;
@@ -85,12 +85,12 @@ public class PagoServicio {
         this.id = id;
     }
 
-    public ServicioXContrato getServicioXContrato() {
-        return servicioXContrato;
+    public ServicioContrato getServicioContrato() {
+        return servicioContrato;
     }
 
-    public void setServicioXContrato(ServicioXContrato servicioXContrato) {
-        this.servicioXContrato = servicioXContrato;
+    public void setServicioContrato(ServicioContrato servicioContrato) {
+        this.servicioContrato = servicioContrato;
     }
 
     public String getFechaPago() {

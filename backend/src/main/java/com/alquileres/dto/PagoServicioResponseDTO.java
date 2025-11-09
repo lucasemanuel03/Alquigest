@@ -1,7 +1,7 @@
 package com.alquileres.dto;
 
 import com.alquileres.model.PagoServicio;
-import com.alquileres.model.ServicioXContrato;
+import com.alquileres.model.ServicioContrato;
 
 import java.math.BigDecimal;
 
@@ -15,7 +15,7 @@ public class PagoServicioResponseDTO {
     private BigDecimal monto;
     private String pdfPath;
     private String periodo;
-    private ServicioXContratoMiniDTO servicioXContrato;
+    private ServicioContratoMiniDTO servicioContrato;
 
     public PagoServicioResponseDTO() {
     }
@@ -30,9 +30,9 @@ public class PagoServicioResponseDTO {
         this.pdfPath = pago.getPdfPath();
         this.periodo = pago.getPeriodo();
 
-        ServicioXContrato sxc = pago.getServicioXContrato();
-        if (sxc != null) {
-            this.servicioXContrato = new ServicioXContratoMiniDTO(sxc);
+        ServicioContrato sc = pago.getServicioContrato();
+        if (sc != null) {
+            this.servicioContrato = new ServicioContratoMiniDTO(sc);
         }
     }
 
@@ -61,11 +61,11 @@ public class PagoServicioResponseDTO {
     public String getPeriodo() { return periodo; }
     public void setPeriodo(String periodo) { this.periodo = periodo; }
 
-    public ServicioXContratoMiniDTO getServicioXContrato() { return servicioXContrato; }
-    public void setServicioXContrato(ServicioXContratoMiniDTO servicioXContrato) { this.servicioXContrato = servicioXContrato; }
+    public ServicioContratoMiniDTO getServicioContrato() { return servicioContrato; }
+    public void setServicioContrato(ServicioContratoMiniDTO servicioContrato) { this.servicioContrato = servicioContrato; }
 
     // DTOs anidados
-    public static class ServicioXContratoMiniDTO {
+    public static class ServicioContratoMiniDTO {
         private Integer id;
         private String nroCuenta;
         private String nroContratoServicio;
@@ -74,17 +74,17 @@ public class PagoServicioResponseDTO {
         private Boolean esActivo;
         private TipoServicioDTO tipoServicio;
 
-        public ServicioXContratoMiniDTO() { }
+        public ServicioContratoMiniDTO() { }
 
-        public ServicioXContratoMiniDTO(ServicioXContrato sxc) {
-            this.id = sxc.getId();
-            this.nroCuenta = sxc.getNroCuenta();
-            this.nroContratoServicio = sxc.getNroContratoServicio();
-            this.esDeInquilino = sxc.getEsDeInquilino();
-            this.esAnual = sxc.getEsAnual();
-            this.esActivo = sxc.getEsActivo();
-            if (sxc.getTipoServicio() != null) {
-                this.tipoServicio = new TipoServicioDTO(sxc.getTipoServicio().getId(), sxc.getTipoServicio().getNombre());
+        public ServicioContratoMiniDTO(ServicioContrato sc) {
+            this.id = sc.getId();
+            this.nroCuenta = sc.getNroCuenta();
+            this.nroContratoServicio = sc.getNroContratoServicio();
+            this.esDeInquilino = sc.getEsDeInquilino();
+            this.esAnual = sc.getEsAnual();
+            this.esActivo = sc.getEsActivo();
+            if (sc.getTipoServicio() != null) {
+                this.tipoServicio = new TipoServicioDTO(sc.getTipoServicio().getId(), sc.getTipoServicio().getNombre());
             }
         }
 

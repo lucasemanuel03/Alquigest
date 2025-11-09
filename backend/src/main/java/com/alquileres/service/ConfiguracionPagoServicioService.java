@@ -1,7 +1,7 @@
 package com.alquileres.service;
 
 import com.alquileres.model.ConfiguracionPagoServicio;
-import com.alquileres.model.ServicioXContrato;
+import com.alquileres.model.ServicioContrato;
 import com.alquileres.repository.ConfiguracionPagoServicioRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,25 +55,25 @@ public class ConfiguracionPagoServicioService {
      * NOTA: Este método NO tiene @Transactional porque se llama desde métodos
      * que ya están en una transacción (crearServicioYConfiguracion)
      *
-     * @param servicioXContrato El servicio x contrato
+     * @param servicioContrato El servicio contrato
      * @param fechaInicio Fecha de inicio del servicio (acepta dd/MM/yyyy o yyyy-MM-dd)
      * @return La configuración creada
      */
-    public ConfiguracionPagoServicio crearConfiguracion(ServicioXContrato servicioXContrato, String fechaInicio) {
+    public ConfiguracionPagoServicio crearConfiguracion(ServicioContrato servicioContrato, String fechaInicio) {
         // Normalizar la fecha de entrada
         String fechaInicioNormalizada = normalizarFecha(fechaInicio);
 
         // Verificar si ya existe una configuración para este servicio
         Optional<ConfiguracionPagoServicio> existente = configuracionPagoServicioRepository
-                .findByServicioXContratoId(servicioXContrato.getId());
+                .findByServicioContratoId(servicioContrato.getId());
 
         if (existente.isPresent()) {
-            logger.warn("Ya existe una configuración para el servicio x contrato ID: {}", servicioXContrato.getId());
+            logger.warn("Ya existe una configuración para el servicio contrato ID: {}", servicioContrato.getId());
             return existente.get();
         }
 
         ConfiguracionPagoServicio configuracion = new ConfiguracionPagoServicio();
-        configuracion.setServicioXContrato(servicioXContrato);
+        configuracion.setServicioContrato(servicioContrato);
         configuracion.setFechaInicio(fechaInicioNormalizada);
         configuracion.setEsActivo(true);
 
@@ -103,7 +103,7 @@ public class ConfiguracionPagoServicioService {
         configuracion.setUltimoPagoGenerado(fechaPagoGeneradoNormalizada);
 
         // Calcular el próximo pago basándose en la fecha del último pago generado
-        Boolean esAnual = configuracion.getServicioXContrato().getEsAnual();
+        Boolean esAnual = configuracion.getServicioContrato().getEsAnual();
         String proximoPago = calcularProximoPago(fechaPagoGeneradoNormalizada, esAnual);
 
         configuracion.setProximoPago(proximoPago);
@@ -162,12 +162,12 @@ public class ConfiguracionPagoServicioService {
     }
 
     /**
-     * Obtiene la configuración de un servicio x contrato
+     * Obtiene la configuración de un servicio contrato
      *
-     * @param servicioXContratoId ID del servicio x contrato
+     * @param servicioContratoId ID del servicio contrato
      * @return La configuración si existe
      */
-    public Optional<ConfiguracionPagoServicio> obtenerPorServicioXContrato(Integer servicioXContratoId) {
-        return configuracionPagoServicioRepository.findByServicioXContratoId(servicioXContratoId);
+    public Optional<ConfiguracionPagoServicio> obtenerPorServicioContrato(Integer servicioContratoId) {
+        return configuracionPagoServicioRepository.findByServicioContratoId(servicioContratoId);
     }
 }

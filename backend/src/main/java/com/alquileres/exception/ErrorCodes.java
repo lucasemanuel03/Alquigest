@@ -39,6 +39,11 @@ public class ErrorCodes {
     public static final String ALQUILER_NO_ENCONTRADO = "ALQUILER_NO_ENCONTRADO";
     public static final String ALQUILER_YA_PAGADO = "ALQUILER_YA_PAGADO";
 
+    // Servicio error codes
+    public static final String SERVICIO_NO_ENCONTRADO = "SERVICIO_NO_ENCONTRADO";
+    public static final String SERVICIO_YA_EXISTE = "SERVICIO_YA_EXISTE";
+    public static final String TIPO_SERVICIO_NO_ENCONTRADO = "TIPO_SERVICIO_NO_ENCONTRADO";
+
     // Cancelacion error codes
     public static final String MOTIVO_CANCELACION_NO_ENCONTRADO = "MOTIVO_CANCELACION_NO_ENCONTRADO";
 

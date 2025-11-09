@@ -65,7 +65,7 @@ class ContratoRetroactivoTest {
     private AlquilerActualizacionService alquilerActualizacionService;
 
     @Mock
-    private ServicioXContratoService servicioXContratoService;
+    private ServicioContratoService servicioContratoService;
 
     @Mock
     private EncryptionService encryptionService;

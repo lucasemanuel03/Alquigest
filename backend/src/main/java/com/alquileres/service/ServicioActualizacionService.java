@@ -3,7 +3,7 @@ package com.alquileres.service;
 import com.alquileres.model.ConfiguracionPagoServicio;
 import com.alquileres.model.ConfiguracionSistema;
 import com.alquileres.model.PagoServicio;
-import com.alquileres.model.ServicioXContrato;
+import com.alquileres.model.ServicioContrato;
 import com.alquileres.model.Contrato;
 import com.alquileres.model.TipoServicio;
 import com.alquileres.repository.ConfiguracionPagoServicioRepository;
@@ -11,7 +11,7 @@ import com.alquileres.repository.ConfiguracionSistemaRepository;
 import com.alquileres.repository.PagoServicioRepository;
 import com.alquileres.repository.ContratoRepository;
 import com.alquileres.repository.TipoServicioRepository;
-import com.alquileres.repository.ServicioXContratoRepository;
+import com.alquileres.repository.ServicioContratoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -45,7 +45,7 @@ public class ServicioActualizacionService {
     private final ConfiguracionSistemaRepository configuracionSistemaRepository;
     private final ContratoRepository contratoRepository;
     private final TipoServicioRepository tipoServicioRepository;
-    private final ServicioXContratoRepository servicioXContratoRepository;
+    private final ServicioContratoRepository servicioContratoRepository;
 
     public ServicioActualizacionService(
             ConfiguracionPagoServicioRepository configuracionPagoServicioRepository,
@@ -54,14 +54,14 @@ public class ServicioActualizacionService {
             ConfiguracionSistemaRepository configuracionSistemaRepository,
             ContratoRepository contratoRepository,
             TipoServicioRepository tipoServicioRepository,
-            ServicioXContratoRepository servicioXContratoRepository) {
+            ServicioContratoRepository servicioContratoRepository) {
         this.configuracionPagoServicioRepository = configuracionPagoServicioRepository;
         this.pagoServicioRepository = pagoServicioRepository;
         this.configuracionPagoServicioService = configuracionPagoServicioService;
         this.configuracionSistemaRepository = configuracionSistemaRepository;
         this.contratoRepository = contratoRepository;
         this.tipoServicioRepository = tipoServicioRepository;
-        this.servicioXContratoRepository = servicioXContratoRepository;
+        this.servicioContratoRepository = servicioContratoRepository;
     }
 
     /**
@@ -101,11 +101,10 @@ public class ServicioActualizacionService {
                 configuracionPagoServicioRepository.findByEsActivo(true);
             logger.info("Total de configuraciones activas: {}", todasLasConfiguraciones.size());
             for (ConfiguracionPagoServicio config : todasLasConfiguraciones) {
-                logger.info("  - Config ID: {}, ServicioXContrato ID: {}, proximoPago: {}, fechaInicio: {}",
+                logger.debug("Generando pago para configuración ID: {}, Servicio ID: {}, Próximo pago: {}",
                            config.getId(),
-                           config.getServicioXContrato().getId(),
-                           config.getProximoPago(),
-                           config.getFechaInicio());
+                           config.getServicioContrato().getId(),
+                           config.getProximoPago());
             }
 
             // Buscar todas las configuraciones con pagos pendientes
@@ -209,7 +208,7 @@ public class ServicioActualizacionService {
      */
     protected boolean generarFacturaParaPeriodo(ConfiguracionPagoServicio configuracion) {
         try {
-            ServicioXContrato servicio = configuracion.getServicioXContrato();
+            ServicioContrato servicio = configuracion.getServicioContrato();
 
             // Verificar que el servicio esté activo
             if (!Boolean.TRUE.equals(servicio.getEsActivo())) {
@@ -223,7 +222,7 @@ public class ServicioActualizacionService {
             String periodo = calcularPeriodo(configuracion.getProximoPago());
 
             // Verificar si ya existe una factura para este servicio y período
-            if (pagoServicioRepository.existsByServicioXContratoIdAndPeriodo(servicio.getId(), periodo)) {
+            if (pagoServicioRepository.existsByServicioContratoIdAndPeriodo(servicio.getId(), periodo)) {
                 logger.debug("Ya existe una factura para el período {} del servicio ID: {}",
                             periodo, servicio.getId());
 
@@ -236,7 +235,7 @@ public class ServicioActualizacionService {
 
             // Crear la nueva factura (PagoServicio) para este período
             PagoServicio nuevaFactura = new PagoServicio();
-            nuevaFactura.setServicioXContrato(servicio);
+            nuevaFactura.setServicioContrato(servicio);
             nuevaFactura.setPeriodo(periodo);
 
             // La factura se crea sin pagar
@@ -332,7 +331,7 @@ public class ServicioActualizacionService {
             ConfiguracionPagoServicio configuracion = configOpt.get();
 
             // Verificar que el servicio esté activo
-            if (!Boolean.TRUE.equals(configuracion.getServicioXContrato().getEsActivo())) {
+            if (!Boolean.TRUE.equals(configuracion.getServicioContrato().getEsActivo())) {
                 logger.warn("El servicio del configuración ID {} no está activo. No se generarán pagos.", configuracionId);
                 return 0;
             }
@@ -396,7 +395,7 @@ public class ServicioActualizacionService {
             }
 
             ConfiguracionPagoServicio configuracion = configOpt.get();
-            ServicioXContrato servicio = configuracion.getServicioXContrato();
+            ServicioContrato servicio = configuracion.getServicioContrato();
 
             // Verificar que el servicio esté activo
             if (!Boolean.TRUE.equals(servicio.getEsActivo())) {
@@ -409,7 +408,7 @@ public class ServicioActualizacionService {
             String periodoActual = fechaActual.format(FORMATO_PERIODO);
 
             // Verificar si ya existe una factura para este servicio y período actual
-            if (pagoServicioRepository.existsByServicioXContratoIdAndPeriodo(servicio.getId(), periodoActual)) {
+            if (pagoServicioRepository.existsByServicioContratoIdAndPeriodo(servicio.getId(), periodoActual)) {
                 logger.debug("Ya existe una factura para el período {} del servicio ID: {}",
                             periodoActual, servicio.getId());
                 return false;
@@ -417,7 +416,7 @@ public class ServicioActualizacionService {
 
             // Crear la nueva factura (PagoServicio) para el mes actual
             PagoServicio nuevaFactura = new PagoServicio();
-            nuevaFactura.setServicioXContrato(servicio);
+            nuevaFactura.setServicioContrato(servicio);
             nuevaFactura.setPeriodo(periodoActual);
             nuevaFactura.setEstaPagado(false);
             nuevaFactura.setEstaVencido(false);
@@ -469,13 +468,13 @@ public class ServicioActualizacionService {
             }
 
             // OPTIMIZACIÓN: Obtener TODOS los servicios existentes de una sola vez
-            List<ServicioXContrato> todosLosServicios = servicioXContratoRepository.findAll();
+            List<ServicioContrato> todosLosServicios = servicioContratoRepository.findAll();
 
             int serviciosCreados = 0;
             String fechaActual = LocalDate.now().format(FORMATO_FECHA);
 
             // Listas para batch processing
-            List<ServicioXContrato> serviciosACrear = new java.util.ArrayList<>();
+            List<ServicioContrato> serviciosACrear = new java.util.ArrayList<>();
             List<ConfiguracionPagoServicio> configuracionesACrear = new java.util.ArrayList<>();
 
             // Para cada contrato vigente
@@ -489,8 +488,8 @@ public class ServicioActualizacionService {
                 // Si el contrato no tiene servicios, crear uno para cada tipo
                 if (!tieneServicios) {
                     for (TipoServicio tipoServicio : tiposServicio) {
-                        // Crear el ServicioXContrato
-                        ServicioXContrato nuevoServicio = new ServicioXContrato();
+                        // Crear el ServicioContrato
+                        ServicioContrato nuevoServicio = new ServicioContrato();
                         nuevoServicio.setContrato(contrato);
                         nuevoServicio.setTipoServicio(tipoServicio);
                         nuevoServicio.setEsDeInquilino(false);
@@ -505,11 +504,11 @@ public class ServicioActualizacionService {
 
             // OPTIMIZACIÓN: Guardar todos los servicios de una sola vez (batch)
             if (!serviciosACrear.isEmpty()) {
-                List<ServicioXContrato> serviciosGuardados = servicioXContratoRepository.saveAll(serviciosACrear);
+                List<ServicioContrato> serviciosGuardados = servicioContratoRepository.saveAll(serviciosACrear);
                 logger.info("Se guardaron {} servicios en batch", serviciosGuardados.size());
 
                 // Crear configuraciones para los servicios guardados
-                for (ServicioXContrato servicio : serviciosGuardados) {
+                for (ServicioContrato servicio : serviciosGuardados) {
                     try {
                         ConfiguracionPagoServicio configuracion =
                             configuracionPagoServicioService.crearConfiguracion(servicio, fechaActual);

@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,7 +63,7 @@ public class ContratoService {
     private final CancelacionContratoRepository cancelacionContratoRepository;
     private final MotivoCancelacionRepository motivoCancelacionRepository;
     private final AlquilerRepository alquilerRepository;
-    private final ServicioXContratoService servicioXContratoService;
+    private final ServicioContratoService servicioContratoService;
     private final EncryptionService encryptionService;
     private final PDFService pdfService;
     private final BCRAApiClient bcraApiClient;
@@ -80,7 +79,7 @@ public class ContratoService {
             CancelacionContratoRepository cancelacionContratoRepository,
             MotivoCancelacionRepository motivoCancelacionRepository,
             AlquilerRepository alquilerRepository,
-            ServicioXContratoService servicioXContratoService,
+            ServicioContratoService servicioContratoService,
             EncryptionService encryptionService,
             PDFService pdfService,
             BCRAApiClient bcraApiClient) {
@@ -94,7 +93,7 @@ public class ContratoService {
         this.cancelacionContratoRepository = cancelacionContratoRepository;
         this.motivoCancelacionRepository = motivoCancelacionRepository;
         this.alquilerRepository = alquilerRepository;
-        this.servicioXContratoService = servicioXContratoService;
+        this.servicioContratoService = servicioContratoService;
         this.encryptionService = encryptionService;
         this.pdfService = pdfService;
         this.bcraApiClient = bcraApiClient;
@@ -168,7 +167,7 @@ public class ContratoService {
             contrato.getInmueble().getPropietarioId()
         );
         
-        if (!propietarioOpt.isPresent()) {
+        if (propietarioOpt.isEmpty()) {
             return;
         }
 
@@ -1196,13 +1195,13 @@ public class ContratoService {
      */
     private void desactivarServiciosDelContrato(Long contratoId) {
         try {
-            List<com.alquileres.model.ServicioXContrato> servicios = 
-                servicioXContratoService.obtenerServiciosActivosPorContrato(contratoId);
-            
+            List<com.alquileres.model.ServicioContrato> servicios =
+                servicioContratoService.getServiciosActivosByContrato(contratoId);
+
             if (servicios != null && !servicios.isEmpty()) {
                 // Desactivar todos los servicios
-                for (com.alquileres.model.ServicioXContrato servicio : servicios) {
-                    servicioXContratoService.desactivarServicio(servicio.getId());
+                for (com.alquileres.model.ServicioContrato servicio : servicios) {
+                    servicioContratoService.desactivarServicio(servicio.getId());
                 }
                 
                 logger.info("Se desactivaron {} servicios del contrato ID: {}", 

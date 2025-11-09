@@ -12,16 +12,16 @@ import java.util.List;
 public interface PagoServicioRepository extends JpaRepository<PagoServicio, Integer> {
 
     // Buscar pagos por contrato
-    @Query("SELECT p FROM PagoServicio p WHERE p.servicioXContrato.contrato.id = :contratoId")
+    @Query("SELECT p FROM PagoServicio p WHERE p.servicioContrato.contrato.id = :contratoId")
     List<PagoServicio> findByContratoId(@Param("contratoId") Long contratoId);
 
     // Verificar si existe un pago para un servicio y período
-    @Query("SELECT COUNT(p) > 0 FROM PagoServicio p WHERE p.servicioXContrato.id = :servicioXContratoId AND p.periodo = :periodo")
-    boolean existsByServicioXContratoIdAndPeriodo(@Param("servicioXContratoId") Integer servicioXContratoId, @Param("periodo") String periodo);
+    @Query("SELECT COUNT(p) > 0 FROM PagoServicio p WHERE p.servicioContrato.id = :servicioContratoId AND p.periodo = :periodo")
+    boolean existsByServicioContratoIdAndPeriodo(@Param("servicioContratoId") Integer servicioContratoId, @Param("periodo") String periodo);
 
     // Buscar pagos no pagados por contrato y tipo de servicio
-    @Query("SELECT p FROM PagoServicio p WHERE p.servicioXContrato.contrato.id = :contratoId " +
-           "AND p.servicioXContrato.tipoServicio.id = :tipoServicioId " +
+    @Query("SELECT p FROM PagoServicio p WHERE p.servicioContrato.contrato.id = :contratoId " +
+           "AND p.servicioContrato.tipoServicio.id = :tipoServicioId " +
            "AND p.estaPagado = false")
     List<PagoServicio> findPagosNoPagadosByContratoAndTipoServicio(
         @Param("contratoId") Long contratoId,
@@ -29,23 +29,25 @@ public interface PagoServicioRepository extends JpaRepository<PagoServicio, Inte
     );
 
     // Buscar todos los pagos no pagados por contrato
-    @Query("SELECT p FROM PagoServicio p WHERE p.servicioXContrato.contrato.id = :contratoId AND p.estaPagado = false")
+    @Query("SELECT p FROM PagoServicio p WHERE p.servicioContrato.contrato.id = :contratoId AND p.estaPagado = false")
     List<PagoServicio> findPagosNoPagadosByContrato(@Param("contratoId") Long contratoId);
 
     // Contar pagos activos del mes actual (independientemente si están pagados o no) - solo contratos vigentes
     @Query("SELECT COUNT(p) FROM PagoServicio p " +
-           "JOIN p.servicioXContrato.contrato c " +
+           "JOIN p.servicioContrato sc " +
+           "JOIN sc.contrato c " +
            "JOIN c.estadoContrato e " +
-           "WHERE p.servicioXContrato.esActivo = true " +
+           "WHERE sc.esActivo = true " +
            "AND p.periodo = :periodo " +
            "AND e.nombre = 'Vigente'")
     Long countPagosActivosPorPeriodo(@Param("periodo") String periodo);
 
     // Contar pagos activos no pagados del mes actual - solo contratos vigentes
     @Query("SELECT COUNT(p) FROM PagoServicio p " +
-           "JOIN p.servicioXContrato.contrato c " +
+           "JOIN p.servicioContrato sc " +
+           "JOIN sc.contrato c " +
            "JOIN c.estadoContrato e " +
-           "WHERE p.servicioXContrato.esActivo = true " +
+           "WHERE sc.esActivo = true " +
            "AND p.estaPagado = false " +
            "AND p.periodo = :periodo " +
            "AND e.nombre = 'Vigente'")
@@ -53,10 +55,11 @@ public interface PagoServicioRepository extends JpaRepository<PagoServicio, Inte
 
     // Buscar pagos no pagados del mes actual por contrato (solo contratos vigentes)
     @Query("SELECT p FROM PagoServicio p " +
-           "JOIN p.servicioXContrato.contrato c " +
+           "JOIN p.servicioContrato sc " +
+           "JOIN sc.contrato c " +
            "JOIN c.estadoContrato e " +
            "WHERE c.id = :contratoId " +
-           "AND p.servicioXContrato.esActivo = true " +
+           "AND sc.esActivo = true " +
            "AND p.estaPagado = false " +
            "AND p.periodo = :periodo " +
            "AND e.nombre = 'Vigente'")
@@ -66,15 +69,16 @@ public interface PagoServicioRepository extends JpaRepository<PagoServicio, Inte
     );
 
     // Contar pagos no pagados del mes actual agrupados por contrato (solo contratos vigentes)
-    @Query("SELECT p.servicioXContrato.contrato.id, COUNT(p) " +
+    @Query("SELECT sc.contrato.id, COUNT(p) " +
            "FROM PagoServicio p " +
-           "JOIN p.servicioXContrato.contrato c " +
+           "JOIN p.servicioContrato sc " +
+           "JOIN sc.contrato c " +
            "JOIN c.estadoContrato e " +
-           "WHERE p.servicioXContrato.esActivo = true " +
+           "WHERE sc.esActivo = true " +
            "AND p.estaPagado = false " +
            "AND p.periodo = :periodo " +
            "AND e.nombre = 'Vigente' " +
-           "GROUP BY p.servicioXContrato.contrato.id")
+           "GROUP BY sc.contrato.id")
     List<Object[]> countPagosNoPagadosPorContratoYPeriodo(@Param("periodo") String periodo);
 
     // Para Informe 4: Obtener pagos de servicios del mes actual con todos los detalles
@@ -82,9 +86,9 @@ public interface PagoServicioRepository extends JpaRepository<PagoServicio, Inte
            "c.id, i.direccion, i.propietarioId, inq.nombre, inq.apellido, " +
            "a.id, a.monto, a.fechaVencimientoPago, a.estaPagado " +
            "FROM PagoServicio p " +
-           "JOIN p.servicioXContrato sxc " +
-           "JOIN sxc.tipoServicio ts " +
-           "JOIN sxc.contrato c " +
+           "JOIN p.servicioContrato sc " +
+           "JOIN sc.tipoServicio ts " +
+           "JOIN sc.contrato c " +
            "JOIN c.inmueble i " +
            "JOIN c.inquilino inq " +
            "LEFT JOIN Alquiler a ON a.contrato.id = c.id AND a.esActivo = true " +

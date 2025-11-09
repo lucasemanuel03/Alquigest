@@ -16,6 +16,8 @@ import com.alquileres.exception.ErrorCodes;
 import com.alquileres.util.FechaUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -207,7 +209,6 @@ public class AlquilerService {
 
         return new AlquilerDTO(alquilerActualizado);
     }
-
     // Marcar alquiler como pagado
     public AlquilerDTO marcarComoPagado(Long id, RegistroPagoDTO registroPagoDTO) {
         // Verificar que existe el alquiler
@@ -242,7 +243,6 @@ public class AlquilerService {
     public boolean existeAlquiler(Long id) {
         return alquilerRepository.existsById(id);
     }
-
     // Calcular honorarios (suma de porcentajes específicos de cada contrato para alquileres pagados del mes actual)
     public BigDecimal calcularHonorarios() {
         List<Alquiler> alquileresPagados = alquilerRepository.findAlquileresDelMes();
