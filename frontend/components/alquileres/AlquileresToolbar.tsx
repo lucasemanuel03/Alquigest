@@ -8,13 +8,14 @@ import { Dispatch, SetStateAction } from "react";
 type OrdenCampo = 'direccion' | 'locador' | 'fechaAumento';
 type Orden = { campo: OrdenCampo; dir: 'asc' | 'desc' };
 
+type Filtro = 'vigentes' | 'proximos-vencer' | 'no-vigentes';
 type Props = {
   vistaDetallada: boolean;
   setVistaDetallada: Dispatch<SetStateAction<boolean>>;
   orden: Orden;
   setOrden: ((orden: Orden) => void) | Dispatch<SetStateAction<Orden>>;
-  filtroContrato: 'vigentes' | 'proximos-vencer';
-  setFiltroContrato: ((filtro: 'vigentes' | 'proximos-vencer') => void) | Dispatch<SetStateAction<'vigentes' | 'proximos-vencer'>>;
+  filtroContrato: Filtro;
+  setFiltroContrato: ((filtro: Filtro) => void) | Dispatch<SetStateAction<Filtro>>;
 };
 
 export default function AlquileresToolbar({
@@ -73,14 +74,16 @@ export default function AlquileresToolbar({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <div className="flex hover:cursor-pointer select-none items-center gap-1">
-                {filtroContrato === 'vigentes' && 'Todos'}
+                {filtroContrato === 'vigentes' && 'Vigentes'}
                 {filtroContrato === 'proximos-vencer' && 'Próximos a Vencer'}
+                {filtroContrato === 'no-vigentes' && 'No Vigentes'}
                 <ChevronDown className="h-4 w-4" />
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => setFiltroContrato('vigentes')}>Todos</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setFiltroContrato('vigentes')}>Vigentes</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setFiltroContrato('proximos-vencer')}>Próximos a vencer</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setFiltroContrato('no-vigentes')}>No Vigentes</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

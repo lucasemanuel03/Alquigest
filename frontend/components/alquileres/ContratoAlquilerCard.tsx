@@ -40,6 +40,13 @@ export default function ContratoAlquilerCard({
     onRegistrarPago(contrato);
   };
 
+  //Refactorizar NULL's
+  if(contrato.montoUltimoAlquiler === null) {
+    contrato.montoUltimoAlquiler = 0;
+  }
+
+  console.log("ContratoAlquilerCard - contrato:", contrato);
+
   return (
     <Card
       className="hover:shadow-lg transition-shadow cursor-pointer"
@@ -103,7 +110,7 @@ export default function ContratoAlquilerCard({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 text-md">
           <div>
             <p className="text-sm font-medium text-muted-foreground">Monto Alquiler</p>
-            <p className="font-bold text-green-600">${contrato.montoUltimoAlquiler.toLocaleString("es-AR")}</p>
+            <p className="font-bold text-green-600">${contrato.montoUltimoAlquiler.toLocaleString("es-AR") || "No especificado"}</p>
           </div>
           <div>
             <p className="text-md font-medium text-muted-foreground">Próximo Aumento</p>

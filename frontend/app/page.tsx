@@ -156,8 +156,8 @@ export default function HomePage() {
                 <div className="mx-auto mb-4 p-4 bg-[var(--amarillo-alqui)]/10 rounded-full w-fit group-hover:bg-[var(--amarillo-alqui)]/20 transition-colors">
                   <Notebook className="h-12 w-12 text-[var(--amarillo-alqui)]" />
                 </div>
-                <CardTitle className="text-2xl md:text-2xl font-bold">Alquileres Vigentes</CardTitle>
-                <CardDescription className="text-base">Visualice y administre la información de los contratos de alquiler vigentes</CardDescription>
+                <CardTitle className="text-2xl md:text-2xl font-bold">Contratos de Alquiler</CardTitle>
+                <CardDescription className="text-base">Visualice y administre la información de todos los contratos de alquiler.</CardDescription>
               </CardHeader>
             </Card>
           </Link>
@@ -192,7 +192,7 @@ export default function HomePage() {
           </Link>
 
           {/* Contratos Card */}
-          <Link href="/informe" className="group">
+          <Link href="/informes" className="group">
             <Card className="h-full transition-all duration-200 hover:shadow-lg hover:scale-105">
               <CardHeader className="text-center pb-2">
                 <div className="mx-auto mb-4 p-4 bg-secondary/10 rounded-full w-fit group-hover:bg-secondary/20 transition-colors">

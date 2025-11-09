@@ -18,6 +18,7 @@ import BarraBusqueda from "@/components/busqueda/barra-busqueda";
 import StatCard from "@/components/alquileres/StatCard";
 import AlquileresToolbar from "@/components/alquileres/AlquileresToolbar";
 import ContratoAlquilerCard from "@/components/alquileres/ContratoAlquilerCard";
+import ContratoHistorialCard from "@/components/alquileres/ContratoHistorialCard";
 import { useAuth } from "@/contexts/AuthProvider"
 
 export default function AlquileresPage() {
@@ -27,8 +28,8 @@ export default function AlquileresPage() {
   const router = useRouter()
 
   // Leer filtro desde URL o usar "vigentes" por defecto
-  const filtroFromURL = searchParams.get("filtro") as "vigentes" | "proximos-vencer" | null
-  const filtrosValidos = ["vigentes", "proximos-vencer"]
+  const filtroFromURL = searchParams.get("filtro") as "vigentes" | "proximos-vencer" | "no-vigentes" | null
+  const filtrosValidos = ["vigentes", "proximos-vencer", "no-vigentes"]
   const filtroInicial = filtroFromURL && filtrosValidos.includes(filtroFromURL) ? filtroFromURL : "vigentes"
 
   // Leer orden desde URL o usar valores por defecto
@@ -47,7 +48,7 @@ export default function AlquileresPage() {
   const [loading, setLoading] = useState(true);
   const [totalContratos, setTotalContratos] = useState(0)
   const [expandedCard, setExpandedCard] = useState<number | null>(null); // id del contrato expandido
-  const [filtroContrato, setFiltroContrato] = useState<"vigentes" | "proximos-vencer">(filtroInicial);
+  const [filtroContrato, setFiltroContrato] = useState<"vigentes" | "proximos-vencer" | "no-vigentes">(filtroInicial);
   const [vistaDetallada, setVistaDetallada] = useState<boolean>(false); // false = colapsada, true = detallada
   const [orden, setOrden] = useState<{campo: 'direccion' | 'locador' | 'fechaAumento', dir: 'asc' | 'desc'}>(ordenInicial);
   const [modalPagoOpen, setModalPagoOpen] = useState(false);
@@ -67,7 +68,7 @@ export default function AlquileresPage() {
   }
 
   // Función para cambiar filtro y actualizar URL
-  const handleChangeFiltro = (nuevoFiltro: "vigentes" | "proximos-vencer") => {
+  const handleChangeFiltro = (nuevoFiltro: "vigentes" | "proximos-vencer" | "no-vigentes") => {
     setFiltroContrato(nuevoFiltro)
     actualizarURL(nuevoFiltro)
   }
@@ -111,7 +112,7 @@ export default function AlquileresPage() {
     const fetchContratos = async () => {
       setLoading(true);
       try {
-        const data = await fetchWithToken(`${BACKEND_URL}/contratos/${filtroContrato}`);
+  const data = await fetchWithToken(`${BACKEND_URL}/contratos/${filtroContrato}`);
         if (cancelled) return;
         setContatosBD(data);
         setContratosMostrar(data); // para búsqueda
@@ -228,6 +229,7 @@ export default function AlquileresPage() {
         </div> 
         
         {/* Stats Summary */}
+        {filtroContrato !== 'no-vigentes' && (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-8">
           <StatCard
             title="Contratos Vigentes"
@@ -248,12 +250,15 @@ export default function AlquileresPage() {
             icon={<AlertCircle className="h-5 w-5 text-orange-500" />}
           />
         </div>
+        )}
         {/* Alquileres List */} 
         <div className="space-y-6"> 
           <div className="flex justify-between my-10">
             <div className="flex items-center justify-between"> 
               <h2 className="text-xl font-semibold font-sans">
-                {filtroContrato === 'vigentes' ? 'Contratos de Alquiler Vigentes' : 'Contratos próximos a vencer'}
+                {filtroContrato === 'vigentes' && 'Contratos de Alquiler Vigentes'}
+                {filtroContrato === 'proximos-vencer' && 'Contratos próximos a vencer'}
+                {filtroContrato === 'no-vigentes' && 'Contratos Inactivos'}
               </h2> 
             </div>
             <div className="flex items-center gap-4">
@@ -278,25 +283,35 @@ export default function AlquileresPage() {
             propiedadesBusqueda={["direccionInmueble", "nombrePropietario", "apellidoPropietario"]}
           />
 
-        <div className="grid gap-4">
-          {contratosMostrar?.map((contrato) => {
-            const isExpanded = vistaDetallada || expandedCard === contrato.id;
-            return (
-              <ContratoAlquilerCard
-                key={contrato.id}
-                contrato={contrato}
-                isExpanded={isExpanded}
-                onToggle={toggleCard}
-                alquileresPendientes={alquileresPendientes as unknown as { contratoId: number }[]}
-                loadingPendientes={loadingPendientes}
-                onRegistrarPago={handleAbrirModalPago}
-              />
-            );
-          })}
-        </div>
+        {filtroContrato !== 'no-vigentes' && (
+          <div className="grid gap-4">
+            {contratosMostrar?.map((contrato) => {
+              const isExpanded = vistaDetallada || expandedCard === contrato.id;
+              return (
+                <ContratoAlquilerCard
+                  key={contrato.id}
+                  contrato={contrato}
+                  isExpanded={isExpanded}
+                  onToggle={toggleCard}
+                  alquileresPendientes={alquileresPendientes as unknown as { contratoId: number }[]}
+                  loadingPendientes={loadingPendientes}
+                  onRegistrarPago={handleAbrirModalPago}
+                />
+              );
+            })}
+          </div>
+        )}
+
+        {filtroContrato === 'no-vigentes' && (
+          <div className="grid gap-6">
+            {contratosMostrar?.map((contrato) => (
+              <ContratoHistorialCard key={contrato.id} contrato={contrato} />
+            ))}
+          </div>
+        )}
 
         {/* Modal de Registro de Pago */}
-        {contratoSeleccionado && (
+        {filtroContrato !== 'no-vigentes' && contratoSeleccionado && (
           <ModalRegistrarPagoAlquiler
             open={modalPagoOpen}
             onOpenChange={setModalPagoOpen}
