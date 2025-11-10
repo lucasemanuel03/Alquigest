@@ -10,6 +10,7 @@ import { fetchWithToken } from '@/utils/functions/auth-functions/fetchWithToken'
 import { Skeleton } from '@/components/ui/skeleton'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
+import GraficoAumentosContrato from '@/components/informes/grafico-aumentos'
 
 interface AumentoItem {
 	aumentoId: number
@@ -217,6 +218,9 @@ export default function AumentosAlquileresPage() {
 									<CardContent className="pt-0">
 										<div className="space-y-3">
 											<h4 className="text-sm font-semibold">Historial de aumentos:</h4>
+											<div>
+												<GraficoAumentosContrato contrato={contrato} />
+											</div>
 											<div className="grid gap-2">
 												{contrato.aumentos.map(aumento => (
 													<div key={aumento.aumentoId} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-muted/50 rounded-md">
