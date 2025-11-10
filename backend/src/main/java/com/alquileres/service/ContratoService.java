@@ -450,7 +450,7 @@ public class ContratoService {
             
             // Verificar si la fecha de inicio es anterior a la fecha actual
             LocalDate fechaInicioDate = LocalDate.parse(fechas.fechaInicio, DateTimeFormatter.ISO_LOCAL_DATE);
-            LocalDate fechaActual = LocalDate.now();
+            LocalDate fechaActual = clockService.getCurrentDate();
             
             if (fechaInicioDate.isBefore(fechaActual)) {
                 // Si la fecha de inicio es anterior a hoy, generar alquileres retroactivos
@@ -945,7 +945,8 @@ public class ContratoService {
      * 
      * @param contrato Contrato a finalizar
      */
-    private void finalizarContrato(Contrato contrato) {
+    @CacheEvict(value = {"contratos", "contratos-por-vencer", "inmuebles", "inquilinos"}, allEntries = true)
+    public void finalizarContrato(Contrato contrato) {
         // Actualizar estado del inmueble a "Disponible"
         Optional<EstadoInmueble> estadoDisponible = 
             estadoInmuebleRepository.findByNombre("Disponible");
@@ -1293,14 +1294,14 @@ public class ContratoService {
             alquileresRetroactivos.add(primerAlquiler);
 
             // Iniciar desde el mes siguiente a la fecha de inicio
-            LocalDate mesIteracion = fechaInicio.plusMonths(1).withDayOfMonth(1);
+            LocalDate fechaIteracion = fechaInicio.plusMonths(1).withDayOfMonth(1);
 
             // Crear alquileres para cada mes hasta el mes actual (inclusive)
-            while (mesIteracion.getMonthValue() <= mesActual && mesIteracion.getYear() <= anioActual) {
+            while (fechaIteracion.getMonthValue() <= mesActual && fechaIteracion.getYear() <= anioActual) {
                 // Verificar si debe aplicar aumento en este mes
                 if (fechaProximoAumento != null && 
-                    (mesIteracion.getMonthValue() == fechaProximoAumento.getMonthValue() &&
-                     mesIteracion.getYear() == fechaProximoAumento.getYear())) {
+                    (fechaIteracion.getMonthValue() == fechaProximoAumento.getMonthValue() &&
+                     fechaIteracion.getYear() == fechaProximoAumento.getYear())) {
 
                     BigDecimal montoAnterior = montoActual;
                     LocalDate fechaSiguienteAumento = fechaProximoAumento.withDayOfMonth(1);
@@ -1311,7 +1312,7 @@ public class ContratoService {
                         montoActual = aplicarAumentoICL(contrato, montoAnterior, fechaUltimoAumento, fechaSiguienteAumento, aumentosRetroactivos);
                     } else {
                         // Aumento por porcentaje fijo
-                        montoActual = aplicarAumentoFijo(contrato, montoAnterior, mesIteracion, aumentosRetroactivos);
+                        montoActual = aplicarAumentoFijo(contrato, montoAnterior, fechaIteracion, aumentosRetroactivos);
                     }
                     
                     // Actualizar la fecha del último aumento
@@ -1319,13 +1320,14 @@ public class ContratoService {
 
                     // Calcular la siguiente fecha de aumento
                     fechaProximoAumento = calcularFechaProximoAumento(fechaProximoAumento, contrato.getPeriodoAumento());
-                    
+
+                    contrato.setFechaAumento(FechaUtil.convertirFechaISOToUsuario(fechaProximoAumento.format(DateTimeFormatter.ISO_LOCAL_DATE)));
                     logger.debug("Aumento aplicado en mes {}/{}: monto anterior={}, monto nuevo={}",
-                                mesIteracion.getMonthValue(), mesIteracion.getYear(), montoAnterior, montoActual);
+                                fechaIteracion.getMonthValue(), fechaIteracion.getYear(), montoAnterior, montoActual);
                 }
                 
                 // Crear alquiler para este mes con fecha de vencimiento día 10
-                LocalDate fechaVencimiento = mesIteracion.withDayOfMonth(10);
+                LocalDate fechaVencimiento = fechaIteracion.withDayOfMonth(10);
                 fechaVencimientoISO = fechaVencimiento.format(DateTimeFormatter.ISO_LOCAL_DATE);
 
                 Alquiler alquiler = new Alquiler(
@@ -1333,8 +1335,8 @@ public class ContratoService {
                 );
 
                 // Determinar si es el mes actual para marcarlo como NO pagado
-                boolean esMesActual = (mesIteracion.getMonthValue() == mesActual &&
-                                      mesIteracion.getYear() == anioActual);
+                boolean esMesActual = (fechaIteracion.getMonthValue() == mesActual &&
+                                      fechaIteracion.getYear() == anioActual);
 
                 if (esMesActual) {
                     // Alquiler del mes actual: NO está pagado
@@ -1355,7 +1357,7 @@ public class ContratoService {
 
 
                 // Avanzar al siguiente mes
-                mesIteracion = mesIteracion.plusMonths(1);
+                fechaIteracion = fechaIteracion.plusMonths(1);
             }
             
             // Guardar todos los alquileres retroactivos

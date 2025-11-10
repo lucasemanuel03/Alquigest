@@ -49,6 +49,8 @@ public class ContratoActualizacionService {
             // Obtener la fecha actual en formato ISO desde clockService
             String fechaActual = clockService.getCurrentDateTime().format(FORMATO_ISO_DATETIME);
 
+            logger.info("Fecha Actual: {}", fechaActual);
+
             // Buscar todos los contratos vigentes que ya vencieron
             List<Contrato> contratosVencidos = contratoRepository.findContratosVigentesVencidos(fechaActual);
 
