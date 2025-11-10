@@ -217,7 +217,7 @@ export default function AumentosAlquileresPage() {
 								{isExpanded && (
 									<CardContent className="pt-0">
 										<div className="space-y-3">
-											<h4 className="text-sm font-semibold">Historial de aumentos:</h4>
+											<h4 className="text-sm font-semibold">Historial de porcentajes de aumentos:</h4>
 											<div>
 												<GraficoAumentosContrato contrato={contrato} />
 											</div>
