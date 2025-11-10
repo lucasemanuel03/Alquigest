@@ -152,6 +152,7 @@ export function useNuevoContratoForm() {
       .map(servicio => ({
         tipoServicioId: servicio.tipoServicioId,
         nroCuenta: servicio.nroCuenta || "",
+        nroContratoServicio: servicio.nroContratoServicio || null,
         esDeInquilino: servicio.esDeInquilino,
         esActivo: servicio.esActivo,
         esAnual: servicio.esAnual,

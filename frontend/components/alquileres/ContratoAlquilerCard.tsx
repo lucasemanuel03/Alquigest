@@ -26,13 +26,13 @@ type Props = {
 };
 
 export default function ContratoAlquilerCard({
-  contrato,
-  isExpanded,
-  onToggle,
-  alquileresPendientes,
-  onRegistrarPago,
-  loadingPendientes = false,
-}: Props) {
+    contrato,
+    isExpanded,
+    onToggle,
+    alquileresPendientes,
+    onRegistrarPago,
+    loadingPendientes = false,
+  }: Props) {
   const estaPendiente = alquileresPendientes.some((a) => a.contratoId === contrato.id);
 
   const handleRegistrarPago = (e: MouseEvent) => {

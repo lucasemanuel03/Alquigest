@@ -21,7 +21,7 @@ import PDFContratoCard from "./pdf-contrato-card";
 import { useAuth } from "@/contexts/AuthProvider"
 
 
-export default function DetalleContratoPage(){
+export default function DetalleContratoPage({contratoDetallado} : {contratoDetallado?: ContratoDetallado}) {
 
     const { hasPermission, hasRole, user } = useAuth();
 
@@ -38,24 +38,31 @@ export default function DetalleContratoPage(){
     const [pdfErrMsg, setPdfErrMsg] = useState<string | null>(null);
     const [esVigente, setEsVigente] = useState(false);
 
+    
     useEffect(() => {
         const fetchContrato = async () => {
-            console.log("Ejecutando fetch de Contratos...");
-            try {
-                const data = await fetchWithToken(`${BACKEND_URL}/contratos/${id}`);
-                console.log("Datos parseados del backend:", data);
-                setContatoBD(data);
-
-                setEsVigente(data?.estadoContratoId === 1);
-                
-                // Si el contrato está rescindido (estadoContratoId === 3), cargar detalles de cancelación
-                if (data?.estadoContratoId === 3) {
-                    await fetchCancelacionDetalle(data.id);
-                }
-            } catch (err: any) {
-                console.error("Error al traer Contratos:", err.message);
-            } finally {
+            if(contratoDetallado !== undefined){
+                setContatoBD(contratoDetallado);
                 setLoading(false);
+            }
+            else{
+                console.log("Ejecutando fetch de Contratos...");
+                try {
+                    const data = await fetchWithToken(`${BACKEND_URL}/contratos/${id}`);
+                    console.log("Datos parseados del backend:", data);
+                    setContatoBD(data);
+    
+                    setEsVigente(data?.estadoContratoId === 1);
+                    
+                    // Si el contrato está rescindido (estadoContratoId === 3), cargar detalles de cancelación
+                    if (data?.estadoContratoId === 3) {
+                        await fetchCancelacionDetalle(data.id);
+                    }
+                } catch (err: any) {
+                    console.error("Error al traer Contratos:", err.message);
+                } finally {
+                    setLoading(false);
+                }
             }
         };
 

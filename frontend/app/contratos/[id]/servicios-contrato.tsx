@@ -50,6 +50,7 @@ export default function ServiciosContratoPage({esVigente, idContrato, fechaInici
                     <h2 className="text-xl font-bold text-foreground font-sans">Servicios Controlados</h2>
                 </div>
                 <ModalEditarServicios 
+                    serviciosActuales={serviciosContrato}
                     disabled={!esVigente}
                     contratoId={idContrato}
                     fechaInicioContrato={fechaInicioContrato || new Date().toISOString().split('T')[0]}

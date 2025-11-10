@@ -18,6 +18,7 @@ interface ModalEditarServiciosProps {
   fechaInicioContrato: string;
   onServiciosActualizados?: () => void;
   disabled: boolean;
+  serviciosActuales?: ServicioContrato[];
 }
 
 const serviciosInicial: ServicioContrato[] = [
@@ -28,10 +29,10 @@ const serviciosInicial: ServicioContrato[] = [
   { tipoServicioId: 5, nroCuenta: null, contratoId: null, nroContrato: '', esDeInquilino: true, esActivo: false, esAnual: true, fechaInicio: '', nroContratoServicio: null },  // Otros
 ];
 
-export default function ModalEditarServicios({ contratoId, fechaInicioContrato, onServiciosActualizados, disabled = false }: ModalEditarServiciosProps) {
+export default function ModalEditarServicios({ contratoId, fechaInicioContrato, onServiciosActualizados, disabled = false, serviciosActuales = [] }: ModalEditarServiciosProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [serviciosContrato, setServiciosContrato] = useState<ServicioContrato[]>(serviciosInicial);
-  const [serviciosOriginales, setServiciosOriginales] = useState<any[]>([]); // Para comparar cambios
+  const [serviciosOriginales, setServiciosOriginales] = useState<ServicioContrato[]>([]); // Para comparar cambios
   const [serviciosExistentesIds, setServiciosExistentesIds] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
   const [errorCarga, setErrorCarga] = useState("");
@@ -48,15 +49,11 @@ export default function ModalEditarServicios({ contratoId, fechaInicioContrato, 
 
   const fetchServiciosExistentes = async () => {
     try {
-      const data = await fetchWithToken(`${BACKEND_URL}/servicios-contrato/contrato/${contratoId}`);
-      console.log("Servicios existentes:", data);
-      
-      // Guardar los servicios originales para comparar después
-      setServiciosOriginales(data);
+      setServiciosOriginales(serviciosActuales);
       
       // Guardar los servicios existentes completos para tener sus IDs
       const serviciosExistentesMap = new Map(
-        data.map((s: any) => [s.tipoServicio.id, s])
+        serviciosActuales.map((s: any) => [s.tipoServicioId, s])
       );
       
       // Mapear los servicios existentes a la estructura del formulario
