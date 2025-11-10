@@ -26,7 +26,7 @@ export default function CardPages({
   disabled = false,
 }: Props) {
   const content = (
-    <Card className={`h-full transition-all duration-200 ${disabled ? '' : 'hover:shadow-lg'} ${borderClass} ${hoverBorderClass}`}>
+    <Card className={`h-full transition-all duration-200 shadow-md shadow-black/30 m-2 ${borderClass} ${hoverBorderClass}`}>
       <CardHeader className="text-center pb-4">
         <div className={`mx-auto mb-4 p-4 rounded-full w-fit transition-colors ${iconWrapperClass}`}>
           {icon}

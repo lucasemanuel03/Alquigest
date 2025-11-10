@@ -14,7 +14,7 @@ type Props = {
 
 export default function CardPagesSecundarias({ href, title, description, icon, disabled = false }: Props) {
   const content = (
-    <Card className={`h-full transition-all duration-200 ${disabled ? '' : 'hover:shadow-lg'} border border-border/60 hover:border-primary/40`}>
+    <Card className={`h-full transition-all duration-200 shadow-md shadow-black/30 m-2  border-2 border-border/90 hover:border-primary/60`}>
       <CardHeader className="text-center pb-3">
         <div className={`mx-auto mb-3 p-3 rounded-full w-fit bg-muted/40 ${disabled ? '' : 'group-hover:bg-muted/60'} transition-colors`}>{icon}</div>
         <CardTitle className="text-lg font-semibold">{title}</CardTitle>

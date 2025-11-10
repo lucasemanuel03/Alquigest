@@ -218,7 +218,7 @@ export default function HomePage() {
         </div>
 
   {/* Cards DATOS ACTUALES */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 mx-2">
           <EstadisticaCard
             titulo="Facturas Pendientes"
             valor={contadores.cantServiciosNoPagos}
@@ -257,7 +257,7 @@ export default function HomePage() {
         </div>
 
         {/* Botón modo edición */}
-        <div className="mb-3 flex justify-end">
+        <div className="mb-3 flex justify-end mr-2">
           <Button
             variant={editingLayout ? "secondary" : "outline"}
             onClick={() => {
@@ -293,7 +293,7 @@ export default function HomePage() {
 
         {/* Contenedor Swapy unificado */}
         <div
-          className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-7 ${editingLayout ? 'cursor-move' : ''}`}
+          className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 ${editingLayout ? 'cursor-move' : ''}`}
           ref={containerRef}
           data-swapy-container
         >
