@@ -183,11 +183,6 @@ public class AuthController {
         }
 
         try {
-            servicioActualizacionService.crearServiciosParaContratosVigentes();
-        } catch (Exception ignored) {
-        }
-
-        try {
             servicioActualizacionService.procesarPagosPendientes();
         } catch (Exception ignored) {
         }

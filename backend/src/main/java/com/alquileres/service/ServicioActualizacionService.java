@@ -1,12 +1,10 @@
 package com.alquileres.service;
 
-import com.alquileres.model.ConfiguracionPagoServicio;
 import com.alquileres.model.ConfiguracionSistema;
 import com.alquileres.model.PagoServicio;
 import com.alquileres.model.ServicioContrato;
 import com.alquileres.model.Contrato;
 import com.alquileres.model.TipoServicio;
-import com.alquileres.repository.ConfiguracionPagoServicioRepository;
 import com.alquileres.repository.ConfiguracionSistemaRepository;
 import com.alquileres.repository.PagoServicioRepository;
 import com.alquileres.repository.ContratoRepository;
@@ -24,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Servicio para la actualización automática de configuraciones de pago de servicios
+ * Servicio para la actualización automática de pagos de servicios
  * Genera automáticamente las facturas mensuales (PagoServicio)
  */
 @Service
@@ -39,9 +37,7 @@ public class ServicioActualizacionService {
      */
     private static final String CLAVE_ULTIMO_MES_PROCESADO = "ULTIMO_MES_PROCESADO_PAGOS_SERVICIOS";
 
-    private final ConfiguracionPagoServicioRepository configuracionPagoServicioRepository;
     private final PagoServicioRepository pagoServicioRepository;
-    private final ConfiguracionPagoServicioService configuracionPagoServicioService;
     private final ConfiguracionSistemaRepository configuracionSistemaRepository;
     private final ContratoRepository contratoRepository;
     private final TipoServicioRepository tipoServicioRepository;
@@ -49,17 +45,13 @@ public class ServicioActualizacionService {
     private final ClockService clockService;
 
     public ServicioActualizacionService(
-            ConfiguracionPagoServicioRepository configuracionPagoServicioRepository,
             PagoServicioRepository pagoServicioRepository,
-            ConfiguracionPagoServicioService configuracionPagoServicioService,
             ConfiguracionSistemaRepository configuracionSistemaRepository,
             ContratoRepository contratoRepository,
             TipoServicioRepository tipoServicioRepository,
             ServicioContratoRepository servicioContratoRepository,
             ClockService clockService) {
-        this.configuracionPagoServicioRepository = configuracionPagoServicioRepository;
         this.pagoServicioRepository = pagoServicioRepository;
-        this.configuracionPagoServicioService = configuracionPagoServicioService;
         this.configuracionSistemaRepository = configuracionSistemaRepository;
         this.contratoRepository = contratoRepository;
         this.tipoServicioRepository = tipoServicioRepository;
@@ -67,9 +59,10 @@ public class ServicioActualizacionService {
         this.clockService = clockService;
     }
 
+
     /**
-     * Procesa todas las configuraciones activas que tienen pagos pendientes de generar
-     * Se ejecuta al iniciar sesión y diariamente a las 00:01
+     * Procesa todos los servicios activos que tienen pagos pendientes de generar
+     * Se ejecuta al iniciar sesión
      * Solo procesa si el mes actual es diferente al último mes procesado (guardado en BD)
      *
      * @return Cantidad de facturas generadas
@@ -79,8 +72,8 @@ public class ServicioActualizacionService {
         try {
             logger.info("=== INICIO procesarPagosPendientes ===");
 
-            // Obtener el mes/ano actual
-            String mesActual = YearMonth.now().format(DateTimeFormatter.ofPattern("MM/yyyy"));
+            // Obtener el mes/año actual desde clockService
+            String mesActual = YearMonth.from(clockService.getCurrentDate()).format(DateTimeFormatter.ofPattern("MM/yyyy"));
             logger.info("Mes actual: {}", mesActual);
 
             // Obtener el último mes procesado desde la base de datos
@@ -95,52 +88,41 @@ public class ServicioActualizacionService {
 
             logger.info("Iniciando procesamiento de facturas de servicios pendientes para el mes {}", mesActual);
 
-            // Obtener la fecha actual en formato ISO
-            String fechaActual = clockService.getCurrentDate().format(FORMATO_FECHA);
-            logger.info("Fecha actual (ISO): {}", fechaActual);
+            // Obtener la fecha actual
+            LocalDate fechaActual = clockService.getCurrentDate();
+            logger.info("Fecha actual: {}", fechaActual);
 
-            // DEBUG: Mostrar todas las configuraciones activas
-            List<ConfiguracionPagoServicio> todasLasConfiguraciones =
-                configuracionPagoServicioRepository.findByEsActivo(true);
-            logger.info("Total de configuraciones activas: {}", todasLasConfiguraciones.size());
-            for (ConfiguracionPagoServicio config : todasLasConfiguraciones) {
-                logger.debug("Generando pago para configuración ID: {}, Servicio ID: {}, Próximo pago: {}",
-                           config.getId(),
-                           config.getServicioContrato().getId(),
-                           config.getProximoPago());
-            }
+            // Buscar todos los servicios activos con pagos pendientes
+            List<ServicioContrato> serviciosPendientes =
+                servicioContratoRepository.findServiciosConPagosPendientes(fechaActual);
 
-            // Buscar todas las configuraciones con pagos pendientes
-            List<ConfiguracionPagoServicio> configuracionesPendientes =
-                configuracionPagoServicioRepository.findConfiguracionesConPagosPendientes(fechaActual);
+            logger.info("Servicios pendientes encontrados: {}", serviciosPendientes.size());
 
-            logger.info("Configuraciones pendientes encontradas: {}", configuracionesPendientes.size());
-
-            if (configuracionesPendientes.isEmpty()) {
-                logger.info("No se encontraron facturas de servicios pendientes para generar");
+            if (serviciosPendientes.isEmpty()) {
+                logger.info("No se encontraron servicios con pagos pendientes para generar");
                 // Actualizar el último mes procesado aunque no haya facturas
                 actualizarUltimoMesProcesado(mesActual);
                 return 0;
             }
 
             int facturasGeneradas = 0;
-            for (ConfiguracionPagoServicio configuracion : configuracionesPendientes) {
+            for (ServicioContrato servicio : serviciosPendientes) {
                 try {
-                    logger.info("Procesando configuración ID: {}, proximoPago: {}",
-                               configuracion.getId(), configuracion.getProximoPago());
+                    logger.info("Procesando servicio ID: {}, proximoPago: {}",
+                               servicio.getId(), servicio.getProximoPago());
 
                     // Generar la nueva factura para este período
-                    boolean generado = generarFacturaParaPeriodo(configuracion);
+                    boolean generado = generarFacturaParaServicio(servicio);
 
                     if (generado) {
                         facturasGeneradas++;
-                        logger.info("Factura generada para configuración ID: {}", configuracion.getId());
+                        logger.info("Factura generada para servicio ID: {}", servicio.getId());
                     }
 
                 } catch (Exception e) {
-                    logger.error("Error al procesar configuración ID {}: {}",
-                                configuracion.getId(), e.getMessage(), e);
-                    // Continuar con la siguiente configuración
+                    logger.error("Error al procesar servicio ID {}: {}",
+                                servicio.getId(), e.getMessage(), e);
+                    // Continuar con el siguiente servicio
                 }
             }
 
@@ -159,6 +141,7 @@ public class ServicioActualizacionService {
         }
     }
 
+
     /**
      * Obtiene el último mes procesado desde la base de datos
      *
@@ -171,7 +154,6 @@ public class ServicioActualizacionService {
 
     /**
      * Actualiza el último mes procesado en la base de datos
-     * Usa una transacción nueva e independiente para evitar bloqueos con SQLite
      *
      * @param mesActual El mes actual en formato MM/yyyy
      */
@@ -198,41 +180,33 @@ public class ServicioActualizacionService {
             }
         } catch (Exception e) {
             logger.error("Error al actualizar último mes procesado: {}", e.getMessage(), e);
-            // No lanzamos la excepción para evitar que falle todo el proceso
         }
     }
 
     /**
-     * Genera una nueva factura (PagoServicio) para el período correspondiente
-     * y actualiza la configuración con el próximo pago
+     * Genera una factura (PagoServicio) para el servicio en el período especificado
      *
-     * @param configuracion La configuración de pago
+     * @param servicio El servicio de contrato
      * @return true si se generó la factura, false si ya existía o hubo error
      */
-    protected boolean generarFacturaParaPeriodo(ConfiguracionPagoServicio configuracion) {
+    protected boolean generarFacturaParaServicio(ServicioContrato servicio) {
         try {
-            ServicioContrato servicio = configuracion.getServicioContrato();
-
             // Verificar que el servicio esté activo
             if (!Boolean.TRUE.equals(servicio.getEsActivo())) {
-                logger.warn("El servicio ID {} no está activo. Desactivando configuración.",
-                           servicio.getId());
-                configuracionPagoServicioService.desactivarConfiguracion(configuracion.getId());
+                logger.warn("El servicio ID {} no está activo.", servicio.getId());
                 return false;
             }
 
             // Calcular el período en formato mm/aaaa
-            String periodo = calcularPeriodo(configuracion.getProximoPago());
+            String periodo = servicio.getProximoPago().format(FORMATO_PERIODO);
 
             // Verificar si ya existe una factura para este servicio y período
             if (pagoServicioRepository.existsByServicioContratoIdAndPeriodo(servicio.getId(), periodo)) {
                 logger.debug("Ya existe una factura para el período {} del servicio ID: {}",
                             periodo, servicio.getId());
 
-                // Actualizar la configuración aunque ya exista la factura
-                configuracionPagoServicioService.actualizarDespuesDeGenerarPago(
-                    configuracion, configuracion.getProximoPago());
-
+                // Actualizar el servicio aunque ya exista la factura
+                actualizarFechasServicio(servicio);
                 return false;
             }
 
@@ -251,36 +225,36 @@ public class ServicioActualizacionService {
                        periodo, servicio.getTipoServicio().getNombre(),
                        servicio.getContrato().getId());
 
-            // Actualizar la configuración con la nueva fecha de próximo pago
-            configuracionPagoServicioService.actualizarDespuesDeGenerarPago(
-                configuracion, configuracion.getProximoPago());
+            // Actualizar las fechas del servicio
+            actualizarFechasServicio(servicio);
 
             return true;
 
         } catch (Exception e) {
-            logger.error("Error al generar factura para configuración ID {}: {}",
-                        configuracion.getId(), e.getMessage(), e);
+            logger.error("Error al generar factura para servicio ID {}: {}",
+                        servicio.getId(), e.getMessage(), e);
             return false;
         }
     }
 
     /**
-     * Calcula el período en formato mm/aaaa a partir de una fecha ISO
-     *
-     * @param fechaISO Fecha en formato ISO (yyyy-MM-dd)
-     * @return Período en formato mm/aaaa
+     * Actualiza las fechas de último y próximo pago de un servicio
      */
-    private String calcularPeriodo(String fechaISO) {
-        try {
-            LocalDate fecha = LocalDate.parse(fechaISO, FORMATO_FECHA);
-            return fecha.format(FORMATO_PERIODO);
-        } catch (Exception e) {
-            logger.error("Error al calcular período desde fecha: {}", fechaISO, e);
-            // En caso de error, retornar formato actual
-            return clockService.getCurrentDate().format(FORMATO_PERIODO);
-        }
-    }
+    private void actualizarFechasServicio(ServicioContrato servicio) {
+        LocalDate proximoPago = servicio.getProximoPago();
+        servicio.setUltimoPagoGenerado(proximoPago);
 
+        // Calcular el próximo pago según si es anual o mensual
+        LocalDate nuevoProximoPago = servicio.getEsAnual()
+            ? proximoPago.plusYears(1)
+            : proximoPago.plusMonths(1);
+
+        servicio.setProximoPago(nuevoProximoPago);
+        servicioContratoRepository.save(servicio);
+
+        logger.debug("Fechas actualizadas para servicio ID={}: último={}, próximo={}",
+                    servicio.getId(), proximoPago, nuevoProximoPago);
+    }
 
     /**
      * Fuerza el procesamiento de pagos independientemente del mes
@@ -312,66 +286,55 @@ public class ServicioActualizacionService {
     }
 
     /**
-     * Genera pagos pendientes para una configuración específica recién creada
-     * Este método genera todos los pagos desde la fecha de inicio hasta el mes actual
+     * Genera pagos pendientes para un servicio específico
      *
-     * @param configuracionId ID de la configuración de pago
+     * @param servicioId ID del servicio
      * @return Cantidad de pagos generados
      */
     @Transactional
-    public int generarPagosPendientesParaConfiguracion(Integer configuracionId) {
+    public int generarPagosPendientesParaServicio(Integer servicioId) {
         try {
-            logger.info("Generando pagos pendientes para configuración ID: {}", configuracionId);
+            logger.info("Generando pagos pendientes para servicio ID: {}", servicioId);
 
-            Optional<ConfiguracionPagoServicio> configOpt =
-                configuracionPagoServicioRepository.findById(configuracionId);
+            Optional<ServicioContrato> servicioOpt = servicioContratoRepository.findById(servicioId);
 
-            if (configOpt.isEmpty()) {
-                logger.warn("Configuración no encontrada con ID: {}", configuracionId);
+            if (servicioOpt.isEmpty()) {
+                logger.warn("Servicio no encontrado con ID: {}", servicioId);
                 return 0;
             }
 
-            ConfiguracionPagoServicio configuracion = configOpt.get();
+            ServicioContrato servicio = servicioOpt.get();
 
             // Verificar que el servicio esté activo
-            if (!Boolean.TRUE.equals(configuracion.getServicioContrato().getEsActivo())) {
-                logger.warn("El servicio del configuración ID {} no está activo. No se generarán pagos.", configuracionId);
+            if (!Boolean.TRUE.equals(servicio.getEsActivo())) {
+                logger.warn("El servicio ID {} no está activo. No se generarán pagos.", servicioId);
                 return 0;
             }
 
-            String fechaActual = clockService.getCurrentDate().format(FORMATO_FECHA);
+            LocalDate fechaActual = clockService.getCurrentDate();
             int pagosGenerados = 0;
 
             // Generar pagos mientras el próximo pago sea menor o igual a la fecha actual
-            while (configuracion.getProximoPago() != null &&
-                   configuracion.getProximoPago().compareTo(fechaActual) <= 0) {
+            while (servicio.getProximoPago() != null &&
+                   !servicio.getProximoPago().isAfter(fechaActual)) {
 
-                boolean generado = generarFacturaParaPeriodo(configuracion);
+                boolean generado = generarFacturaParaServicio(servicio);
 
                 if (generado) {
                     pagosGenerados++;
                 }
 
-                // Recargar la configuración para obtener el próximo pago actualizado
-                configuracion = configuracionPagoServicioRepository.findById(configuracionId)
-                    .orElse(configuracion);
-
-                // Verificar si hay fechaFin y si ya se pasó
-                if (configuracion.getFechaFin() != null &&
-                    configuracion.getProximoPago().compareTo(configuracion.getFechaFin()) > 0) {
-                    logger.info("Se alcanzó la fecha fin. Desactivando configuración ID: {}", configuracionId);
-                    configuracionPagoServicioService.desactivarConfiguracion(configuracionId);
-                    break;
-                }
+                // Recargar el servicio para obtener el próximo pago actualizado
+                servicio = servicioContratoRepository.findById(servicioId).orElse(servicio);
             }
 
-            logger.info("Pagos pendientes generados para configuración ID {}: {} pagos",
-                       configuracionId, pagosGenerados);
+            logger.info("Pagos pendientes generados para servicio ID {}: {} pagos",
+                       servicioId, pagosGenerados);
             return pagosGenerados;
 
         } catch (Exception e) {
-            logger.error("Error al generar pagos pendientes para configuración ID {}: {}",
-                        configuracionId, e.getMessage(), e);
+            logger.error("Error al generar pagos pendientes para servicio ID {}: {}",
+                        servicioId, e.getMessage(), e);
             return 0;
         }
     }
@@ -381,24 +344,22 @@ public class ServicioActualizacionService {
      * Este método fuerza la creación del pago del mes actual independientemente del estado del sistema
      * Útil para cuando se crea un nuevo contrato después de que el sistema ya procesó el mes
      *
-     * @param configuracionId ID de la configuración de pago
+     * @param servicioId ID del servicio
      * @return true si se generó el pago, false en caso contrario
      */
     @Transactional
-    public boolean generarPagoMesActualParaNuevoServicio(Integer configuracionId) {
+    public boolean generarPagoMesActualParaNuevoServicio(Integer servicioId) {
         try {
-            logger.info("Forzando generación de pago del mes actual para configuración ID: {}", configuracionId);
+            logger.info("Forzando generación de pago del mes actual para servicio ID: {}", servicioId);
 
-            Optional<ConfiguracionPagoServicio> configOpt =
-                configuracionPagoServicioRepository.findById(configuracionId);
+            Optional<ServicioContrato> servicioOpt = servicioContratoRepository.findById(servicioId);
 
-            if (configOpt.isEmpty()) {
-                logger.warn("Configuración no encontrada con ID: {}", configuracionId);
+            if (servicioOpt.isEmpty()) {
+                logger.warn("Servicio no encontrado con ID: {}", servicioId);
                 return false;
             }
 
-            ConfiguracionPagoServicio configuracion = configOpt.get();
-            ServicioContrato servicio = configuracion.getServicioContrato();
+            ServicioContrato servicio = servicioOpt.get();
 
             // Verificar que el servicio esté activo
             if (!Boolean.TRUE.equals(servicio.getEsActivo())) {
@@ -433,108 +394,9 @@ public class ServicioActualizacionService {
             return true;
 
         } catch (Exception e) {
-            logger.error("Error al generar pago del mes actual para configuración ID {}: {}",
-                        configuracionId, e.getMessage(), e);
+            logger.error("Error al generar pago del mes actual para servicio ID {}: {}",
+                        servicioId, e.getMessage(), e);
             return false;
-        }
-    }
-
-    /**
-     * Crea automáticamente servicios y sus configuraciones para todos los contratos vigentes
-     * que no tengan servicios configurados.
-     * Se ejecuta al iniciar sesión para asegurar que todos los contratos tengan sus servicios.
-     * OPTIMIZADO: Usa batch processing y reduce queries a BD
-     *
-     * @return Cantidad de servicios creados
-     */
-    @Transactional
-    public int crearServiciosParaContratosVigentes() {
-        try {
-            logger.info("Iniciando creacion automatica de servicios para contratos vigentes");
-
-            // Obtener todos los contratos vigentes
-            List<Contrato> contratosVigentes = contratoRepository.findContratosVigentes();
-
-            if (contratosVigentes.isEmpty()) {
-                logger.info("No se encontraron contratos vigentes");
-                return 0;
-            }
-
-            logger.info("Se encontraron {} contratos vigentes", contratosVigentes.size());
-
-            // Obtener todos los tipos de servicio disponibles
-            List<TipoServicio> tiposServicio = tipoServicioRepository.findAll();
-
-            if (tiposServicio.isEmpty()) {
-                logger.warn("No hay tipos de servicio configurados en el sistema");
-                return 0;
-            }
-
-            // OPTIMIZACIÓN: Obtener TODOS los servicios existentes de una sola vez
-            List<ServicioContrato> todosLosServicios = servicioContratoRepository.findAll();
-
-            int serviciosCreados = 0;
-            String fechaActual = clockService.getCurrentDate().format(FORMATO_FECHA);
-
-            // Listas para batch processing
-            List<ServicioContrato> serviciosACrear = new java.util.ArrayList<>();
-            List<ConfiguracionPagoServicio> configuracionesACrear = new java.util.ArrayList<>();
-
-            // Para cada contrato vigente
-            for (Contrato contrato : contratosVigentes) {
-                // OPTIMIZACIÓN: Filtrar en memoria en lugar de BD
-                // Solo considerar servicios activos (esActivo=true)
-                boolean tieneServicios = todosLosServicios.stream()
-                    .anyMatch(s -> s.getContrato().getId().equals(contrato.getId())
-                        && Boolean.TRUE.equals(s.getEsActivo()));
-
-                // Si el contrato no tiene servicios, crear uno para cada tipo
-                if (!tieneServicios) {
-                    for (TipoServicio tipoServicio : tiposServicio) {
-                        // Crear el ServicioContrato
-                        ServicioContrato nuevoServicio = new ServicioContrato();
-                        nuevoServicio.setContrato(contrato);
-                        nuevoServicio.setTipoServicio(tipoServicio);
-                        nuevoServicio.setEsDeInquilino(false);
-                        nuevoServicio.setEsAnual(false);
-                        nuevoServicio.setEsActivo(true);
-
-                        serviciosACrear.add(nuevoServicio);
-                        serviciosCreados++;
-                    }
-                }
-            }
-
-            // OPTIMIZACIÓN: Guardar todos los servicios de una sola vez (batch)
-            if (!serviciosACrear.isEmpty()) {
-                List<ServicioContrato> serviciosGuardados = servicioContratoRepository.saveAll(serviciosACrear);
-                logger.info("Se guardaron {} servicios en batch", serviciosGuardados.size());
-
-                // Crear configuraciones para los servicios guardados
-                for (ServicioContrato servicio : serviciosGuardados) {
-                    try {
-                        ConfiguracionPagoServicio configuracion =
-                            configuracionPagoServicioService.crearConfiguracion(servicio, fechaActual);
-                        configuracionesACrear.add(configuracion);
-                    } catch (Exception e) {
-                        logger.error("Error al crear configuración para servicio ID {}: {}",
-                                   servicio.getId(), e.getMessage());
-                    }
-                }
-
-                // Guardar todas las configuraciones de una sola vez (batch)
-                if (!configuracionesACrear.isEmpty()) {
-                    configuracionPagoServicioRepository.saveAll(configuracionesACrear);
-                    logger.info("Se guardaron {} configuraciones de pago en batch", configuracionesACrear.size());
-                }
-            }
-
-            logger.info("Creacion automatica completada. Total de servicios creados: {}", serviciosCreados);
-            return serviciosCreados;
-
-        } catch (Exception e) {
-            logger.error("Error al crear servicios para contratos vigentes: {}", e.getMessage(), e);
-            return 0;
         }
     }
 }

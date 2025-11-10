@@ -2,11 +2,12 @@ package com.alquileres.service;
 
 import com.alquileres.exception.BusinessException;
 import com.alquileres.exception.ErrorCodes;
-import com.alquileres.model.ConfiguracionPagoServicio;
 import com.alquileres.model.Contrato;
+import com.alquileres.model.PagoServicio;
 import com.alquileres.model.ServicioContrato;
 import com.alquileres.model.TipoServicio;
 import com.alquileres.repository.ContratoRepository;
+import com.alquileres.repository.PagoServicioRepository;
 import com.alquileres.repository.ServicioContratoRepository;
 import com.alquileres.repository.TipoServicioRepository;
 import org.slf4j.Logger;
@@ -25,11 +26,12 @@ public class ServicioContratoService {
 
     private static final Logger logger = LoggerFactory.getLogger(ServicioContratoService.class);
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ISO_LOCAL_DATE;
+    private static final DateTimeFormatter FORMATO_PERIODO = DateTimeFormatter.ofPattern("MM/yyyy");
 
     private final ServicioContratoRepository servicioContratoRepository;
     private final ContratoRepository contratoRepository;
     private final TipoServicioRepository tipoServicioRepository;
-    private final ConfiguracionPagoServicioService configuracionPagoServicioService;
+    private final PagoServicioRepository pagoServicioRepository;
     private final ServicioActualizacionService servicioActualizacionService;
     private final ClockService clockService;
 
@@ -37,13 +39,13 @@ public class ServicioContratoService {
             ServicioContratoRepository servicioContratoRepository,
             ContratoRepository contratoRepository,
             TipoServicioRepository tipoServicioRepository,
-            ConfiguracionPagoServicioService configuracionPagoServicioService,
+            PagoServicioRepository pagoServicioRepository,
             ServicioActualizacionService servicioActualizacionService,
             ClockService clockService) {
         this.servicioContratoRepository = servicioContratoRepository;
         this.contratoRepository = contratoRepository;
         this.tipoServicioRepository = tipoServicioRepository;
-        this.configuracionPagoServicioService = configuracionPagoServicioService;
+        this.pagoServicioRepository = pagoServicioRepository;
         this.servicioActualizacionService = servicioActualizacionService;
         this.clockService = clockService;
     }
@@ -86,11 +88,20 @@ public class ServicioContratoService {
      * @param fechaInicio Fecha de inicio del servicio
      * @return El servicio creado
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public ServicioContrato crearServicioCompleto(Long contratoId, Integer tipoServicioId,
                                                   String nroCuenta, String nroContrato, String nroContratoServicio,
                                                   Boolean esDeInquilino, Boolean esAnual,
                                                   String fechaInicio) {
+        logger.info("=== CREANDO SERVICIO COMPLETO ===");
+        logger.info("ContratoId: {}", contratoId);
+        logger.info("TipoServicioId: {}", tipoServicioId);
+        logger.info("NroCuenta: {}", nroCuenta);
+        logger.info("NroContrato: {}", nroContrato);
+        logger.info("NroContratoServicio: {}", nroContratoServicio);
+        logger.info("EsDeInquilino: {}", esDeInquilino);
+        logger.info("EsAnual: {}", esAnual);
+        logger.info("FechaInicio: {}", fechaInicio);
+
         Contrato contrato = contratoRepository.findById(contratoId)
                 .orElseThrow(() -> new BusinessException(
                         ErrorCodes.CONTRATO_NO_ENCONTRADO,
@@ -113,8 +124,10 @@ public class ServicioContratoService {
                             HttpStatus.CONFLICT);
                 });
 
-        // Crear el servicio
-        ServicioContrato servicio = new ServicioContrato(contrato, tipoServicio);
+        // Crear el servicio con todos los datos
+        ServicioContrato servicio = new ServicioContrato();
+        servicio.setContrato(contrato);
+        servicio.setTipoServicio(tipoServicio);
         servicio.setNroCuenta(nroCuenta);
         servicio.setNroContrato(nroContrato);
         servicio.setNroContratoServicio(nroContratoServicio);
@@ -122,26 +135,39 @@ public class ServicioContratoService {
         servicio.setEsAnual(esAnual != null ? esAnual : false);
         servicio.setEsActivo(true);
 
+        logger.info("Servicio antes de guardar - NroCuenta: {}, NroContrato: {}, NroContratoServicio: {}",
+                   servicio.getNroCuenta(), servicio.getNroContrato(), servicio.getNroContratoServicio());
+
         // Guardar el servicio
         ServicioContrato servicioGuardado = servicioContratoRepository.save(servicio);
-        logger.info("Servicio creado - Contrato ID: {}, Tipo: {}, Mensual: {}",
-                   contratoId, tipoServicio.getNombre(), !servicio.getEsAnual());
+        logger.info("Servicio guardado ID: {} - NroCuenta: {}, NroContrato: {}, NroContratoServicio: {}",
+                   servicioGuardado.getId(), servicioGuardado.getNroCuenta(),
+                   servicioGuardado.getNroContrato(), servicioGuardado.getNroContratoServicio());
 
-        // Crear la configuración de pago automática
+        // Inicializar fechas de pago
         String fechaInicioFinal = fechaInicio != null ? fechaInicio : clockService.getCurrentDate().format(FORMATO_FECHA);
-        ConfiguracionPagoServicio configuracion = configuracionPagoServicioService.crearConfiguracion(servicioGuardado, fechaInicioFinal);
-        logger.info("Configuración de pago creada para servicio ID: {}", servicioGuardado.getId());
+        LocalDate fechaInicioPago = LocalDate.parse(fechaInicioFinal, FORMATO_FECHA);
+        servicioGuardado.setUltimoPagoGenerado(fechaInicioPago);
+
+        // Calcular próximo pago
+        LocalDate proximoPago = servicio.getEsAnual()
+            ? fechaInicioPago.plusYears(1)
+            : fechaInicioPago.plusMonths(1);
+        servicioGuardado.setProximoPago(proximoPago);
+
+        servicioContratoRepository.save(servicioGuardado);
+        logger.info("Fechas de pago inicializadas para servicio ID: {}", servicioGuardado.getId());
 
         // Generar automáticamente los pagos pendientes hasta la fecha actual
         try {
-            int pagosGenerados = servicioActualizacionService.generarPagosPendientesParaConfiguracion(configuracion.getId());
+            int pagosGenerados = servicioActualizacionService.generarPagosPendientesParaServicio(servicioGuardado.getId());
             logger.info("Pagos pendientes generados automáticamente para servicio ID {}: {} pagos",
                        servicioGuardado.getId(), pagosGenerados);
 
             // Si no se generó ningún pago (porque el sistema ya procesó el mes actual),
             // forzar la creación del pago del mes actual para este nuevo servicio
             if (pagosGenerados == 0) {
-                boolean pagoActualGenerado = servicioActualizacionService.generarPagoMesActualParaNuevoServicio(configuracion.getId());
+                boolean pagoActualGenerado = servicioActualizacionService.generarPagoMesActualParaNuevoServicio(servicioGuardado.getId());
                 if (pagoActualGenerado) {
                     logger.info("Pago del mes actual forzado para el nuevo servicio ID: {}", servicioGuardado.getId());
                 }
@@ -195,10 +221,6 @@ public class ServicioContratoService {
         servicio.setEsActivo(false);
         servicioContratoRepository.save(servicio);
 
-        // Desactivar también la configuración de pago
-        configuracionPagoServicioService.obtenerPorServicioContrato(servicioId)
-                .ifPresent(config -> configuracionPagoServicioService.desactivarConfiguracion(config.getId()));
-
         logger.info("Servicio desactivado: ID={}", servicioId);
     }
 
@@ -225,21 +247,18 @@ public class ServicioContratoService {
                         HttpStatus.NOT_FOUND));
 
         servicio.setEsActivo(true);
+
+        // Actualizar fechas de pago
+        LocalDate fechaInicio = LocalDate.parse(nuevaFechaInicio, FORMATO_FECHA);
+        servicio.setUltimoPagoGenerado(fechaInicio);
+
+        LocalDate proximoPago = servicio.getEsAnual()
+            ? fechaInicio.plusYears(1)
+            : fechaInicio.plusMonths(1);
+        servicio.setProximoPago(proximoPago);
+
         servicioContratoRepository.save(servicio);
 
-        // Verificar si existe configuración
-        var configOpt = configuracionPagoServicioService.obtenerPorServicioContrato(servicioId);
-
-        if (configOpt.isPresent()) {
-            // Reactivar configuración existente
-            ConfiguracionPagoServicio config = configOpt.get();
-            config.setEsActivo(true);
-            config.setFechaInicio(nuevaFechaInicio);
-            // La configuración se actualiza a través del service
-        } else {
-            // Crear nueva configuración
-            configuracionPagoServicioService.crearConfiguracion(servicio, nuevaFechaInicio);
-        }
 
         logger.info("Servicio reactivado ID: {}", servicioId);
     }
@@ -334,5 +353,74 @@ public class ServicioContratoService {
         });
         logger.info("Todos los servicios desactivados para contrato ID={}", contratoId);
     }
-}
 
+    /**
+     * Crea todos los servicios y pagos de servicios para un nuevo contrato
+     * Se crea un servicio por cada tipo disponible y un pago del mes actual
+     */
+    @Transactional
+    public void crearServiciosYPagosParaNuevoContrato(Contrato contrato) {
+        try {
+            logger.info("Creando servicios y pagos para nuevo contrato ID: {}", contrato.getId());
+
+            // Obtener todos los tipos de servicio disponibles
+            List<TipoServicio> tiposServicio = tipoServicioRepository.findAll();
+
+            if (tiposServicio.isEmpty()) {
+                logger.warn("No hay tipos de servicio configurados en el sistema");
+                return;
+            }
+
+            LocalDate fechaActual = clockService.getCurrentDate();
+            String periodoActual = fechaActual.format(FORMATO_PERIODO);
+
+            int serviciosCreados = 0;
+            int pagosCreados = 0;
+
+            // Crear un servicio por cada tipo disponible
+            for (TipoServicio tipoServicio : tiposServicio) {
+                try {
+                    // Crear el ServicioContrato
+                    ServicioContrato nuevoServicio = new ServicioContrato();
+                    nuevoServicio.setContrato(contrato);
+                    nuevoServicio.setTipoServicio(tipoServicio);
+                    nuevoServicio.setEsDeInquilino(false);
+                    nuevoServicio.setEsAnual(false);
+                    nuevoServicio.setEsActivo(true);
+
+                    // Inicializar fechas de pago
+                    nuevoServicio.setUltimoPagoGenerado(fechaActual);
+                    nuevoServicio.setProximoPago(fechaActual.plusMonths(1));
+
+                    ServicioContrato servicioGuardado = servicioContratoRepository.save(nuevoServicio);
+                    serviciosCreados++;
+
+                    // Crear el PagoServicio del mes actual
+                    PagoServicio pagoServicio = new PagoServicio();
+                    pagoServicio.setServicioContrato(servicioGuardado);
+                    pagoServicio.setPeriodo(periodoActual);
+                    pagoServicio.setEstaPagado(false);
+                    pagoServicio.setEstaVencido(false);
+
+                    pagoServicioRepository.save(pagoServicio);
+                    pagosCreados++;
+
+                    logger.debug("Servicio y pago creados - Contrato ID: {}, Tipo: {}",
+                               contrato.getId(), tipoServicio.getNombre());
+
+                } catch (Exception e) {
+                    logger.error("Error al crear servicio tipo {} para contrato ID {}: {}",
+                                tipoServicio.getNombre(), contrato.getId(), e.getMessage());
+                }
+            }
+
+            logger.info("Servicios y pagos creados para contrato ID: {} - {} servicios, {} pagos",
+                       contrato.getId(), serviciosCreados, pagosCreados);
+
+        } catch (Exception e) {
+            logger.error("Error al crear servicios para contrato ID {}: {}",
+                        contrato.getId(), e.getMessage(), e);
+            // No lanzamos la excepción para no afectar la creación del contrato
+        }
+    }
+}

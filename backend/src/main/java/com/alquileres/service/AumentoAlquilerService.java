@@ -29,6 +29,9 @@ public class AumentoAlquilerService {
     @Autowired
     private ContratoRepository contratoRepository;
 
+    @Autowired
+    private ClockService clockService;
+
     /**
      * Obtener el historial completo de aumentos de un contrato
      */
@@ -145,12 +148,12 @@ public class AumentoAlquilerService {
 
         AumentoAlquiler aumento = new AumentoAlquiler();
         aumento.setContrato(contrato);
-        aumento.setFechaAumento(LocalDate.now().toString());
+        aumento.setFechaAumento(clockService.getCurrentDate().toString());
         aumento.setMontoAnterior(montoAnterior);
         aumento.setMontoNuevo(montoNuevo);
         aumento.setPorcentajeAumento(porcentajeAumento != null ? porcentajeAumento : BigDecimal.ZERO);
         aumento.setDescripcion("Aumento automático registrado");
-        aumento.setCreatedAt(LocalDateTime.now().toString());
+        aumento.setCreatedAt(clockService.getCurrentDateTime().toString());
 
         AumentoAlquiler aumentoGuardado = aumentoAlquilerRepository.save(aumento);
         return new AumentoAlquilerDTO(aumentoGuardado);
@@ -214,12 +217,12 @@ public class AumentoAlquilerService {
                                                    BigDecimal montoNuevo, BigDecimal porcentajeAumento) {
         AumentoAlquiler aumento = new AumentoAlquiler();
         aumento.setContrato(contrato);
-        aumento.setFechaAumento(LocalDate.now().toString());
+        aumento.setFechaAumento(clockService.getCurrentDate().toString());
         aumento.setMontoAnterior(montoAnterior);
         aumento.setMontoNuevo(montoNuevo);
         aumento.setPorcentajeAumento(porcentajeAumento != null ? porcentajeAumento : BigDecimal.ZERO);
         aumento.setDescripcion("Aumento automático registrado");
-        aumento.setCreatedAt(LocalDateTime.now().toString());
+        aumento.setCreatedAt(clockService.getCurrentDateTime().toString());
         return aumento;
     }
 

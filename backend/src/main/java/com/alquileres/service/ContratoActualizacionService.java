@@ -24,11 +24,17 @@ public class ContratoActualizacionService {
     private static final Logger logger = LoggerFactory.getLogger(ContratoActualizacionService.class);
     private static final DateTimeFormatter FORMATO_ISO_DATETIME = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
-    @Autowired
-    private ContratoRepository contratoRepository;
+    private final ContratoRepository contratoRepository;
+    private final EstadoContratoRepository estadoContratoRepository;
+    private final ClockService clockService;
 
-    @Autowired
-    private EstadoContratoRepository estadoContratoRepository;
+    public ContratoActualizacionService(ContratoRepository contratoRepository,
+                                       EstadoContratoRepository estadoContratoRepository,
+                                       ClockService clockService) {
+        this.contratoRepository = contratoRepository;
+        this.estadoContratoRepository = estadoContratoRepository;
+        this.clockService = clockService;
+    }
 
     /**
      * Actualiza todos los contratos vigentes que ya vencieron a estado "No Vigente"
@@ -40,8 +46,8 @@ public class ContratoActualizacionService {
         try {
             logger.info("Iniciando actualización de contratos vencidos");
 
-            // Obtener la fecha actual en formato ISO
-            String fechaActual = LocalDateTime.now().format(FORMATO_ISO_DATETIME);
+            // Obtener la fecha actual en formato ISO desde clockService
+            String fechaActual = clockService.getCurrentDateTime().format(FORMATO_ISO_DATETIME);
 
             // Buscar todos los contratos vigentes que ya vencieron
             List<Contrato> contratosVencidos = contratoRepository.findContratosVigentesVencidos(fechaActual);

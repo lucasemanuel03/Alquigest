@@ -82,6 +82,18 @@ public class ServicioContrato {
         this.esActivo = true;
     }
 
+    public ServicioContrato(Contrato contrato, TipoServicio tipoServicio, String nroCuenta, String nroContrato,
+                            String nroContratoServicio, Boolean esDeInquilino, Boolean esAnual) {
+        this.contrato = contrato;
+        this.tipoServicio = tipoServicio;
+        this.nroCuenta = nroCuenta;
+        this.nroContrato = nroContrato;
+        this.nroContratoServicio = nroContratoServicio;
+        this.esDeInquilino = esDeInquilino != null ? esDeInquilino : false;
+        this.esAnual = esAnual != null ? esAnual : false;
+        this.esActivo = true;
+    }
+
     // ==================== LIFECYCLE CALLBACKS ====================
 
     @PrePersist

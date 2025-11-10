@@ -461,6 +461,9 @@ public class ContratoService {
                 // Si la fecha de inicio es hoy o futura, generar solo el primer alquiler
                 generarPrimerAlquiler(contratoGuardado);
             }
+            
+            // NOTA: Los servicios ya NO se crean automáticamente aquí.
+            // El frontend envía explícitamente qué servicios crear mediante POST a /api/servicios-contrato
         }
         
         return enrichContratoDTO(contratoGuardado);
