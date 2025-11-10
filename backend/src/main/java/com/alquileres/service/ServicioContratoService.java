@@ -10,6 +10,7 @@ import com.alquileres.repository.ContratoRepository;
 import com.alquileres.repository.PagoServicioRepository;
 import com.alquileres.repository.ServicioContratoRepository;
 import com.alquileres.repository.TipoServicioRepository;
+import com.alquileres.util.FechaUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -102,6 +103,24 @@ public class ServicioContratoService {
         logger.info("EsAnual: {}", esAnual);
         logger.info("FechaInicio: {}", fechaInicio);
 
+        // Convertir fecha de formato usuario a ISO si es necesario
+        String fechaInicioISO = fechaInicio;
+        if (fechaInicio != null && !fechaInicio.trim().isEmpty()) {
+            try {
+                // Intentar convertir si viene en formato usuario (dd/MM/yyyy)
+                if (fechaInicio.contains("/")) {
+                    fechaInicioISO = FechaUtil.convertirFechaUsuarioToISODate(fechaInicio);
+                    logger.info("Fecha convertida de {} a {}", fechaInicio, fechaInicioISO);
+                }
+            } catch (Exception e) {
+                logger.error("Error al convertir fecha: {}", e.getMessage());
+                throw new BusinessException(
+                        ErrorCodes.FORMATO_FECHA_INVALIDO,
+                        "Formato de fecha inválido: " + fechaInicio,
+                        HttpStatus.BAD_REQUEST);
+            }
+        }
+
         Contrato contrato = contratoRepository.findById(contratoId)
                 .orElseThrow(() -> new BusinessException(
                         ErrorCodes.CONTRATO_NO_ENCONTRADO,
@@ -145,7 +164,7 @@ public class ServicioContratoService {
                    servicioGuardado.getNroContrato(), servicioGuardado.getNroContratoServicio());
 
         // Inicializar fechas de pago
-        String fechaInicioFinal = fechaInicio != null ? fechaInicio : clockService.getCurrentDate().format(FORMATO_FECHA);
+        String fechaInicioFinal = fechaInicioISO != null ? fechaInicioISO : clockService.getCurrentDate().format(FORMATO_FECHA);
         LocalDate fechaInicioPago = LocalDate.parse(fechaInicioFinal, FORMATO_FECHA);
         servicioGuardado.setUltimoPagoGenerado(fechaInicioPago);
 
@@ -324,24 +343,6 @@ public class ServicioContratoService {
     }
 
     /**
-     * Crea servicios para todos los tipos de servicio disponibles para un contrato
-     */
-    @Transactional
-    public void crearServiciosParaContrato(Long contratoId) {
-        List<TipoServicio> tiposServicio = tipoServicioRepository.findAll();
-
-        for (TipoServicio tipo : tiposServicio) {
-            // Verificar que no exista ya
-            if (servicioContratoRepository.findByContratoIdAndTipoServicioId(
-                    contratoId, tipo.getId()).isEmpty()) {
-                crearServicio(contratoId, tipo.getId(), false, false);
-            }
-        }
-
-        logger.info("Servicios creados para contrato ID={}", contratoId);
-    }
-
-    /**
      * Desactiva todos los servicios de un contrato
      */
     @Transactional
@@ -354,73 +355,4 @@ public class ServicioContratoService {
         logger.info("Todos los servicios desactivados para contrato ID={}", contratoId);
     }
 
-    /**
-     * Crea todos los servicios y pagos de servicios para un nuevo contrato
-     * Se crea un servicio por cada tipo disponible y un pago del mes actual
-     */
-    @Transactional
-    public void crearServiciosYPagosParaNuevoContrato(Contrato contrato) {
-        try {
-            logger.info("Creando servicios y pagos para nuevo contrato ID: {}", contrato.getId());
-
-            // Obtener todos los tipos de servicio disponibles
-            List<TipoServicio> tiposServicio = tipoServicioRepository.findAll();
-
-            if (tiposServicio.isEmpty()) {
-                logger.warn("No hay tipos de servicio configurados en el sistema");
-                return;
-            }
-
-            LocalDate fechaActual = clockService.getCurrentDate();
-            String periodoActual = fechaActual.format(FORMATO_PERIODO);
-
-            int serviciosCreados = 0;
-            int pagosCreados = 0;
-
-            // Crear un servicio por cada tipo disponible
-            for (TipoServicio tipoServicio : tiposServicio) {
-                try {
-                    // Crear el ServicioContrato
-                    ServicioContrato nuevoServicio = new ServicioContrato();
-                    nuevoServicio.setContrato(contrato);
-                    nuevoServicio.setTipoServicio(tipoServicio);
-                    nuevoServicio.setEsDeInquilino(false);
-                    nuevoServicio.setEsAnual(false);
-                    nuevoServicio.setEsActivo(true);
-
-                    // Inicializar fechas de pago
-                    nuevoServicio.setUltimoPagoGenerado(fechaActual);
-                    nuevoServicio.setProximoPago(fechaActual.plusMonths(1));
-
-                    ServicioContrato servicioGuardado = servicioContratoRepository.save(nuevoServicio);
-                    serviciosCreados++;
-
-                    // Crear el PagoServicio del mes actual
-                    PagoServicio pagoServicio = new PagoServicio();
-                    pagoServicio.setServicioContrato(servicioGuardado);
-                    pagoServicio.setPeriodo(periodoActual);
-                    pagoServicio.setEstaPagado(false);
-                    pagoServicio.setEstaVencido(false);
-
-                    pagoServicioRepository.save(pagoServicio);
-                    pagosCreados++;
-
-                    logger.debug("Servicio y pago creados - Contrato ID: {}, Tipo: {}",
-                               contrato.getId(), tipoServicio.getNombre());
-
-                } catch (Exception e) {
-                    logger.error("Error al crear servicio tipo {} para contrato ID {}: {}",
-                                tipoServicio.getNombre(), contrato.getId(), e.getMessage());
-                }
-            }
-
-            logger.info("Servicios y pagos creados para contrato ID: {} - {} servicios, {} pagos",
-                       contrato.getId(), serviciosCreados, pagosCreados);
-
-        } catch (Exception e) {
-            logger.error("Error al crear servicios para contrato ID {}: {}",
-                        contrato.getId(), e.getMessage(), e);
-            // No lanzamos la excepción para no afectar la creación del contrato
-        }
-    }
 }

@@ -1281,7 +1281,7 @@ public class ContratoService {
             LocalDate fechaIteracion = fechaInicio.plusMonths(1).withDayOfMonth(1);
 
             // Crear alquileres para cada mes hasta el mes actual (inclusive)
-            while (fechaIteracion.getMonthValue() <= mesActual && fechaIteracion.getYear() <= anioActual) {
+            while (fechaIteracion.getYear() < anioActual || fechaIteracion.getMonthValue() <= mesActual && fechaIteracion.getYear() <= anioActual) {
                 // Verificar si debe aplicar aumento en este mes
                 if (fechaProximoAumento != null && 
                     (fechaIteracion.getMonthValue() == fechaProximoAumento.getMonthValue() &&
