@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import {  Phone, User, Edit, SquareX, SquareCheck } from "lucide-react"
+import {  Phone, User, Edit, SquareX, SquareCheck, Eye } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import HeaderAlquigest from "@/components/header"
@@ -206,7 +206,7 @@ export default function InquilinosPage() {
                   </div>
                   <Badge
                     variant={inquilino.esActivo === true? "default" : "secondary"}
-                    className={inquilino.esActivo === true ? "bg-accent" : ""}
+                    className={inquilino.esActivo === true ? "bg-accent w-18" : "w-18"}
                   >
                     {inquilino.esActivo=== true ? "Activo" : "Inactivo"}
                   </Badge>
@@ -223,20 +223,21 @@ export default function InquilinosPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2 pt-2">
+                <div className="grid grid-cols-2 gap-2 pt-2">
                   <Link href={`/inquilinos/${inquilino.id}`}>
-                    <Button variant="outline" size="sm" className="flex-1 bg-transparent">
+                    <Button variant="outline" size="sm" className="w-full bg-transparent">
+                      <Eye />
                       Ver Detalles
                     </Button>
                   </Link>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1 bg-transparent"
+                    className="w-full bg-transparent"
                     onClick={() => handleEditInquilino(inquilino)}
                     disabled={!hasPermission("modificar_inquilino")}
                   >
-                    <Edit className="h-3 w-3 mr-1" />
+                    <Edit />
                     Editar
                   </Button>
                 </div>

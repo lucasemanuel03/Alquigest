@@ -80,12 +80,13 @@ export default function HistorialPagoAlquilerPage() {
               <TableHeader className="bg-primary">
                 <TableRow>
                   <TableHead className="font-bold text-background">Período</TableHead>
-                  <TableHead className="font-bold text-background">Estado</TableHead>
                   <TableHead className="font-bold text-background">Monto</TableHead>
                   <TableHead className="font-bold text-background">Vencimiento</TableHead>
                   <TableHead className="font-bold text-background">Método de Pago</TableHead>
                   <TableHead className="font-bold text-background">Titular</TableHead>
                   <TableHead className="font-bold text-background">Cuenta Banco</TableHead>
+                  <TableHead className="font-bold text-background">Fecha de Pago</TableHead>
+                  <TableHead className="font-bold text-background">Estado</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -104,12 +105,13 @@ export default function HistorialPagoAlquilerPage() {
                     return (
                       <TableRow key={item.id}>
                         <TableCell className="font-semibold">{formatPeriodo(item.fechaVencimientoPago)}</TableCell>
-                        <TableCell>{estadoPago}</TableCell>
                         <TableCell className="font-semibold">${item.monto.toLocaleString()}</TableCell>
                         <TableCell>{new Date(item.fechaVencimientoPago + 'T12:00:00').toLocaleDateString('es-AR')}</TableCell>
                         <TableCell>{item.metodo ?? "-"}</TableCell>
                         <TableCell>{item.titularDePago ?? "-"}</TableCell>
                         <TableCell>{item.cuentaBanco ?? "-"}</TableCell>
+                        <TableCell>{"-"}</TableCell>
+                        <TableCell>{estadoPago}</TableCell>
                       </TableRow>
                     )
                   })

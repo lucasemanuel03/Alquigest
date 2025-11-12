@@ -74,7 +74,7 @@ export default function ModalNotificacionesInicio({ isOpen, onClose, setNotifica
           <div className="space-y-4 py-4">
             {/* Servicios Pendientes */}
             {serviciosPendientes > 0 && (
-              <div className="p-4 rounded-lg border border-muted bg-orange-50 dark:bg-orange-950/10">
+              <div className="p-4 rounded-lg border border-foreground/20 shadow-lg bg-orange-50 dark:bg-orange-950/10">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3">
                     <CreditCard className="h-5 w-5 text-orange-600 mt-0.5" />
@@ -103,7 +103,7 @@ export default function ModalNotificacionesInicio({ isOpen, onClose, setNotifica
 
             {/* Contratos Próximos a Vencer */}
             {contratosProximosVencer > 0 && (
-              <div className="p-4 rounded-lg border border-muted bg-red-50 dark:bg-red-950/20">
+              <div className="p-4 rounded-lg border border-foreground/20 shadow-lg bg-red-50 dark:bg-red-950/20">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3">
                     <FileText className="h-5 w-5 text-red-600 mt-0.5" />

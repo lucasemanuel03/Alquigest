@@ -101,10 +101,10 @@ export default function HistorialPagosServiciosPage() {
                   <TableHead className="font-bold text-background">Servicio</TableHead>
                   <TableHead className="font-bold text-background">Nro. Cuenta</TableHead>
                   <TableHead className="font-bold text-background">A cargo de</TableHead>
-                  <TableHead className="font-bold text-background">Estado</TableHead>
                   <TableHead className="font-bold text-background">Monto</TableHead>
                   <TableHead className="font-bold text-background">Medio de Pago</TableHead>
                   <TableHead className="font-bold text-background">Fecha de pago</TableHead>
+                  <TableHead className="font-bold text-background">Estado</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -173,10 +173,10 @@ export default function HistorialPagosServiciosPage() {
                         <TableCell>{tipoServicio}</TableCell>
                         <TableCell>{item.servicioContrato.nroCuenta ?? "-"}</TableCell>
                         <TableCell>{aCargoDe }</TableCell>
-                        <TableCell>{estadoPago}</TableCell>
                         <TableCell>{item.monto ? `$${item.monto.toLocaleString()}` : "-"}</TableCell>
                         <TableCell>{item.medioPago ?? "-"}</TableCell>
                         <TableCell>{item.fechaPago ?? "-"}</TableCell>
+                        <TableCell>{estadoPago}</TableCell>
                       </TableRow>
                     )
                   })

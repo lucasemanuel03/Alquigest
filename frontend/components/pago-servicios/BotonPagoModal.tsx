@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import formatPrice from "@/utils/functions/price-convert"
 import LoadingSmall from "../loading-sm"
+import { Check, Receipt } from "lucide-react"
 
 export interface PagoResumenItem {
   id: number | string
@@ -61,7 +62,7 @@ export default function BotonPagoModal({
   return (
     <>
       <Button onClick={handleOpen} disabled={isDisabled} variant={triggerVariant} className={className}>
-        {triggerLabel}
+        <Check /> {triggerLabel}
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>

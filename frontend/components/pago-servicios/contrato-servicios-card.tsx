@@ -172,7 +172,7 @@ export default function ContratoServiciosCard({
             {loadingPendientes ? (
               <Skeleton className="h-6 w-24" />
             ) : cantidadPendientes > 0 ? (
-              <Badge variant="destructive" className="text-sm">
+              <Badge variant="destructive" className="text-sm w-30">
                 {cantidadPendientes} pendiente{cantidadPendientes !== 1 ? 's' : ''}
               </Badge>
             ) : null}
@@ -222,6 +222,20 @@ export default function ContratoServiciosCard({
               </div>
             )}
             <div className="pt-4 border-t flex justify-end gap-5 items-center">
+                 {/* Aquí va el botón HISTORIAL */}
+              <Link href={`/contratos/${contrato.id}/historial-pagos-servicios`}>
+                <Button className="w-42" variant={"outline"}>
+                  <FileClock className="h-4 w-4 mr-2" />
+                  Ver Historial
+                </Button>
+              </Link>
+                {/* Aquí va el botón para generar MERCEDES LOCATIVAS */}
+              <Link href={`/alquileres/${contrato.id}/generar-recibo`}>
+                <Button className="w-42" variant={"outline"}>
+                  <Receipt/>
+                  Mercedes Locativas
+                </Button>
+              </Link>
               <BotonPagoModal
                 triggerLabel={registrandoBatch ? 'Procesando...' : `Registrar Pagos${cantidadSeleccionados > 0 ? ` (${cantidadSeleccionados})` : ''}`}
                 items={resumenBatch}
@@ -234,20 +248,6 @@ export default function ContratoServiciosCard({
                 triggerVariant="default"
                 className="bg-emerald-600 hover:bg-emerald-700"
               />
-                 {/* Aquí va el botón HISTORIAL */}
-              <Link href={`/contratos/${contrato.id}/historial-pagos-servicios`}>
-                <Button variant={"outline"}>
-                  <FileClock className="h-4 w-4 mr-2" />
-                  Ver Historial
-                </Button>
-              </Link>
-                {/* Aquí va el botón para generar MERCEDES LOCATIVAS */}
-              <Link href={`/alquileres/${contrato.id}/generar-recibo`}>
-                <Button variant={"outline"}>
-                  <Receipt/>
-                  Mercedes Locativas
-                </Button>
-              </Link>
             </div>
           </div>
         </CardContent>

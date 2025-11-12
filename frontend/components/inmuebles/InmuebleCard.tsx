@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Building2, MapPin, Ruler, User } from "lucide-react"
+import { Building2, Eye, MapPin, PenBox, Ruler, User } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Inmueble } from "@/types/Inmueble"
@@ -68,9 +68,10 @@ export default function InmuebleCard({ inmueble, propietarioNombre, canEdit, onE
           </div>
         </div>
 
-        <div className="flex gap-2 pt-2">
+        <div className="grid grid-cols-2 gap-2 pt-2">
           <Link href={`/inmuebles/${inmueble.id}`}>
-            <Button variant="outline" size="sm" className="flex-1 bg-transparent">
+            <Button variant="outline" size="sm" className="w-full bg-transparent">
+              <Eye />
               Ver Detalles
             </Button>
           </Link>
@@ -78,9 +79,10 @@ export default function InmuebleCard({ inmueble, propietarioNombre, canEdit, onE
             onClick={() => onEdit(inmueble)}
             variant="outline"
             size="sm"
-            className="flex-1 bg-transparent"
+            className="w-full bg-transparent"
             disabled={!canEdit}
           >
+            <PenBox />
             Editar
           </Button>
         </div>

@@ -90,9 +90,9 @@ export default function ContratoAlquilerCard({
             {loadingPendientes ? (
               <Skeleton className="h-6 w-30" />
             ) : estaPendiente ? (
-              <Badge className="bg-red-300 text-red-950">Alquiler No Pago</Badge>
+              <Badge className="bg-red-300 text-red-950 w-30">Alquiler No pagado</Badge>
             ) : (
-              <Badge className="bg-emerald-300 text-emerald-950">Mes Alquiler Pagado</Badge>
+              <Badge className="bg-emerald-300 text-emerald-950 w-30">Alquiler Pagado</Badge>
             )}
           </div>
         </div>
@@ -144,7 +144,7 @@ export default function ContratoAlquilerCard({
             <Link href={`/alquileres/${contrato.id}/historial-pago-alquiler`}>
               <Button variant="outline" size="sm">
                 <CalendarCheck />
-                Ver Pagos Alquiler
+                Ver Historial
               </Button>
             </Link>
           </div>

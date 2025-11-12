@@ -86,7 +86,7 @@ export default function ServicioPagoCard({ pagoServicio, onPagoRegistrado, onDat
   }
 
   return (
-    <Card className="bg-muted/50">
+    <Card className="bg-muted/50 border-1 border-foreground/30">
       <CardContent className="flex flex-col gap-2">
         <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsExpanded(e => !e)}>
           
@@ -105,17 +105,17 @@ export default function ServicioPagoCard({ pagoServicio, onPagoRegistrado, onDat
               <div className="flex flex-col gap-1 items-end">
                 <div>
                     {pagoServicio.estaPagado ? (
-                      <Badge className="bg-emerald-400">Pagado</Badge>
+                      <Badge className="bg-emerald-400 w-32">Pagado</Badge>
                     ) : (
-                      <Badge className="bg-red-300 text-red-950">Pendiente de Pago</Badge>
+                      <Badge className="bg-red-300 text-red-950 w-32">Pendiente de Pago</Badge>
                     )}
                 </div>
 
                 <div>
                     {pagoServicio.servicioContrato.esDeInquilino ? (
-                      <Badge variant={"secondary"}>Paga Locatario</Badge>
+                      <Badge className="w-32" variant={"secondary"}>Paga Locatario</Badge>
                     ) : (
-                      <Badge>Paga Estudio</Badge>
+                      <Badge className="w-32">Paga Estudio Jurídico</Badge>
                     )}
                 </div>
               </div>
@@ -200,7 +200,7 @@ export default function ServicioPagoCard({ pagoServicio, onPagoRegistrado, onDat
                 cancelLabel="Cancelar"
                 title="Confirmar pago del servicio"
                 description="Verificá los datos del servicio antes de registrar el pago."
-                className="bg-emerald-600 hover:bg-emerald-700"
+                className="bg-emerald-600 hover:bg-emerald-700 mr-[3px]"
               />
             </div>
           </div>

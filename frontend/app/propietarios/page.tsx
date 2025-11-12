@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Phone, Mail, User, Edit, MapPin, ArrowLeft, Menu, Grid, SquareCheck, SquareX } from "lucide-react"
+import { Phone, Mail, User, Edit, MapPin, ArrowLeft, Menu, Grid, SquareCheck, SquareX, Eye } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Propietario } from "@/types/Propietario"
@@ -139,7 +139,7 @@ useEffect(() => {
                   </div>
                   <Badge
                     variant={propietario.esActivo === true? "default" : "secondary"}
-                    className={propietario.esActivo === true ? "bg-accent" : ""}
+                    className={propietario.esActivo === true ? "bg-accent w-18" : "w-18"}
                   >
                     {propietario.esActivo=== true ? "Activo" : "Inactivo"}
                   </Badge>
@@ -165,20 +165,21 @@ useEffect(() => {
                 
 
                 {/* Actions */}
-                <div className="flex gap-2 pt-2 w-fit">
+                <div className="grid grid-cols-2 gap-2 pt-2">
                   <Link href={`/propietarios/${propietario.id}`}>
-                    <Button variant="outline" size="sm" className="flex-1 bg-transparent">
+                    <Button variant="outline" size="sm" className="w-full bg-transparent">
+                      <Eye />
                       Ver Detalles
                     </Button>
                   </Link>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1 bg-transparent"
+                    className="w-full bg-transparent"
                     onClick={() => handleEditOwner(propietario)}
                     disabled={!hasPermission("modificar_propietario")}
                   >
-                    <Edit className="h-3 w-3 mr-1" />
+                    <Edit />
                     Editar
                   </Button>
                 </div>
