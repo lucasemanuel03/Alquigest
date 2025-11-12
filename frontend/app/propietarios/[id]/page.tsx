@@ -11,7 +11,7 @@ import BACKEND_URL from "@/utils/backendURL";
 import auth from "@/utils/functions/auth-functions/auth";
 import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken";
 import tiposInmueble from "@/utils/tiposInmuebles";
-import { ArrowLeft, Building, Building2, User } from "lucide-react";
+import { ArrowLeft, Building, Building2, Eye, User } from "lucide-react";
 import Link from "next/link"
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -147,7 +147,8 @@ export default function PropietarioDetalles() {
 
                                 <Link href={`/inmuebles/${inmueble.id}`}>
                                     <Button variant="outline" size="sm" className="mt-2">
-                                    Ver detalles
+                                        <Eye />
+                                        Ver detalles
                                     </Button>
                                 </Link>
                                 </Card>

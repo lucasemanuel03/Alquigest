@@ -43,7 +43,8 @@ export default function ModalRegistrarPagoAlquiler({
   const [formData, setFormData] = useState({
     cuentaBanco: "",
     titularDePago: "",
-    metodo: ""
+    metodo: "",
+    fechaPago: new Date().toISOString().split('T')[0] // Fecha actual en formato YYYY-MM-DD
   })
 
   // Fetch pagos pendientes cuando se abre el modal
@@ -69,7 +70,8 @@ export default function ModalRegistrarPagoAlquiler({
         setFormData({
           cuentaBanco: primerPago.cuentaBanco || "",
           titularDePago: primerPago.titularDePago || "",
-          metodo: primerPago.metodo || ""
+          metodo: primerPago.metodo || "",
+          fechaPago: new Date().toISOString().split('T')[0]
         })
       }
     } catch (err: any) {
@@ -91,7 +93,8 @@ export default function ModalRegistrarPagoAlquiler({
     setFormData({
       cuentaBanco: pago.cuentaBanco || "",
       titularDePago: pago.titularDePago || "",
-      metodo: pago.metodo || ""
+      metodo: pago.metodo || "",
+      fechaPago: new Date().toISOString().split('T')[0]
     })
   }
 
@@ -130,7 +133,8 @@ export default function ModalRegistrarPagoAlquiler({
         body: JSON.stringify({
           cuentaBanco: formData.cuentaBanco,
           titularDePago: formData.titularDePago,
-          metodo: formData.metodo
+          metodo: formData.metodo,
+          fechaPago: formData.fechaPago
         })
       })
       
@@ -162,7 +166,8 @@ export default function ModalRegistrarPagoAlquiler({
       setFormData({
         cuentaBanco: "",
         titularDePago: "",
-        metodo: ""
+        metodo: "",
+        fechaPago: new Date().toISOString().split('T')[0]
       })
     }
   }, [open])
@@ -294,6 +299,24 @@ export default function ModalRegistrarPagoAlquiler({
                     </Select>
                   </div>
 
+                  {/* Fecha de Pago */}
+                  <div className="space-y-2">
+                    <Label htmlFor="fechaPago">
+                      Fecha de Pago <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="relative">
+                      <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="fechaPago"
+                        type="date"
+                        value={formData.fechaPago}
+                        onChange={(e) => handleChange("fechaPago", e.target.value)}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
+                  </div>
+
                   {/* Cuenta de Banco */}
                   <div className="space-y-2">
                     <Label htmlFor="cuentaBanco">
@@ -397,6 +420,10 @@ export default function ModalRegistrarPagoAlquiler({
                   <div>
                     <p className="text-xs text-muted-foreground">Método de Pago</p>
                     <p className="font-semibold">{formData.metodo}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Fecha de Pago</p>
+                    <p className="font-semibold">{new Date(formData.fechaPago).toLocaleDateString('es-AR')}</p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Cuenta de Banco</p>

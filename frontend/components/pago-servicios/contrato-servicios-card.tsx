@@ -151,7 +151,7 @@ export default function ContratoServiciosCard({
   }
 
   return (
-    <Card className="transition-all duration-200">
+    <Card className="transition-all duration-200 hover:shadow-lg cursor-pointer border-1 border-foreground/20">
       <CardHeader onClick={toggleCard} className="cursor-pointer">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">

@@ -8,7 +8,7 @@ import InmuebleIcon from "@/components/inmueble-icon";
 import ProximoAumentoBadge from "@/components/contratos/proximo-aumento-badge";
 import VencimientoBadge from "@/components/contratos/vencimiento-badge";
 import EstadoBadge from "@/components/contratos/estado-badge";
-import { CalendarCheck, Import, Receipt, User } from "lucide-react";
+import { CalendarCheck, FileText, Import, Receipt, User } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ContratoDetallado } from "@/types/ContratoDetallado";
@@ -49,13 +49,13 @@ export default function ContratoAlquilerCard({
 
   return (
     <Card
-      className="hover:shadow-lg transition-shadow cursor-pointer"
+      className="hover:shadow-lg transition-shadow cursor-pointer border-1 border-foreground/20"
       onClick={() => onToggle(contrato.id)}
     >
       {/* Header */}
-      <CardHeader className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[2fr_3fr_auto] items-center">
+      <CardHeader className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 items-center gap-4">
         {/* Dirección */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 md:col-span-4">
           <InmuebleIcon tipoInmuebleString={contrato?.tipoInmueble} className="h-7 w-7" />
           <CardTitle className="text-xl md:text-xl font-semibold">
             <Link href={`/inmuebles/${contrato.inmuebleId}`} className="hover:text-primary">
@@ -65,7 +65,7 @@ export default function ContratoAlquilerCard({
         </div>
 
         {/* Locador / Locatario */}
-        <div className="flex flex-col gap-5  md:flex-row">
+        <div className="flex flex-col gap-5 md:flex-row md:col-span-5">
           <div className="flex items-center gap-1 text-sm md:text-base">
             <User className="h-5" />
             <p className="font-medium text-muted-foreground">Locador:</p>
@@ -79,7 +79,7 @@ export default function ContratoAlquilerCard({
         </div>
 
         {/* Estado */}
-        <div className="flex flex-col items-end sm:justify-end md:justify-end gap-2">
+        <div className="flex flex-col items-end sm:justify-end md:justify-end gap-2 md:col-span-3">
           <div className="flex gap-2">
             <ProximoAumentoBadge fechaAumento={contrato.fechaAumento} />
             <VencimientoBadge fechaFin={contrato.fechaFin} />
@@ -139,7 +139,9 @@ export default function ContratoAlquilerCard({
         <div className="grid grid-cols-1 items-center justify-between pt-4 border-t gap-2 md:flex md:justify-between">
           <div className="flex gap-2">
             <Link href={`/contratos/${contrato.id}`}>
-              <Button variant="outline" size="sm">Ver Contrato</Button>
+              <Button variant="outline" size="sm">
+                <FileText />
+                Ver Contrato</Button>
             </Link>
             <Link href={`/alquileres/${contrato.id}/historial-pago-alquiler`}>
               <Button variant="outline" size="sm">
@@ -160,8 +162,8 @@ export default function ContratoAlquilerCard({
             </Button>
             <Link href={`/alquileres/${contrato.id}/generar-recibo`}>
               <Button variant="outline" size="sm">
-                <Receipt className="h-4 w-4 mr-2" />
-                Generar Mercedes Locativas
+                <Receipt />
+                Mercedes Locativas
               </Button>
             </Link>
           </div>

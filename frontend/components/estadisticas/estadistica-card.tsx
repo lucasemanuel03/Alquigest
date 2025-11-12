@@ -14,7 +14,7 @@ interface EstadisticaCardProps {
 
 export default function EstadisticaCard({ titulo, valor = "N/A", icono, subtitulo, tituloAyuda = "Alquigest S.A.", cargando=false, coloresIcono }: EstadisticaCardProps) {
   return (
-    <Card>
+    <Card className="hover:shadow-lg transition-shadow border-1 border-foreground/20">
       <CardContent className="flex justify-between items-center gap-4">
         <div>
           {cargando ? (

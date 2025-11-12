@@ -3,7 +3,7 @@ import { Badge } from "../ui/badge"
  export default function EstadoBadge({estado}: {estado: string}) {
     switch (estado) {
       case "Vigente":
-        return <Badge className="bg-green-100 text-green-950 hover:bg-green-100 font-bold w-30">Vigente</Badge>
+        return <Badge className="bg-teal-200 text-green-950 hover:bg-green-100 font-bold w-30">Vigente</Badge>
       case "Por Renovar":
         return <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100 font-bold w-30">Por Renovar</Badge>
       case "No Vigente":
