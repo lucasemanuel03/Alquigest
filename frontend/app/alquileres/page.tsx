@@ -8,14 +8,9 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
 import BACKEND_URL from "@/utils/backendURL"
 import Loading from "@/components/loading";
-import { Separator } from "@/components/ui/separator"
-import { Skeleton } from "@/components/ui/skeleton"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ContratoDetallado } from "@/types/ContratoDetallado";
-import auth from "@/utils/functions/auth-functions/auth";
 import ModalRegistrarPagoAlquiler from "@/components/modal-registrar-pago-alquiler";
 import BarraBusqueda from "@/components/busqueda/barra-busqueda";
-import StatCard from "@/components/alquileres/StatCard";
 import AlquileresToolbar from "@/components/alquileres/AlquileresToolbar";
 import ContratoAlquilerCard from "@/components/alquileres/ContratoAlquilerCard";
 import ContratoHistorialCard from "@/components/alquileres/ContratoHistorialCard";

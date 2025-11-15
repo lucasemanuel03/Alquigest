@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { AlertCircle, ArrowUpRightFromSquareIcon, Blocks, Calendar, CreditCard, FileText } from "lucide-react"
+import { AlertCircle, ArrowUpRightFromSquareIcon, Blocks, Calendar, CreditCard, FileText, TriangleAlert } from "lucide-react"
 import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
 import BACKEND_URL from "@/utils/backendURL"
 import Link from "next/link"
@@ -19,6 +19,7 @@ interface ModalNotificacionesInicioProps {
 export default function ModalNotificacionesInicio({ isOpen, onClose, setNotificationDot }: ModalNotificacionesInicioProps) {
   const [loading, setLoading] = useState(true)
   const [serviciosPendientes, setServiciosPendientes] = useState(0)
+  const [aumentosManuales, setAumentosManuales] = useState(0)
   const [contratosProximosVencer, setContratosProximosVencer] = useState(0)
 
   useEffect(() => {
@@ -26,6 +27,11 @@ export default function ModalNotificacionesInicio({ isOpen, onClose, setNotifica
       if (!isOpen) return
       setLoading(true)
       try {
+
+        // Obtener cantidad de aumentos manuales pendientes
+        //PROVISORIO
+        setAumentosManuales(2);
+
         // Obtener cantidad de servicios pendientes
         const cantServicios = await fetchWithToken(`${BACKEND_URL}/pagos-servicios/count/pendientes`)
         setServiciosPendientes(cantServicios.serviciosPendientes || 0)
@@ -72,18 +78,76 @@ export default function ModalNotificacionesInicio({ isOpen, onClose, setNotifica
           </div>
         ) : hayNotificaciones ? (
           <div className="space-y-4 py-4">
-            {/* Servicios Pendientes */}
-            {serviciosPendientes > 0 && (
-              <div className="p-4 rounded-lg border border-foreground/20 shadow-lg bg-orange-50 dark:bg-orange-950/10">
+
+            {/* Aumentos manuales de alquileres */}
+            {aumentosManuales > 0 && (
+              <div className="p-4 rounded-lg border border-foreground/20 shadow-lg bg-red-50 dark:bg-orange-950/10">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3">
-                    <CreditCard className="h-5 w-5 text-orange-600 mt-0.5" />
+                    <TriangleAlert className="h-5 w-5 text-red-800 mt-0.5" />
+                    <div className="flex-1 space-y-2">
+                      <h3 className="font-semibold text-foreground">
+                        Falló el aumento automático de Alquleres
+                      </h3>
+                      <p className="text-sm text-foreground">
+                        Hay <Badge variant="outline" className="mx-1 bg-red-200 text-red-900">{aumentosManuales}</Badge>
+                        {aumentosManuales === 1 ? 'alquiler' : 'alquileres'} que requieren que se ingrese el aumento manualmente.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <Link href="/alquileres/aumentos-manuales" onClick={onClose}>
+                  <Button
+                    className="w-full mt-3 bg-red-600 hover:bg-red-700 text-white"
+                    size="sm"
+                  >
+                    <ArrowUpRightFromSquareIcon />
+                    Ver Detalles
+                  </Button>
+                </Link>
+              </div>
+            )}
+            {/* Contratos Próximos a Vencer */}
+            {contratosProximosVencer > 0 && (
+              <div className="p-4 rounded-lg border border-foreground/20 shadow-lg bg-red-50 dark:bg-red-950/20">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <FileText className="h-5 w-5 text-orange-600 mt-0.5" />
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-orange-900 dark:text-orange-200">
+                        Contratos Próximos a Vencer
+                      </h3>
+                      <p className="text-sm text-orange-700 dark:text-orange-300 mt-1">
+                        Hay <Badge variant="outline" className="mx-1 bg-orange-200 text-orange-900">{contratosProximosVencer}</Badge>
+                        {contratosProximosVencer === 1 ? 'contrato que vence' : 'contratos que vencen'} próximamente
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <Link href="/alquileres?filtro=proximos-vencer&ordenCampo=direccion&ordenDir=asc" onClick={onClose}>
+                  <Button
+                    className="w-full mt-3 bg-orange-600 hover:bg-orange-700 text-white"
+                    size="sm"
+                  >
+                    <ArrowUpRightFromSquareIcon />
+                    Ver Contratos
+                  </Button>
+                </Link>
+              </div>
+            )}
+
+            {/* Servicios Pendientes */}
+            {serviciosPendientes > 0 && (
+              <div className="p-4 rounded-lg border border-foreground/20 shadow-lg bg-yellow-50 dark:bg-yellow-950/10">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <CreditCard className="h-5 w-5 text-primary mt-0.5" />
                     <div className="flex-1 space-y-2">
                       <h3 className="font-semibold text-foreground">
                         Facturas Pendientes de Pago
                       </h3>
                       <p className="text-sm text-foreground">
-                        Hay <Badge variant="outline" className="mx-1 bg-orange-200 text-orange-900">{serviciosPendientes}</Badge>
+                        Hay <Badge variant="outline" className="mx-1 bg-orange-200 text-primary">{serviciosPendientes}</Badge>
                         {serviciosPendientes === 1 ? 'servicio pendiente' : 'servicios pendientes'} de pagar
                       </p>
                     </div>
@@ -91,7 +155,7 @@ export default function ModalNotificacionesInicio({ isOpen, onClose, setNotifica
                 </div>
                 <Link href="/pago-servicios" onClick={onClose}>
                   <Button
-                    className="w-full mt-3 bg-orange-600 hover:bg-orange-700 text-white"
+                    className="w-full mt-3 bg-primary "
                     size="sm"
                   >
                     <ArrowUpRightFromSquareIcon />
@@ -101,33 +165,6 @@ export default function ModalNotificacionesInicio({ isOpen, onClose, setNotifica
               </div>
             )}
 
-            {/* Contratos Próximos a Vencer */}
-            {contratosProximosVencer > 0 && (
-              <div className="p-4 rounded-lg border border-foreground/20 shadow-lg bg-red-50 dark:bg-red-950/20">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-3">
-                    <FileText className="h-5 w-5 text-red-600 mt-0.5" />
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-red-900 dark:text-red-200">
-                        Contratos Próximos a Vencer
-                      </h3>
-                      <p className="text-sm text-red-700 dark:text-red-300 mt-1">
-                        Hay <Badge variant="outline" className="mx-1 bg-red-200 text-red-900">{contratosProximosVencer}</Badge>
-                        {contratosProximosVencer === 1 ? 'contrato que vence' : 'contratos que vencen'} próximamente
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <Link href="/alquileres?filtro=proximos-vencer&ordenCampo=direccion&ordenDir=asc" onClick={onClose}>
-                  <Button
-                    className="w-full mt-3 bg-red-600 hover:bg-red-700 text-white"
-                    size="sm"
-                  >
-                    Ver Contratos
-                  </Button>
-                </Link>
-              </div>
-            )}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-8">
