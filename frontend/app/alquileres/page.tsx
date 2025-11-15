@@ -233,7 +233,7 @@ export default function AlquileresPage() {
         {filtroContrato !== 'no-vigentes' && (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-8">
           <EstadisticaCard
-            titulo="Contratos Vigentes"
+            titulo="Contratos vigentes"
             valor={totalContratos}
             icono={<Handshake className=" text-foreground" />}
             coloresIcono="bg-secondary/20"
@@ -251,10 +251,9 @@ export default function AlquileresPage() {
           />
 
           <EstadisticaCard
-            titulo="Alquileres No Pagos"
+            titulo="Alquileres pendientes de pago"
             valor={cantAlquileresNoPagos}
             coloresIcono="bg-red-200"
-            subtitulo="Alquileres pendientes de pago"
             cargando={loadingContadores}
             icono={<Banknote className=" text-red-500" />}
           />
