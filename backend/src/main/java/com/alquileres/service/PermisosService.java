@@ -34,6 +34,9 @@ public class PermisosService {
         permisos.put("crear_usuario_abogada", false);
         permisos.put("crear_usuario_administrador", false);
 
+        permisos.put("editar_servicios", false);
+        permisos.put("pagar_servicios", false);
+
         // Asignar permisos específicos según el rol
         switch (rol) {
             case ROLE_ADMINISTRADOR:
@@ -77,6 +80,9 @@ public class PermisosService {
                 // Usuarios: puede crear secretarias y abogadas
                 permisos.put("crear_usuario_secretaria", true);
                 permisos.put("crear_usuario_abogada", true);
+
+                permisos.put("editar_servicios", true);
+                permisos.put("pagar_servicios", true);
 
                 // Estados de contrato y tipos de inmueble: solo consultar (ADMIN puede modificar)
                 // Ya está configurado arriba en consultar_estado_contrato y consultar_tipo_inmueble
