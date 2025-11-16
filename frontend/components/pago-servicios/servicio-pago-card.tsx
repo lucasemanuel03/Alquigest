@@ -12,6 +12,7 @@ import { Badge } from "../ui/badge"
 import BACKEND_URL from "@/utils/backendURL"
 import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
 import BotonPagoModal, { PagoResumenItem } from "@/components/pago-servicios/BotonPagoModal"
+import { useAuth } from "@/contexts/AuthProvider"
 
 interface ServicioPagoCardProps {
   pagoServicio: any
@@ -96,7 +97,7 @@ export default function ServicioPagoCard({ pagoServicio, onPagoRegistrado, onDat
                 <p className="font-bold text-base">{pagoServicio.servicioContrato.tipoServicio.nombre}</p>
                 <p className="text-sm text-muted-foreground">Período: {pagoServicio.periodo}</p>
                 <p className="text-sm text-muted-foreground">Nro Cuenta: {pagoServicio.servicioContrato.nroCuenta || "No Especificado"}</p>
-                {pagoServicio.servicioContrato.nroContratoServicio !== "" && (
+                {pagoServicio.servicioContrato.nroContratoServicio !== null && (
                   <p className="text-sm text-muted-foreground">Nro Contrato Servicio: {pagoServicio.servicioContrato.nroContratoServicio || "No Especificado"}</p>
                 )}
                 </div>
@@ -194,7 +195,7 @@ export default function ServicioPagoCard({ pagoServicio, onPagoRegistrado, onDat
                   monto: typeof monto === 'number' ? monto : parseFloat(String(monto).replace(',', '.'))
                 }]}
                 onConfirm={confirmarPagoIndividual}
-                isDisabled={loading || pagoServicio.estaPagado || !monto || parseFloat(String(monto).replace(',', '.')) <= 0}
+                isDisabled={loading || pagoServicio.estaPagado || !monto || parseFloat(String(monto).replace(',', '.')) <= 0 || !useAuth().hasPermission("pagar_servicios")}
                 confirmLabel="Confirmar pago"
                 iconLabel={<CheckSquare/>}
                 cancelLabel="Cancelar"

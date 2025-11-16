@@ -23,7 +23,8 @@ interface Paso1Props {
   onSelectInmueble: (inmueble: any, propietario: any) => void;
   onSelectInquilino: (inquilino: any) => void;
   onInquilinoCreado: (nuevo: any) => void;
-  onInmuebleCreado: (nuevo: any) => void;
+  onInmuebleCreado: (data: { inmueble: any; propietario?: any }) => void;
+  onPropietarioCreado?: (nuevo: any) => void;
 }
 
 export default function Paso1InmuebleLocatario({
@@ -36,6 +37,7 @@ export default function Paso1InmuebleLocatario({
   onSelectInquilino,
   onInquilinoCreado,
   onInmuebleCreado,
+  onPropietarioCreado,
 }: Paso1Props) {
   const inmuebleRef = useRef<BusquedaDesplegableRef>(null);
   const inquilinoRef = useRef<BusquedaDesplegableRef>(null);
@@ -67,10 +69,11 @@ export default function Paso1InmuebleLocatario({
           <div>
             <NuevoInmuebleModal
               text="Nuevo"
-              onInmuebleCreado={(nuevo) => {
-                onInmuebleCreado(nuevo);
-                inmuebleRef.current?.setDisplayValue(nuevo.direccion);
+              onInmuebleCreado={(data) => {
+                onInmuebleCreado(data);
+                inmuebleRef.current?.setDisplayValue(data.inmueble.direccion);
               }}
+              onPropietarioCreado={onPropietarioCreado}
             />
           </div>
         </div>

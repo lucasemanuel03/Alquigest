@@ -5,6 +5,7 @@ import BACKEND_URL from "@/utils/backendURL";
 import { useState } from "react";
 import { Blocks } from "lucide-react";
 import { useEffect } from "react";
+import { useAuth } from "@/contexts/AuthProvider"
 
 import TipoServicioIcon from "@/components/tipoServicioIcon";
 import LoadingSmall from "@/components/loading-sm";
@@ -51,7 +52,7 @@ export default function ServiciosContratoPage({esVigente, idContrato, fechaInici
                 </div>
                 <ModalEditarServicios 
                     serviciosActuales={serviciosContrato}
-                    disabled={!esVigente}
+                    disabled={!esVigente || !useAuth().hasPermission("editar_servicios")}
                     contratoId={idContrato}
                     fechaInicioContrato={fechaInicioContrato || new Date().toISOString().split('T')[0]}
                     onServiciosActualizados={fetchServiciosContrato}

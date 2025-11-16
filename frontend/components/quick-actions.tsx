@@ -57,7 +57,7 @@ export default function QuickActions() {
             {/* Nuevo Contrato */}
             <DropdownMenuItem>
               {perms.crearContrato ? (
-                <Link href={"/contratos/nuevo"}>
+                <Link href={"/contratos/nuevo"} className="w-full">
                   <Button size="sm" className="w-full flex items-center justify-start">
                     <FileText className="mr-2 text-background" />
                     Nuevo Contrato
@@ -73,14 +73,14 @@ export default function QuickActions() {
             {/* Nuevo Usuario */}
             <DropdownMenuItem>
               {perms.crearUsuario ? (
-                <Link href={"/auth/signup"}>
-                  <Button variant="outline" size="sm">
+                <Link href={"/auth/signup"} className="w-full">
+                  <Button variant="outline" size="sm" className="w-full flex items-center justify-start">
                     <UserPlus2 className="h-5 w-5 mr-2" />
                     Nuevo Usuario
                   </Button>
                 </Link>
               ) : (
-                <Button variant="outline" size="sm" disabled>
+                <Button variant="outline" size="sm" className="w-full flex items-center justify-start" disabled>
                   <UserPlus className="h-5 w-5 mr-2" />
                   Nuevo Usuario
                 </Button>
@@ -88,8 +88,8 @@ export default function QuickActions() {
             </DropdownMenuItem>
             {/* Generar Informe */}
             <DropdownMenuItem>
-              <Link href={"/informes"}>
-                <Button variant="outline" size="sm">
+              <Link href={"/informes"} className="w-full">
+                <Button variant="outline" size="sm" className="w-full flex items-center justify-start">
                   <FileText className="h-5 w-5 mr-2" />
                   Generar Informe
                 </Button>

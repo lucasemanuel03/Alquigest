@@ -193,11 +193,29 @@ export default function NuevoContratoPage() {
               });
               selectInquilino(nuevo);
             }}
-            onInmuebleCreado={(nuevo) => {
-              setInmueblesDisponibles(prev => [...prev, nuevo]);
-              // Buscar el propietario correspondiente
-              const propietario = propietarios.find(p => p.id === nuevo.propietarioId);
-              selectInmueble(nuevo, propietario);
+            onInmuebleCreado={(data) => {
+              const { inmueble, propietario } = data;
+              setInmueblesDisponibles(prev => [...prev, inmueble]);
+              
+              // Si viene un propietario nuevo, agregarlo a la lista
+              if (propietario) {
+                setPropietarios(prev => {
+                  // Evitar duplicados
+                  const exists = prev.some(p => p.id === propietario.id);
+                  return exists ? prev : [...prev, propietario];
+                });
+              }
+              
+              // Buscar el propietario (ya sea del array o el nuevo)
+              const propietarioFinal = propietario || propietarios.find(p => p.id === inmueble.propietarioId);
+              selectInmueble(inmueble, propietarioFinal);
+            }}
+            onPropietarioCreado={(nuevo) => {
+              setPropietarios(prev => {
+                // Evitar duplicados
+                const exists = prev.some(p => p.id === nuevo.id);
+                return exists ? prev : [...prev, nuevo];
+              });
             }}
           />
         );

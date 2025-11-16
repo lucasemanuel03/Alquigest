@@ -11,7 +11,6 @@ import ChangeEstadoContrato from "@/components/contratos/change-estado-contrato"
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import ProximoAumentoBadge from "@/components/contratos/proximo-aumento-badge";
-import auth from "@/utils/functions/auth-functions/auth";
 import formatPrice from "@/utils/functions/price-convert";
 import ServiciosContratoPage from "./servicios-contrato";
 import ModalCargarPdf from "@/components/contratos/modal-cargar-pdf";

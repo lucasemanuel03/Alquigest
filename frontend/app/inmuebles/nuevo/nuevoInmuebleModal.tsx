@@ -20,7 +20,8 @@ import BusquedaDesplegable from "@/components/busqueda/busqueda-desplegable";
 type NuevoInmuebleModalProps = {
   text?: string
   disabled?: boolean
-  onInmuebleCreado?: (nuevo: any) => void
+  onInmuebleCreado?: (data: { inmueble: any; propietario?: any }) => void
+  onPropietarioCreado?: (nuevo: any) => void
   open?: boolean
   onOpenChange?: (open: boolean) => void
   showTrigger?: boolean
@@ -29,7 +30,7 @@ type NuevoInmuebleModalProps = {
 export default function NuevoInmuebleModal(props: NuevoInmuebleModalProps) {
     const { hasPermission, hasRole, user } = useAuth();
 
-    const { text = "Nuevo Inmueble", onInmuebleCreado, disabled, open, onOpenChange, showTrigger = true } = props;
+    const { text = "Nuevo Inmueble", onInmuebleCreado, onPropietarioCreado, disabled, open, onOpenChange, showTrigger = true } = props;
     const [errorCarga, setErrorCarga] = useState("")
     const [mostrarError, setMostrarError] = useState(false)
     const [loadingCreacion, setLoadingCreacion] = useState(false) // nuevo estado para loading
@@ -132,9 +133,12 @@ export default function NuevoInmuebleModal(props: NuevoInmuebleModalProps) {
         });
         console.log("Inmueble creado con éxito:", createdInmueble);
   
-        // Llamar al callback si existe
+        // Encontrar el propietario seleccionado y pasarlo junto con el inmueble
+        const propietarioSeleccionado = propietariosBD.find(p => p.id.toString() === formData.propietarioId);
+        
+        // Llamar al callback si existe, pasando inmueble y propietario
         if (onInmuebleCreado) {
-          onInmuebleCreado(createdInmueble);
+          onInmuebleCreado({ inmueble: createdInmueble, propietario: propietarioSeleccionado });
         }
   
         // Limpiar formulario y cerrar modal
@@ -273,6 +277,10 @@ export default function NuevoInmuebleModal(props: NuevoInmuebleModalProps) {
                         setFormData(prev => ({ ...prev, propietarioId: nuevo.id.toString() }));
                         setErrorCarga("");
                         setMostrarError(false);
+                        // Notificar al padre si existe el callback
+                        if (onPropietarioCreado) {
+                          onPropietarioCreado(nuevo);
+                        }
                       }}
                     /> 
                   </div>

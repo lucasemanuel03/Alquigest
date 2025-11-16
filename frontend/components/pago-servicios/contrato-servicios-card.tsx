@@ -14,6 +14,7 @@ import BotonPagoModal, { PagoResumenItem } from "@/components/pago-servicios/Bot
 import LoadingSmall from "../loading-sm"
 import { Skeleton } from "../ui/skeleton"
 import InmuebleIcon from "../inmueble-icon"
+import { useAuth } from "@/contexts/AuthProvider"
 
 interface ContratoServiciosCardProps {
   contrato: ContratoDetallado
@@ -240,7 +241,7 @@ export default function ContratoServiciosCard({
                 triggerLabel={registrandoBatch ? 'Procesando...' : `Registrar Pagos${cantidadSeleccionados > 0 ? ` (${cantidadSeleccionados})` : ''}`}
                 items={resumenBatch}
                 onConfirm={confirmarBatch}
-                isDisabled={registrandoBatch || cantidadSeleccionados === 0}
+                isDisabled={registrandoBatch || cantidadSeleccionados === 0 || !useAuth().hasPermission("pagar_servicios")}
                 confirmLabel="Confirmar pagos"
                 cancelLabel="Cancelar"
                 title="Confirmación de pagos masivos"

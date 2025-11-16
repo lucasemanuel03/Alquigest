@@ -64,8 +64,8 @@ export default function PasoCargaPdf({ pdfFile, setPdfFile }: PasoCargaPdfProps)
 						<div className="flex items-center justify-between gap-4 p-4 bg-background rounded-lg border border-border">
 							<div className="flex items-center gap-3">
 								<FileText className="h-8 w-8 text-primary" />
-								<div>
-									<p className="font-medium">{pdfFile.name}</p>
+								<div className="">
+									<p className="font-medium">{pdfFile.name.slice(0, 50)}{pdfFile.name.length > 50 ? "..." : ""}</p>
 									<p className="text-xs text-muted-foreground">
 										{(pdfFile.size / 1024).toFixed(2)} KB
 									</p>
