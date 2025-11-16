@@ -136,4 +136,14 @@ public class PropietarioController {
             "advertencia", "Esta clave es confidencial. No la compartas."
         ));
     }
+
+    // PUT /api/propietarios/{id}/clave-fiscal - Modificar solo la clave fiscal
+    @PutMapping("/{id}/clave-fiscal")
+    @Operation(summary = "Modificar clave fiscal", description = "Modifica solamente la clave fiscal de un propietario")
+    public ResponseEntity<PropietarioDTO> modificarClaveFiscal(
+            @PathVariable Long id,
+            @Valid @RequestBody com.alquileres.dto.ModificarClaveFiscalRequest request) {
+        PropietarioDTO propietarioActualizado = propietarioService.modificarClaveFiscal(id, request.getClaveFiscal());
+        return ResponseEntity.ok(propietarioActualizado);
+    }
 }

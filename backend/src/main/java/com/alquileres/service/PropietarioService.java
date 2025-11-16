@@ -405,4 +405,45 @@ public class PropietarioService {
 
         return claveFiscal;
     }
+
+    /**
+     * Modifica la clave fiscal de un propietario
+     *
+     * @param propietarioId ID del propietario
+     * @param claveFiscalNueva Nueva clave fiscal sin encriptar
+     * @return PropietarioDTO actualizado con la clave fiscal enmascarada
+     * @throws BusinessException si el propietario no existe
+     */
+    @Transactional
+    public PropietarioDTO modificarClaveFiscal(Long propietarioId, String claveFiscalNueva) {
+        Propietario propietario = propietarioRepository.findById(propietarioId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCodes.PROPIETARIO_NO_ENCONTRADO,
+                "Propietario no encontrado con ID: " + propietarioId,
+                HttpStatus.NOT_FOUND
+            ));
+
+        try {
+            // Encriptar la nueva clave fiscal
+            String claveFiscalEncriptada = encryptionService.encriptar(claveFiscalNueva);
+            propietario.setClaveFiscal(claveFiscalEncriptada);
+            propietario.setUpdatedAt(java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+
+            Propietario propietarioActualizado = propietarioRepository.save(propietario);
+
+            PropietarioDTO dto = new PropietarioDTO(propietarioActualizado);
+            desencriptarClaveFiscal(dto);
+
+            logger.info("Clave fiscal modificada exitosamente para propietario ID: {}", propietarioId);
+
+            return dto;
+        } catch (Exception e) {
+            logger.error("Error encriptando clave fiscal para propietario ID: {}", propietarioId, e);
+            throw new BusinessException(
+                ErrorCodes.ERROR_INTERNO,
+                "Error al procesar la clave fiscal",
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
 }
