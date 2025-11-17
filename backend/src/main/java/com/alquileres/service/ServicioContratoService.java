@@ -93,6 +93,9 @@ public class ServicioContratoService {
                                                   String nroCuenta, String nroContrato, String nroContratoServicio,
                                                   Boolean esDeInquilino, Boolean esAnual,
                                                   String fechaInicio) {
+
+        fechaInicio = clockService.getCurrentDate().format(FORMATO_FECHA); // Evita creacion de servicios anteriores
+
         logger.info("=== CREANDO SERVICIO COMPLETO ===");
         logger.info("ContratoId: {}", contratoId);
         logger.info("TipoServicioId: {}", tipoServicioId);

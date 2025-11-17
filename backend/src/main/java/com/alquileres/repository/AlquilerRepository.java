@@ -17,8 +17,8 @@ public interface AlquilerRepository extends JpaRepository<Alquiler, Long> {
     @Query("SELECT a FROM Alquiler a WHERE a.contrato = :contrato AND a.esActivo = true")
     List<Alquiler> findByContrato(@Param("contrato") Contrato contrato);
 
-    // Buscar alquileres activos por contrato ID
-    @Query("SELECT a FROM Alquiler a WHERE a.contrato.id = :contratoId AND a.esActivo = true")
+    // Buscar alquileres por contrato ID
+    @Query("SELECT a FROM Alquiler a WHERE a.contrato.id = :contratoId")
     List<Alquiler> findByContratoId(@Param("contratoId") Long contratoId);
 
     // Buscar TODOS los alquileres por contrato ID (activos e inactivos) - usado para anular al dar de baja
@@ -58,8 +58,8 @@ public interface AlquilerRepository extends JpaRepository<Alquiler, Long> {
     Long countAlquileresProximosAVencer(@Param("fechaActual") String fechaActual, @Param("fechaLimite") String fechaLimite);
 
     // Buscar todos los alquileres pagados del mes actual (independientemente de si están activos o no)
-    @Query("SELECT a FROM Alquiler a WHERE a.estaPagado = true AND a.esActivo = true AND YEAR(CAST(a.fechaVencimientoPago AS date)) = YEAR(CURRENT_DATE) AND MONTH(CAST(a.fechaVencimientoPago AS date)) = MONTH(CURRENT_DATE)")
-    List<Alquiler> findAlquileresDelMes();
+    @Query("SELECT a FROM Alquiler a WHERE a.estaPagado = true AND YEAR(CAST(a.fechaVencimientoPago AS date)) = YEAR(CURRENT_DATE) AND MONTH(CAST(a.fechaVencimientoPago AS date)) = MONTH(CURRENT_DATE)")
+    List<Alquiler> findAlquileresPagadosDelMes();
 
     // Buscar alquileres activos no pagados del mes actual con sus datos asociados de contratos vigentes
     @Query("SELECT a FROM Alquiler a " +

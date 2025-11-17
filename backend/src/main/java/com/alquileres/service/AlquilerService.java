@@ -257,7 +257,7 @@ public class AlquilerService {
     }
     // Calcular honorarios (suma de porcentajes específicos de cada contrato para alquileres pagados del mes actual)
     public BigDecimal calcularHonorarios() {
-        List<Alquiler> alquileresPagados = alquilerRepository.findAlquileresDelMes();
+        List<Alquiler> alquileresPagados = alquilerRepository.findAlquileresPagadosDelMes();
 
         BigDecimal honorariosTotales = alquileresPagados.stream()
                 .map(alquiler -> {

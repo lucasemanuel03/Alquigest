@@ -78,11 +78,11 @@ public class ServicioActualizacionService {
 
             // Obtener el último mes procesado desde la base de datos
             String ultimoMesProcesado = obtenerUltimoMesProcesado();
-            logger.info("Último mes procesado en BD: {}", ultimoMesProcesado);
+            logger.info("Ultimo mes procesado en BD: {}", ultimoMesProcesado);
 
             // Verificar si ya se procesó en este mes
             if (mesActual.equals(ultimoMesProcesado)) {
-                logger.info("Los pagos ya fueron procesados en el mes actual ({}). No se procesarán nuevamente.", mesActual);
+                logger.info("Los pagos ya fueron procesados en el mes actual ({}). No se procesaran nuevamente.", mesActual);
                 return 0;
             }
 
