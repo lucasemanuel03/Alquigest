@@ -9,6 +9,7 @@ import { useEffect, useState } from "react"
 import BACKEND_URL from "@/utils/backendURL"
 import ModalError from "@/components/modal-error"
 import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
+import EditarClaveFiscal from "@/components/edit-clave-fiscal"
 
 type EditarPropietarioModalProps = {
   propietario: any
@@ -24,7 +25,7 @@ export default function EditarPropietarioModal({
   onPropietarioActualizado,
 }: EditarPropietarioModalProps) {
   const [editingOwner, setEditingOwner] = useState(propietario)
-
+  const [claveFiscalActualizada, setClaveFiscalActualizada] = useState("")
   const [errorCarga, setErrorCarga] = useState("")
   const [mostrarError, setMostrarError] = useState(false)
   const [loadingActualizacion, setLoadingActualizacion] = useState(false) // nuevo estado para loading
@@ -32,7 +33,15 @@ export default function EditarPropietarioModal({
   // Sincronizar el estado interno con la prop `propietario` cuando esta cambie
   useEffect(() => {
     setEditingOwner(propietario)
+    setClaveFiscalActualizada("") // Resetear la clave fiscal al cambiar de propietario
   }, [propietario])
+
+  // Resetear la clave fiscal cuando se cierra el modal
+  useEffect(() => {
+    if (!isOpen) {
+      setClaveFiscalActualizada("")
+    }
+  }, [isOpen])
 
 const handleBajaPropietarioInmueble = async () => {
   setLoadingActualizacion(true); // Activar loading
@@ -71,22 +80,29 @@ const handleBajaPropietarioInmueble = async () => {
 const handleUpdateOwner = async () => {
   setLoadingActualizacion(true); // Activar loading
   try {
+    // Crear objeto sin la clave fiscal para enviar al PATCH
+    const { claveFiscal, ...propietarioSinClaveFiscal } = editingOwner;
+    
+    // Si hay una clave fiscal actualizada, incluirla en el request
+    const dataToSend = claveFiscalActualizada !== "" 
+      ? { ...propietarioSinClaveFiscal, claveFiscal: claveFiscalActualizada }
+      : propietarioSinClaveFiscal;
+    
     const response = await fetchWithToken(`${BACKEND_URL}/propietarios/${editingOwner.id}`, {
-      method: "PUT",
+      method: "PATCH",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(editingOwner),
+      body: JSON.stringify(dataToSend),
     });
-
-    
 
     // Si el backend devuelve datos, actualizarlos
     const updatedOwner = response;
     onPropietarioActualizado(updatedOwner);
+    setClaveFiscalActualizada("") // Resetear la clave fiscal actualizada
     onClose();
   } catch (error: any) {
-      console.error("Error al crear propietario:", error)
+      console.error("Error al actualizar propietario:", error)
       const mensajeError = error?.message || "Error al conectarse al servidor"
       setErrorCarga(mensajeError)
       setMostrarError(true) // Mostrar el modal de error
@@ -143,7 +159,7 @@ const handleUpdateOwner = async () => {
                   <Input id="edit-cuil" value={editingOwner.cuil} disabled className="bg-muted" />
                   <p className="text-xs text-muted-foreground mt-1">El CUIL no se puede modificar</p>
                 </div>
-
+{/* CLAVE FISCAL
                 <div>
                     <Label htmlFor="clave-fiscal">Clave Fiscal</Label>
                     <Input
@@ -157,6 +173,15 @@ const handleUpdateOwner = async () => {
                       }}
                       placeholder="Opcional, ingrese la clave fiscal del Locador"
                     />
+                </div>*/}
+
+                <div>
+                  <Label>Clave Fiscal</Label>
+                  <EditarClaveFiscal 
+                    propietarioId={editingOwner.id} 
+                    claveFiscalEnmascarada={editingOwner.claveFiscal}
+                    setClaveFiscalActualizada={setClaveFiscalActualizada}
+                    claveFiscalActualizada={claveFiscalActualizada}/>
                 </div>
 
                 <div>

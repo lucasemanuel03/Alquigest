@@ -94,6 +94,16 @@ public class PropietarioController {
         return ResponseEntity.ok(propietarioActualizado);
     }
 
+    // PATCH /api/propietarios/{id} - Actualizar parcialmente propietario (sin afectar clave fiscal si no se envía)
+    @PatchMapping("/{id}")
+    @Operation(summary = "Actualización parcial de propietario", description = "Actualiza solo los campos enviados. La clave fiscal solo se modifica si se incluye explícitamente en el request")
+    public ResponseEntity<PropietarioDTO> actualizarParcialPropietario(
+            @PathVariable Long id,
+            @RequestBody PropietarioDTO propietarioDTO) {
+        PropietarioDTO propietarioActualizado = propietarioService.actualizarParcialPropietario(id, propietarioDTO);
+        return ResponseEntity.ok(propietarioActualizado);
+    }
+
     // PATCH /api/propietarios/{id}/desactivar - Desactivar propietario (eliminación lógica)
     @PatchMapping("/{id}/desactivar")
     public ResponseEntity<Void> desactivarPropietario(@PathVariable Long id) {

@@ -251,6 +251,80 @@ public class PropietarioService {
         return dto;
     }
 
+    // Actualizar parcialmente propietario (PATCH)
+    // No modifica la clave fiscal a menos que se envíe explícitamente
+    public PropietarioDTO actualizarParcialPropietario(Long id, PropietarioDTO propietarioDTO) {
+        Propietario propietarioExistente = propietarioRepository.findById(id)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCodes.PROPIETARIO_NO_ENCONTRADO,
+                "No se encontró el propietario con ID: " + id,
+                HttpStatus.NOT_FOUND
+            ));
+
+        // Validar CUIL único si se proporciona (excluyendo el propietario actual)
+        if (propietarioDTO.getCuil() != null && propietarioRepository.existsByCuilAndIdNot(propietarioDTO.getCuil(), id)) {
+            throw new BusinessException(
+                ErrorCodes.DNI_DUPLICADO,
+                "Ya existe otro propietario con ese CUIL"
+            );
+        }
+
+        // Validar email único si se proporciona (excluyendo el propietario actual)
+        if (propietarioDTO.getEmail() != null && !propietarioDTO.getEmail().trim().isEmpty()) {
+            if (propietarioRepository.existsByEmailAndIdNot(propietarioDTO.getEmail(), id)) {
+                throw new BusinessException(
+                    ErrorCodes.EMAIL_DUPLICADO,
+                    "Ya existe otro propietario con ese email"
+                );
+            }
+        }
+
+        // Actualizar solo los campos enviados
+        if (propietarioDTO.getNombre() != null) {
+            propietarioExistente.setNombre(propietarioDTO.getNombre());
+        }
+        if (propietarioDTO.getApellido() != null) {
+            propietarioExistente.setApellido(propietarioDTO.getApellido());
+        }
+        if (propietarioDTO.getCuil() != null) {
+            propietarioExistente.setCuil(propietarioDTO.getCuil());
+        }
+        if (propietarioDTO.getTelefono() != null) {
+            propietarioExistente.setTelefono(propietarioDTO.getTelefono());
+        }
+        if (propietarioDTO.getEmail() != null) {
+            propietarioExistente.setEmail(propietarioDTO.getEmail());
+        }
+        if (propietarioDTO.getDireccion() != null) {
+            propietarioExistente.setDireccion(propietarioDTO.getDireccion());
+        }
+        if (propietarioDTO.getBarrio() != null) {
+            propietarioExistente.setBarrio(propietarioDTO.getBarrio());
+        }
+        if (propietarioDTO.getEsActivo() != null) {
+            propietarioExistente.setEsActivo(propietarioDTO.getEsActivo());
+        }
+
+        // Solo actualizar clave fiscal si se envía explícitamente
+        // Nota: Si se envía como null o vacío, NO se modifica
+        if (propietarioDTO.getClaveFiscal() != null && !propietarioDTO.getClaveFiscal().trim().isEmpty()) {
+            try {
+                propietarioExistente.setClaveFiscal(encryptionService.encriptar(propietarioDTO.getClaveFiscal()));
+            } catch (Exception e) {
+                logger.error("Error encriptando clave fiscal", e);
+                throw new BusinessException(
+                    ErrorCodes.ERROR_INTERNO,
+                    "Error al procesar la clave fiscal"
+                );
+            }
+        }
+
+        Propietario propietarioActualizado = propietarioRepository.save(propietarioExistente);
+        PropietarioDTO dto = new PropietarioDTO(propietarioActualizado);
+        desencriptarClaveFiscal(dto);
+        return dto;
+    }
+
     // Eliminar propietario (eliminación lógica)
     @Transactional
     public void desactivarPropietario(Long id) {
