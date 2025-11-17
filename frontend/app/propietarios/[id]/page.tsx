@@ -97,7 +97,7 @@ export default function PropietarioDetalles() {
                                 <h2 className="font-bold">CUIL:</h2>
                                 <p>{propietario?.cuil}</p>
                             </div>
-                            {(hasRole("ROLE_ADMINISTRADOR") || hasRole("ROLE_ABOGADA")) && (
+                            {(hasRole("ROLE_SECRETARIA") || hasRole("ROLE_ABOGADA")) && (
                                 <div className="flex flex-col gap-2">
                                     <h2 className="font-bold">Clave Fiscal:</h2>
                                     <ClaveFiscalSecura
