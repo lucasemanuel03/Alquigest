@@ -120,7 +120,7 @@ export default function HonorariosMesPage() {
 							<CardTitle className="text-base font-light">Honorarios promedio</CardTitle>
 							<CardDescription>
                                 <p className='text-xl'>
-                                    {loading ? <Skeleton className="h-5 w-24" /> : data ? `${formatoMoneda(data.totalHonorarios / data.honorariosPorInmueble.length)}` : '—'}
+                                    {loading ? <Skeleton className="h-5 w-24" /> : data ? `${formatoMoneda(data.honorariosPorInmueble.length > 0 ? data.totalHonorarios / data.honorariosPorInmueble.length : 0)}` : '—'}
                                 </p>
                                     
 							</CardDescription>

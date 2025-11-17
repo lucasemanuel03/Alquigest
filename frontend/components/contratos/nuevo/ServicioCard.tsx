@@ -88,7 +88,7 @@ const ServicioCard: React.FC<ServicioCardProps> = ({ s, updateServicio }) => {
                   <SelectValue placeholder="Seleccionar responsable" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="inquilino">Inquilino</SelectItem>
+                  <SelectItem value="inquilino">Locatario</SelectItem>
                   <SelectItem value="estudio">Estudio jurídico</SelectItem>
                 </SelectContent>
               </Select>
