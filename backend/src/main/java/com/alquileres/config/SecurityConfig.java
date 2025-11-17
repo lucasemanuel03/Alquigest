@@ -111,6 +111,8 @@ public class SecurityConfig {
 
                 // ALQUILERES - Lectura: todos los roles, Escritura: ADMIN y ABOGADA
                 .requestMatchers(HttpMethod.GET, "/api/alquileres/**").hasAnyRole("ADMINISTRADOR", "ABOGADA", "SECRETARIA")
+                .requestMatchers(HttpMethod.GET, "/api/alquileres/honorarios").hasAnyRole("ADMINISTRADOR", "ABOGADA")
+                .requestMatchers(HttpMethod.GET, "/api/alquileres/{id}/honorarios").hasAnyRole("ADMINISTRADOR", "ABOGADA")
                 .requestMatchers("/api/alquileres/**").hasAnyRole("ADMINISTRADOR", "ABOGADA")
 
                 // SERVICIOS POR CONTRATO - Lectura: todos los roles, Escritura: ADMIN y ABOGADA
