@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import BACKEND_URL from "@/utils/backendURL";
 import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken";
 import { useEffect, useState } from "react";
-import { File } from "lucide-react";
+import { FileText, ExternalLink } from "lucide-react";
 
 export default function PDFContratoCard({idContrato}: {idContrato: number}) {
 
@@ -43,41 +43,49 @@ export default function PDFContratoCard({idContrato}: {idContrato: number}) {
 
   return (
     <div className="w-full">
-        <div className="flex flex-col items-center space-y-2">
-            <div className="flex gap-2 items-center">
-                <File className="text-primary"/>
-                <h2 className="text-xl font-bold text-foreground font-sans">PDF Contrato</h2>
+        <div>
+            <div className="flex items-center">
+                <FileText className="h-7 w-7 mr-2 text-primary" />
+                <h2 className="text-xl font-bold text-foreground font-sans">Documento PDF del Contrato</h2>
             </div>
-            <Card className="w-4xl">
-                        <CardHeader >
-                            <div className="flex items-center gap-2">
-                                <CardTitle className="font-bold">Clickee el botón para verificar si existe un PDF del contrato.</CardTitle>
-                            </div>
-                        </CardHeader>
+        </div> 
+        <div className="mt-10 ml-5">
+            <Card className="max-w-4xl">
+                <CardHeader>
+                    <div className="flex items-center gap-2">
+                        <FileText className="h-5 w-5"/>
+                        <CardTitle className="font-bold">Documento PDF del Contrato</CardTitle>
+                    </div>
+                </CardHeader>
 
-                        <CardContent>
-                            <div className="flex flex-col items-center gap-3">
-                                <Button onClick={handleVerPdf} loading={loading} className="w-full">
-                                    Ver PDF
+                <CardContent>
+                    <div className="flex flex-col gap-4">
+                        <p className="text-sm text-muted-foreground">
+                            Visualice el documento PDF del contrato si ha sido cargado previamente.
+                        </p>
+                        <div className="flex items-center gap-3">
+                            <Button onClick={handleVerPdf} loading={loading} variant="default">
+                                <FileText className="h-4 w-4 mr-2" />
+                                Ver PDF del Contrato
+                            </Button>
+                            {pdfUrl && (
+                                <Button
+                                    variant="outline"
+                                    onClick={() => window.open(pdfUrl, "_blank")}
+                                >
+                                    <ExternalLink className="h-4 w-4 mr-2" />
+                                    Abrir en nueva pestaña
                                 </Button>
-                                {pdfUrl && (
-                                    <a
-                                        href={pdfUrl}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="text-sm text-primary underline"
-                                    >
-                                        Abrir en nueva pestaña
-                                    </a>
-                                )}
-                            </div>
-                            {errorMsg && (
-                                <p className="mt-3 text-sm text-red-600">{errorMsg}</p>
                             )}
-                        </CardContent>
-                    </Card>
-
-
+                        </div>
+                        {errorMsg && (
+                            <div className="mt-2 p-3 bg-destructive/10 border border-destructive/20 dark:bg-destructive/20 w-fit rounded-md">
+                                <p className="text-sm text-foreground">{errorMsg}</p>
+                            </div>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     </div>
   )

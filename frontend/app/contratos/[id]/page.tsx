@@ -6,9 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ContratoDetallado } from "@/types/ContratoDetallado";
 import BACKEND_URL from "@/utils/backendURL";
 import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken";
-import { ArrowLeft, Blocks, Building, Contact, FileText, FileUp, User } from "lucide-react";
+import { ArrowLeft, Blocks, Building, Contact, FileText, FileUp, User, History } from "lucide-react";
 import ChangeEstadoContrato from "@/components/contratos/change-estado-contrato";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import ProximoAumentoBadge from "@/components/contratos/proximo-aumento-badge";
 import formatPrice from "@/utils/functions/price-convert";
@@ -23,6 +23,7 @@ import { useAuth } from "@/contexts/AuthProvider"
 export default function DetalleContratoPage({contratoDetallado} : {contratoDetallado?: ContratoDetallado}) {
 
     const { hasPermission, hasRole, user } = useAuth();
+    const router = useRouter();
 
     const params = useParams(); 
     const id = params.id as string;
@@ -144,6 +145,9 @@ export default function DetalleContratoPage({contratoDetallado} : {contratoDetal
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
+                            <Button variant="outline" onClick={() => router.push(`/alquileres/${id}/historial-pago-alquiler`)}>
+                                <History className="h-4 w-4 mr-2" /> Historial de Pagos
+                            </Button>
                             <Button variant="outline" onClick={() => setOpenModalPdf(true)} disabled={contratoBD.estadoContratoId !== 1}>
                                 <FileUp className="h-4 w-4 mr-2" /> Cargar PDF
                             </Button>

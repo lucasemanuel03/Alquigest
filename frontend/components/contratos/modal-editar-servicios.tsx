@@ -153,7 +153,7 @@ export default function ModalEditarServicios({ contratoId, fechaInicioContrato, 
             } else {
               // Desactivar: sin body
               await fetchWithToken(`${BACKEND_URL}/servicios-contrato/${servicioId}/desactivar`, {
-                method: "PUT",
+                method: "DELETE",
               });
               console.log(`✅ Servicio ${servicioId} desactivado exitosamente`);
             }

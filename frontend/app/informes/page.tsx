@@ -64,16 +64,6 @@ export default function InformesPage() {
                     descripcion="Informe detallado del historial de aumentos de los contratos de alquiler."
                     iconInforme={<CalendarArrowUp />}
                 />
-                <InformeCard 
-                    classNameHeader="text-muted" 
-                    classNameCard="text-muted"
-                    urlInforme="/informes"  
-                />
-                <InformeCard
-                    classNameHeader="text-muted" 
-                    classNameCard="text-muted"
-                    urlInforme="/informes"   
-                    />
             </div>
         </main>
     </div>

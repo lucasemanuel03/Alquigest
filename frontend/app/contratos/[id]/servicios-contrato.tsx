@@ -42,9 +42,9 @@ export default function ServiciosContratoPage({esVigente, idContrato, fechaInici
     }
 
     return(
-    <div className="w-full">
+    <div className="w-full mb-15">
         
-        <div className="flex flex-col m-5 mt-20">
+        <div className="flex flex-col  mt-20">
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center">
                     <Blocks className="h-7 w-7 mr-2 text-green-700" />
@@ -59,7 +59,7 @@ export default function ServiciosContratoPage({esVigente, idContrato, fechaInici
                 />
             </div>
 
-            <div>
+            <div className="ml-5">
                 {serviciosContrato.length === 0 ? (
                     <p className="mt-5 text-lg">No hay servicios asociados a este contrato.</p>
                 ) : (

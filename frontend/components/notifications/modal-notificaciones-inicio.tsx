@@ -30,7 +30,10 @@ export default function ModalNotificacionesInicio({ isOpen, onClose, setNotifica
 
         // Obtener cantidad de aumentos manuales pendientes
         //PROVISORIO
-        setAumentosManuales(2);
+        const aumentosManuales = await fetchWithToken(`${BACKEND_URL}/alquileres/aumento-manual/pendientes`)
+        const cantAumentos: number = aumentosManuales.length
+        setAumentosManuales(cantAumentos)
+        console.log("Aumentos manuales pendientes:", cantAumentos)
 
         // Obtener cantidad de servicios pendientes
         const cantServicios = await fetchWithToken(`${BACKEND_URL}/pagos-servicios/count/pendientes`)

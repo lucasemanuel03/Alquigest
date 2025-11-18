@@ -75,7 +75,7 @@ export default function ExportarHonorariosPDF({
     doc.setFont("helvetica", "bold")
     doc.setFontSize(18)
     doc.setTextColor(0, 50, 100)
-    doc.text("Reporte de Honorarios Mensuales", 30, 80)
+    doc.text("Informe de Honorarios Mensuales", 30, 80)
 
     doc.setFontSize(11)
     doc.setFont("helvetica", "bold")
