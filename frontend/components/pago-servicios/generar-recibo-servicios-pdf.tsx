@@ -219,8 +219,8 @@ export default function GenerarReciboServiciosPDF({
   }
 
   return (
-    <Button onClick={generarPDF} className="bg-amber-500 hover:bg-amber-600">
-      <FileDown className="h-4 w-4 mr-2" />
+    <Button onClick={generarPDF} >
+      <FileDown/>
       Generar PDF
     </Button>
   )

@@ -144,13 +144,11 @@ export default function ModalReciboServicios({
             Cargando datos del recibo...
           </div>
         ) : datos ? (
-          <div className="space-y-6 py-4">
+          <div className="space-y-4">
             {/* Período */}
-            <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-              <span className="font-semibold text-lg">Período:</span>
-              <Badge variant="outline" className="text-base px-4 py-2">
-                {datos.periodo}
-              </Badge>
+            <div className="flex items-center gap-2 bg-muted rounded-lg">
+              <span className=" text-base">Período:</span>
+                <p className="font-bold">{datos.periodo}</p>
             </div>
 
             {/* Información del Contrato */}
@@ -170,12 +168,10 @@ export default function ModalReciboServicios({
               </div>
             </div>
 
-            {/* Propietario */}
-            <div className="space-y-3">
-              <h3 className="font-semibold text-base border-b pb-2">Locador (Propietario)</h3>
+              <h3 className="font-semibold text-sm">Locador:</h3>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
-                  <span className="text-muted-foreground">Nombre:</span>
+                  <span className="text-muted-foreground">Apellido, Nombre:</span>
                   <p className="font-medium">{datos.propietario.apellido}, {datos.propietario.nombre}</p>
                 </div>
                 <div>
@@ -187,14 +183,11 @@ export default function ModalReciboServicios({
                   <p className="font-medium">{datos.propietario.direccion} - {datos.propietario.barrio}</p>
                 </div>
               </div>
-            </div>
 
-            {/* Inquilino */}
-            <div className="space-y-3">
-              <h3 className="font-semibold text-base border-b pb-2">Locatario (Inquilino)</h3>
+              <h3 className="font-semibold text-sm">Locatario: </h3>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
-                  <span className="text-muted-foreground">Nombre:</span>
+                  <span className="text-muted-foreground">Apellido, Nombre:</span>
                   <p className="font-medium">{datos.inquilino.apellido}, {datos.inquilino.nombre}</p>
                 </div>
                 <div>
@@ -206,18 +199,19 @@ export default function ModalReciboServicios({
                   <p className="font-medium">{datos.inquilino.direccion} - {datos.inquilino.barrio}</p>
                 </div>
               </div>
-            </div>
 
             {/* Servicios */}
             <div className="space-y-3">
               <h3 className="font-semibold text-base border-b pb-2">Servicios</h3>
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {datos.servicios.map((servicio) => (
                   <div
                     key={servicio.id}
-                    className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                    className="flex items-center justify-between p-2 bg-muted"
                   >
-                    <span className="font-medium">{servicio.nombreTipoServicio}</span>
+                    <div>
+                      <span className="font-medium">{servicio.nombreTipoServicio}</span>
+                    </div>
                     <span className="font-semibold text-green-600">
                       ${servicio.monto.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
@@ -226,7 +220,7 @@ export default function ModalReciboServicios({
               </div>
 
               {/* Total */}
-              <div className="flex items-center justify-between p-4 bg-primary/10 rounded-lg border-2 border-primary/20">
+              <div className="flex items-center justify-between p-4 bg-green-100 rounded-lg border-2 border-green-500/50">
                 <span className="font-bold text-lg">Total:</span>
                 <span className="font-bold text-xl text-green-600">
                   ${calcularTotal().toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
