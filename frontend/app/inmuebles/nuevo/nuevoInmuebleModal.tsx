@@ -127,9 +127,20 @@ export default function NuevoInmuebleModal(props: NuevoInmuebleModalProps) {
     const handleNewInmueble = async () => {
       setLoadingCreacion(true); // Activar loading
       try {
+        // Convertir campos string a number para el backend
+        const dataToSend = {
+          ...formData,
+          propietarioId: parseInt(formData.propietarioId),
+          tipoInmuebleId: parseInt(formData.tipoInmuebleId),
+          estado: parseInt(formData.estado),
+          superficie: formData.superficie ? parseFloat(formData.superficie) : null,
+          esActivo: formData.esActivo === "true",
+          esAlquilado: formData.esAlquilado === "true",
+        };
+
         const createdInmueble = await fetchWithToken(`${BACKEND_URL}/inmuebles`, {
           method: "POST",
-          body: JSON.stringify(formData),
+          body: JSON.stringify(dataToSend),
         });
         console.log("Inmueble creado con éxito:", createdInmueble);
   

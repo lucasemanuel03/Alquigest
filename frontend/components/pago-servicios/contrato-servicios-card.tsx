@@ -15,6 +15,7 @@ import LoadingSmall from "../loading-sm"
 import { Skeleton } from "../ui/skeleton"
 import InmuebleIcon from "../inmueble-icon"
 import { useAuth } from "@/contexts/AuthProvider"
+import ModalReciboServicios from "@/components/pago-servicios/modal-recibo-servicios"
 
 interface ContratoServiciosCardProps {
   contrato: ContratoDetallado
@@ -34,6 +35,7 @@ export default function ContratoServiciosCard({
   const [loading, setLoading] = useState(false)
   const [serviciosCargados, setServiciosCargados] = useState(false)
   const [registrandoBatch, setRegistrandoBatch] = useState(false)
+  const [modalReciboOpen, setModalReciboOpen] = useState(false)
 
   // Estado local para acumular pagos masivos (por pagoId)
   type DatosPagoBatch = {
@@ -222,7 +224,7 @@ export default function ContratoServiciosCard({
                 ))}
               </div>
             )}
-            <div className="pt-4 border-t flex justify-end gap-5 items-center">
+            <div className="pt-4 border-t flex justify-end gap-5 items-center ">
                  {/* Aquí va el botón HISTORIAL */}
               <Link href={`/contratos/${contrato.id}/historial-pagos-servicios`}>
                 <Button className="w-42" variant={"outline"}>
@@ -230,10 +232,18 @@ export default function ContratoServiciosCard({
                   Ver Historial
                 </Button>
               </Link>
+              <Button 
+                className="w-42 border-amber-400" 
+                variant={"outline"}
+                onClick={() => setModalReciboOpen(true)}
+              >
+                <Receipt className="h-4 w-4 mr-2" />
+                Recibo de Servicios
+              </Button>
                 {/* Aquí va el botón para generar MERCEDES LOCATIVAS */}
               <Link href={`/alquileres/${contrato.id}/generar-recibo`}>
                 <Button className="w-42" variant={"outline"}>
-                  <Receipt/>
+                  <Receipt className="h-4 w-4 mr-2" />
                   Mercedes Locativas
                 </Button>
               </Link>
@@ -253,6 +263,14 @@ export default function ContratoServiciosCard({
           </div>
         </CardContent>
       )}
+      
+      {/* Modal de Recibo de Servicios */}
+      <ModalReciboServicios
+        open={modalReciboOpen}
+        onOpenChange={setModalReciboOpen}
+        contratoId={contrato.id}
+        direccionInmueble={contrato.direccionInmueble}
+      />
     </Card>
   )
 }

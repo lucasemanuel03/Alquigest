@@ -3,6 +3,17 @@ import { Badge } from "../ui/badge";
 
 export default function BadgeInmueble({ estadoInmueble } : { estadoInmueble: number }) {
   
+    // Validación de seguridad
+    if (!estadoInmueble || estadoInmueble < 1 || estadoInmueble > ESTADOS_INMUEBLE.length) {
+      return (
+        <div className="flex flex-col items-end space-y-1">
+          <Badge variant="secondary" className="w-25">
+            Desconocido
+          </Badge>
+        </div>
+      );
+    }
+
     switch (estadoInmueble) {
       case 1: // Disponible
         return (
