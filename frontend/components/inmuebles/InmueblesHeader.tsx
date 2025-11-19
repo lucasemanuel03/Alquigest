@@ -38,7 +38,10 @@ export default function InmueblesHeader({ filtro, onChangeFiltro, count, onInmue
             Volver
           </Button>
         </Link>
-        <NuevoInmuebleModal text="Nuevo Inmueble" onInmuebleCreado={onInmuebleCreado} />
+        <NuevoInmuebleModal 
+          text="Nuevo Inmueble" 
+          onInmuebleCreado={(data) => onInmuebleCreado(data.inmueble)} 
+        />
       </div>
       <div className="flex items-center justify-between">
         <div>

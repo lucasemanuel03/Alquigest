@@ -177,7 +177,10 @@ export default function InmueblesContainer() {
         filtro={filtro}
         onChangeFiltro={handleChangeFiltro}
         count={inmueblesBD.length}
-        onInmuebleCreado={(nuevo) => setInmueblesBD((prev) => [...prev, nuevo])}
+        onInmuebleCreado={(nuevo) => {
+          setInmueblesBD((prev) => [...prev, nuevo])
+          setInmueblesMostrar((prev) => [...prev, nuevo])
+        }}
       />
 
       <BarraBusqueda 
