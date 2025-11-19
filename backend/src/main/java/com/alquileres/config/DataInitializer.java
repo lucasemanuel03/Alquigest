@@ -105,6 +105,7 @@ public class DataInitializer implements CommandLineRunner {
         if (motivoCancelacionRepository.count() == 0) {
             motivoCancelacionRepository.save(new MotivoCancelacion("Locador Rescinde", "Se violaron cláusulas específicas del contrato"));
             motivoCancelacionRepository.save(new MotivoCancelacion("Locatario Rescinde", "Otros motivos"));
+            motivoCancelacionRepository.save(new MotivoCancelacion("Mal Cargado", "El contrato fue cargado con datos incorrectos"));
 
             System.out.println("Motivos de cancelación inicializados en la base de datos");
         }

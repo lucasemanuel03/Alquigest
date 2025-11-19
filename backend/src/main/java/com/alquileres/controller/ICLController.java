@@ -56,7 +56,7 @@ public class ICLController {
             @RequestParam String fechaFin) {
 
         BigDecimal nuevoMonto = bcraApiClient.calcularNuevoMontoConICL(montoOriginal, fechaInicio, fechaFin);
-        BigDecimal tasaAumento = bcraApiClient.obtenerTasaAumentoICL(fechaInicio, fechaFin);
+        BigDecimal tasaAumento = nuevoMonto.divide(montoOriginal, 6, BigDecimal.ROUND_HALF_UP);
         BigDecimal diferencia = nuevoMonto.subtract(montoOriginal);
 
         Map<String, Object> response = new HashMap<>();

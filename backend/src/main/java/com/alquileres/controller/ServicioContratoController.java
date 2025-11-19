@@ -96,7 +96,7 @@ public class ServicioContratoController {
         return ResponseEntity.ok(new ServicioContratoDTO(servicio));
     }
 
-    @DeleteMapping("/{servicioId}/desactivar")
+    @PatchMapping("/{servicioId}/desactivar")
     @Operation(summary = "Desactivar servicio", description = "Desactiva un servicio (borrado lógico)")
     public ResponseEntity<Void> desactivarServicio(@PathVariable Integer servicioId) {
         servicioContratoService.desactivarServicio(servicioId);

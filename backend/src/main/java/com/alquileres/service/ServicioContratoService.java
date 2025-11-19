@@ -230,7 +230,6 @@ public class ServicioContratoService {
 
     /**
      * Desactiva un servicio (borrado lógico)
-     * También desactiva su configuración de pago
      */
     @Transactional
     public void desactivarServicio(Integer servicioId) {

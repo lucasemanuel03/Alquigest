@@ -467,7 +467,7 @@ public class AlquilerActualizacionService {
      *
      * @param contrato El contrato cuya fechaAumento se debe actualizar
      */
-    private void actualizarFechaAumentoContrato(Contrato contrato) {
+    public void actualizarFechaAumentoContrato(Contrato contrato) {
         try {
             // Validar que tenga periodoAumento configurado
             if (contrato.getPeriodoAumento() == null || contrato.getPeriodoAumento() <= 0) {

@@ -154,6 +154,11 @@ public class BCRAApiClient {
             BigDecimal valorInicio = valoresPorFecha.get(fechaInicio);
             BigDecimal valorFin = valoresPorFecha.get(fechaFin);
 
+            logger.info("=== === === Valores de ICL === === ===");
+            logger.info("Fecha Inicio: {}, Valor: {}", fechaInicio, valorInicio);
+            logger.info("Fecha Fin: {}, Valor: {}", fechaFin, valorFin);
+            logger.info("=== === === Fin Valores ICL === === ===");
+
             // Validar que existan ambos valores
             if (valorInicio == null) {
                 logger.error("No se encontró valor de ICL para la fecha de inicio: {}", fechaInicio);

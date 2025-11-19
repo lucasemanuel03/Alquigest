@@ -1,14 +1,7 @@
 package com.alquileres.service;
 
-import com.alquileres.dto.AlquilerDTO;
-import com.alquileres.dto.AlquilerCreateDTO;
-import com.alquileres.dto.RegistroPagoDTO;
-import com.alquileres.dto.NotificacionPagoAlquilerDTO;
-import com.alquileres.dto.AlquilerDetalladoDTO;
-import com.alquileres.model.Alquiler;
-import com.alquileres.model.Contrato;
-import com.alquileres.model.Propietario;
-import com.alquileres.model.Inmueble;
+import com.alquileres.dto.*;
+import com.alquileres.model.*;
 import com.alquileres.repository.AlquilerRepository;
 import com.alquileres.repository.ContratoRepository;
 import com.alquileres.exception.BusinessException;
@@ -36,6 +29,7 @@ public class AlquilerService {
     private final ContratoRepository contratoRepository;
     private final com.alquileres.repository.PropietarioRepository propietarioRepository;
     private final AumentoAlquilerService aumentoAlquilerService;
+    private final AlquilerActualizacionService alquilerActualizacionService;
     private final com.alquileres.util.BCRAApiClient bcraApiClient;
 
     @Autowired
@@ -46,11 +40,13 @@ public class AlquilerService {
             ContratoRepository contratoRepository,
             com.alquileres.repository.PropietarioRepository propietarioRepository,
             AumentoAlquilerService aumentoAlquilerService,
+            AlquilerActualizacionService alquilerActualizacionService,
             com.alquileres.util.BCRAApiClient bcraApiClient) {
         this.alquilerRepository = alquilerRepository;
         this.contratoRepository = contratoRepository;
         this.propietarioRepository = propietarioRepository;
         this.aumentoAlquilerService = aumentoAlquilerService;
+        this.alquilerActualizacionService = alquilerActualizacionService;
         this.bcraApiClient = bcraApiClient;
     }
 
@@ -477,8 +473,15 @@ public class AlquilerService {
                 }
 
                 // Obtener fechas para consultar la API
-                String fechaInicio = contrato.getFechaAumento();
-                String fechaFin = clockService.getCurrentDate().withDayOfMonth(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+                // Obtener el ultimo aumento
+                AumentoAlquilerDTO aumentoAnterior = aumentoAlquilerService
+                        .obtenerUltimoAumento(contrato.getId());
+
+                // fechaInicio es la fecha del aumento anterior si existiera
+                String fechaInicio = aumentoAnterior.getFechaAumento();
+                // fechaFin es la fecha del alquiler actual
+                String fechaFin = alquiler.getFechaVencimientoPago();
 
                 logger.debug("Reintentando consulta API del BCRA para alquiler ID {}: fechaInicio={}, fechaFin={}",
                             alquiler.getId(), fechaInicio, fechaFin);
@@ -504,6 +507,9 @@ public class AlquilerService {
                 alquiler.setMonto(nuevoMonto);
                 alquiler.setNecesitaAumentoManual(false);
                 alquilerRepository.save(alquiler);
+
+                // Actualizar fechaAumento de contrato
+                alquilerActualizacionService.actualizarFechaAumentoContrato(contrato);
 
                 // Registrar el aumento en el historial
                 aumentoAlquilerService.crearYGuardarAumento(
