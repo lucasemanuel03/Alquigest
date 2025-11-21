@@ -68,6 +68,10 @@ export default function DetalleInquilino() {
                 <h2 className="font-bold">Teléfono:</h2>
                 <p>{inquilino?.telefono || "No especifica"}</p>
               </div>
+              <div className="flex gap-3">
+                <h2 className="font-bold">Dirección Real:</h2>
+                <p>{inquilino?.direccion || "No especifica"}, {inquilino?.barrio}</p>
+              </div>
               {/* Email eliminado, no existe en el modelo Inquilino */}
               <div className="flex gap-3">
                 <h2 className="font-bold">Estado:</h2>

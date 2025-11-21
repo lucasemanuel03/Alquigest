@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import {  Phone, User, Edit, SquareX, SquareCheck, Eye } from "lucide-react"
+import {  Phone, User, Edit, SquareX, SquareCheck, Eye, MapPin } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import HeaderAlquigest from "@/components/header"
@@ -69,6 +69,8 @@ export default function InquilinosPage() {
     cuil: "",
     telefono: "",
     esActivo: true,
+    barrio: "",
+    direccion: ""
   })
 
  
@@ -133,6 +135,8 @@ export default function InquilinosPage() {
         cuil: "",
         telefono: "",
         esActivo: true,
+        barrio: "",
+        direccion: ""
       });
 
     } catch (error: any) {
@@ -200,7 +204,7 @@ export default function InquilinosPage() {
                       <CardTitle className="text-lg">
                         {inquilino.apellido}, {inquilino.nombre}
                       </CardTitle>
-                      <p className="text-sm text-muted-foreground">cuil: {inquilino.cuil}</p>
+                      <p className="text-sm text-muted-foreground">CUIL: {inquilino.cuil}</p>
                     </div>
                 
                   </div>
@@ -219,6 +223,10 @@ export default function InquilinosPage() {
                   <div className="flex items-center text-sm">
                     <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
                     <span className="text-muted-foreground">{inquilino.telefono || "No Especificada"}</span>
+                  </div>
+                  <div className="flex items-center text-sm">
+                    <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">{inquilino.direccion || "No Especificada"}{`, ${inquilino.barrio}`}</p>
                   </div>
                 </div>
 
@@ -284,9 +292,9 @@ export default function InquilinosPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="edit-cuil">Cuil</Label>
+                  <Label htmlFor="edit-cuil">CUIL</Label>
                   <Input id="edit-cuil" value={editingInquilino.cuil} disabled className="bg-muted" />
-                  <p className="text-xs text-muted-foreground mt-1">El cuil no se puede modificar</p>
+                  <p className="text-xs text-muted-foreground mt-1">El CUIL no se puede modificar</p>
                 </div>
 
                 <div>
@@ -303,6 +311,24 @@ export default function InquilinosPage() {
                     placeholder="351-4455667"
                   />
                 </div>
+                <div>
+                    <Label htmlFor="edit-direccion">Dirección</Label>
+                    <Input
+                      required
+                      id="edit-direccion"
+                      value={editingInquilino.direccion}
+                      onChange={(e) => setEditingInquilino({ ...editingInquilino, direccion: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-barrio">Barrio</Label>
+                    <Input
+                      required
+                      id="edit-barrio"
+                      value={editingInquilino.barrio}
+                      onChange={(e) => setEditingInquilino({ ...editingInquilino, barrio: e.target.value })}
+                    />
+                  </div>
 
                 <div>
                   <Label htmlFor="edit-estado">Estado</Label>

@@ -49,6 +49,7 @@ export default function NuevoPropietarioModal(props: NuevoPropietarioModalProps)
     telefono: "",
     email: "",
     direccion: "",
+    barrio: ""
   })
   const [puedeCrear, setPuedeCrear] = useState(false)
 
@@ -79,6 +80,7 @@ export default function NuevoPropietarioModal(props: NuevoPropietarioModalProps)
         telefono: "",
         email: "",
         direccion: "",
+        barrio: ""
       })
   setOpenSafe(false)
     } catch (error) {
@@ -222,7 +224,19 @@ export default function NuevoPropietarioModal(props: NuevoPropietarioModalProps)
                 onChange={(e) =>
                   setNuevoPropietario({ ...nuevoPropietario, direccion: e.target.value })
                 }
-                placeholder="Calle, número, ciudad"
+                placeholder="Calle, número"
+              />
+            </div>
+            <div>
+              <Label htmlFor="barrio">Barrio</Label>
+              <Input
+                id="barrio"
+                maxLength={50}
+                value={nuevoPropietario.barrio}
+                onChange={(e) =>
+                  setNuevoPropietario({ ...nuevoPropietario, barrio: e.target.value })
+                }
+                placeholder="Ingrese el barrio"
               />
             </div>
 

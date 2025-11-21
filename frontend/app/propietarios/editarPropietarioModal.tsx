@@ -159,21 +159,6 @@ const handleUpdateOwner = async () => {
                   <Input id="edit-cuil" value={editingOwner.cuil} disabled className="bg-muted" />
                   <p className="text-xs text-muted-foreground mt-1">El CUIL no se puede modificar</p>
                 </div>
-{/* CLAVE FISCAL
-                <div>
-                    <Label htmlFor="clave-fiscal">Clave Fiscal</Label>
-                    <Input
-                      id="clave-fiscal"
-                      type="text"
-                      minLength={8}
-                      maxLength={64}
-                      value={editingOwner.claveFiscal}
-                      onChange={(e) => {
-                        setEditingOwner({ ...editingOwner, claveFiscal: e.target.value})
-                      }}
-                      placeholder="Opcional, ingrese la clave fiscal del Locador"
-                    />
-                </div>*/}
 
                 <div>
                   <Label>Clave Fiscal</Label>
@@ -216,6 +201,14 @@ const handleUpdateOwner = async () => {
                     id="edit-direccion"
                     value={editingOwner.direccion}
                     onChange={(e) => setEditingOwner({ ...editingOwner, direccion: e.target.value })}
+                />
+                </div>
+                <div>
+                <Label htmlFor="edit-barrio">Barrio</Label>
+                <Input
+                    id="edit-barrio"
+                    value={editingOwner.barrio}
+                    onChange={(e) => setEditingOwner({ ...editingOwner, barrio: e.target.value })}
                 />
                 </div>
 

@@ -116,7 +116,7 @@ export default function PropietarioDetalles() {
                             </div>
                             <div className="flex gap-3">
                                 <h2 className="font-bold">Dirección:</h2>
-                                <p>{propietario?.direccion || "No especifica"}</p>
+                                <p>{propietario?.direccion || "No especifica"}{`, ${propietario?.barrio}`}</p>
                             </div>
                         </div>
                     </CardContent>

@@ -7,5 +7,6 @@ export interface Propietario {
   telefono: string;
   email: string;
   direccion: string;
+  barrio: string;
   esActivo: boolean;
 }

@@ -158,7 +158,7 @@ useEffect(() => {
                     </div>
                     <div className="flex items-start text-sm">
                       <MapPin className="h-4 w-4 mr-2 text-muted-foreground mt-0.5" />
-                      <span className="text-muted-foreground text-xs leading-relaxed">{propietario.direccion || "No Especificado"}</span>
+                      <span className="text-muted-foreground text-xs leading-relaxed">{propietario.direccion || "No Especificado"}{`, ${propietario.barrio}`}</span>
                     </div>
                   </div>
                 )}

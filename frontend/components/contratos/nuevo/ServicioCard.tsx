@@ -36,7 +36,7 @@ const ServicioCard: React.FC<ServicioCardProps> = ({ s, updateServicio }) => {
             className="mr-2 transition-all"
           />
           <div className="text-xs text-muted-foreground">
-            {expanded ? "Con control" : "No controlado"}
+            {expanded ? "Controlado" : "No controlado"}
           </div>
         </div>
       </CardHeader>

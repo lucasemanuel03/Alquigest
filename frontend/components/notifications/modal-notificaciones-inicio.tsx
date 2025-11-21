@@ -90,7 +90,7 @@ export default function ModalNotificacionesInicio({ isOpen, onClose, setNotifica
                     <TriangleAlert className="h-5 w-5 text-red-800 mt-0.5" />
                     <div className="flex-1 space-y-2">
                       <h3 className="font-semibold text-foreground">
-                        Falló el aumento automático de Alquleres
+                        Falló el aumento automático de Alquileres
                       </h3>
                       <p className="text-sm text-foreground">
                         Hay <Badge variant="outline" className="mx-1 bg-red-200 text-red-900">{aumentosManuales}</Badge>

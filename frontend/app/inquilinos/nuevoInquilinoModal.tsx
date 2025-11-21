@@ -44,6 +44,8 @@ export default function NuevoInquilinoModal({ text = "Nuevo Locatario", onInquil
     cuil: "",
     telefono: "",
     esActivo: "true",
+    direccion: "",
+    barrio: ""
   })
   const [puedeCrear, setPuedeCrear] = useState(false)
 
@@ -74,6 +76,8 @@ export default function NuevoInquilinoModal({ text = "Nuevo Locatario", onInquil
         cuil: "",
         telefono: "",
         esActivo: "true",
+        direccion: "",
+        barrio: ""
       })
   setOpenSafe(false)
 
@@ -171,6 +175,33 @@ return (
                   setNuevoInquilino({ ...nuevoInquilino, telefono: value })
                 }}
                 placeholder="351-4455667"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="direccion">Dirección</Label>
+              <Input
+                id="direccion"
+                required
+                maxLength={50}
+                value={nuevoInquilino.direccion}
+                onChange={(e) =>
+                  setNuevoInquilino({ ...nuevoInquilino, direccion: e.target.value })
+                }
+                placeholder="Ingrese la dirrección del domicilio real"
+              />
+            </div>
+                        <div>
+              <Label htmlFor="barrio">Barrio</Label>
+              <Input
+                id="barrio"
+                required
+                maxLength={50}
+                value={nuevoInquilino.barrio}
+                onChange={(e) =>
+                  setNuevoInquilino({ ...nuevoInquilino, barrio: e.target.value })
+                }
+                placeholder="Ingrese el barrio del domicilio real"
               />
             </div>
 
