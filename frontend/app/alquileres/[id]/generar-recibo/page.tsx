@@ -24,7 +24,7 @@ export default function GenerarReciboPage() {
   const [loadingDatos, setLoadingDatos] = useState(true);
 
 
-  type ServicioBase = { tipoServicioId: number }
+  type ServicioBase = { tipoServicioId: number, servicioContrato: { id: number; nroCuenta: string, nroContratoServicio: string | null } }
 
   const [serviciosBase, setServiciosBase] = useState<ServicioBase[]>([])
   const [servicios, setServicios] = useState<Record<number, string | "">>({})
@@ -59,6 +59,7 @@ export default function GenerarReciboPage() {
         const serviciosNoPagados: PagoServicio[] = await fetchWithToken(`${BACKEND_URL}/pagos-servicios/contrato/${alquilerId}/no-pagados`)
         const base: ServicioBase[] = (serviciosNoPagados || []).map((item) => ({
           tipoServicioId: item.servicioContrato?.tipoServicio?.id,
+          servicioContrato: { id: item.servicioContrato?.id, nroCuenta: item.servicioContrato?.nroCuenta, nroContratoServicio: item.servicioContrato?.nroContratoServicio }
         }))
         setServiciosBase(base)
         console.log("Servicios no pagados:", serviciosNoPagados);
@@ -244,11 +245,15 @@ export default function GenerarReciboPage() {
                     serviciosBase.map((servicio) => (
                       <div key={servicio.tipoServicioId} className={`p-3 rounded-lg border bg-background border-opacity-50`}>
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div>
-                              <TipoServicioIcon tipoServicio={servicio.tipoServicioId} className={`h-8 w-8`} />
+                          <div className="flex items-center  gap-2">
+                              <TipoServicioIcon tipoServicio={servicio.tipoServicioId} className={`h-10 w-10`} />
+                            <div className="flex flex-col gap-1">
+                              <Label className="text-sm font-bold">{TIPO_SERVICIO_LABEL[servicio.tipoServicioId]}</Label>
+                              <div className="flex flex-col gap-1 text-sm">
+                                <p>Nro Cuenta: {servicio.servicioContrato.nroCuenta || "No Especificado"}</p>
+                                {servicio.servicioContrato.nroContratoServicio && (<div>Nro Contrato Servicio: {servicio.servicioContrato.nroContratoServicio}</div>)}
+                              </div>
                             </div>
-                            <Label className="text-sm font-medium">{TIPO_SERVICIO_LABEL[servicio.tipoServicioId]}</Label>
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium">$</span>
