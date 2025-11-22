@@ -38,7 +38,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -858,7 +857,6 @@ public class ContratoService {
         // Actualizar el estado del contrato
         contrato.setEstadoContrato(nuevoEstado);
 
-        System.out.println("Check 1");
 
         // Aplicar los cambios según el nuevo estado
         aplicarCambiosPorNuevoEstado(
@@ -867,7 +865,7 @@ public class ContratoService {
             nombreNuevoEstado, 
             estadoContratoUpdateDTO
         );
-        
+
         Contrato contratoActualizado = contratoRepository.save(contrato);
         return enrichContratoDTO(contratoActualizado);
     }
@@ -915,7 +913,7 @@ public class ContratoService {
         if ("No Vigente".equals(nombreNuevoEstado) || "Cancelado".equals(nombreNuevoEstado)) {
             // Contrato se está terminando o cancelando
             finalizarContrato(contrato);
-            
+
             // Si cambió de Vigente a Cancelado, crear registro de cancelación
             if ("Vigente".equals(estadoAnterior) && "Cancelado".equals(nombreNuevoEstado)) {
                 crearRegistroCancelacion(contrato, estadoContratoUpdateDTO);
@@ -947,15 +945,15 @@ public class ContratoService {
             inmueble.setEsAlquilado(false);
             inmuebleRepository.save(inmueble);
         }
-        
+
         // Actualizar inquilino como no alquilando
         Inquilino inquilino = contrato.getInquilino();
         inquilino.setEstaAlquilando(false);
         inquilinoRepository.save(inquilino);
-        
+
         // Anular todos los alquileres del contrato
         anularAlquileresDelContrato(contrato.getId());
-        
+
         // Desactivar todos los servicios del contrato
         desactivarServiciosDelContrato(contrato.getId());
     }
@@ -1010,7 +1008,7 @@ public class ContratoService {
         CancelacionContrato cancelacion = new CancelacionContrato();
         cancelacion.setContrato(contrato);
         cancelacion.setFechaCancelacion(
-            clockService.getCurrentDate().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            clockService.getCurrentDateTime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
         );
         cancelacion.setMotivoCancelacion(motivoCancelacion);
         
