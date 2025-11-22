@@ -37,7 +37,7 @@ public class TestingController {
      * @return Confirmación con la fecha configurada
      */
     @PostMapping("/set-date")
-    @Operation(summary = "Configura una fecha específica para testing")
+    @Operation(summary = "Configura una fecha específica para testing (aaaa-mm-dd)")
     public ResponseEntity<Map<String, String>> setTestDate(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         clockService.setOverrideDate(date);
