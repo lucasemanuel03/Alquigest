@@ -156,21 +156,36 @@ export default function GenerarReciboServiciosPDF({
     // Texto del recibo legal
     const textoRecibo = `Córdoba, ${fechaTextoLegal}. Recibo en nombre y representación de la parte locadora, ${generarTextoServicios()}. Dicho pago tiene como causa contrato de locación que comenzó a regir el ${fechaContratoTexto} y suscripto entre ${datos.propietario.apellido.toUpperCase()} ${datos.propietario.nombre.toUpperCase()} DNI ${datos.propietario.dni} con domicilio en ${datos.propietario.direccion} de barrio ${datos.propietario.barrio} de la Ciudad de Córdoba, por una parte, como LOCADORA y por la otra parte, ${datos.inquilino.apellido.toUpperCase()} ${datos.inquilino.nombre.toUpperCase()} DNI ${datos.inquilino.dni}, con domicilio real en ${datos.inquilino.direccion} de barrio ${datos.inquilino.barrio} de la Ciudad de Córdoba, como LOCATARIA del inmueble ubicado en ${direccionInmueble} de barrio ${datos.propietario.barrio} de la Ciudad de Córdoba, destinado a ${datos.contrato.tipoInmueble.toLowerCase()}.`
     
-    // Configuración del documento
-    doc.setFont('helvetica', 'normal')
-    doc.setFontSize(12)
-    doc.setTextColor(0, 0, 0)
-    
     // Márgenes
     const margenIzquierdo = 20
     const margenDerecho = 190
     const anchoTexto = margenDerecho - margenIzquierdo
+    const centroX = (margenIzquierdo + margenDerecho) / 2
+    
+    // Título del documento
+    let yPosition = 30
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(16)
+    doc.setTextColor(0, 0, 0)
+    doc.text('RECIBO DE SERVICIOS', centroX, yPosition, { align: 'center' })
+    
+    // Línea separadora debajo del título
+    yPosition += 5
+    doc.setLineWidth(0.5)
+    doc.line(margenIzquierdo, yPosition, margenDerecho, yPosition)
+    
+    // Espacio después del título
+    yPosition += 10
+    
+    // Configuración del documento para el texto del cuerpo
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(12)
+    doc.setTextColor(0, 0, 0)
     
     // Dividir el texto en líneas que quepan en el ancho disponible
     const lineas = doc.splitTextToSize(textoRecibo, anchoTexto)
     
     // Agregar el texto justificado
-    let yPosition = 40
     const interlineado = 7
     
     lineas.forEach((linea: string) => {
@@ -197,7 +212,6 @@ export default function GenerarReciboServiciosPDF({
     doc.setFontSize(11)
     
     // Línea para la firma
-    const centroX = (margenIzquierdo + margenDerecho) / 2
     doc.line(centroX - 30, yPosition, centroX + 30, yPosition)
     
     yPosition += 7

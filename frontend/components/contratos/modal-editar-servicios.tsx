@@ -145,7 +145,7 @@ export default function ModalEditarServicios({ contratoId, fechaInicioContrato, 
             if (servicio.esActivo) {
               // Reactivar: ahora requiere fechaInicio en el body (YYYY-MM-DD)
               await fetchWithToken(`${BACKEND_URL}/servicios-contrato/${servicioId}/reactivar`, {
-                method: "PUT",
+                method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ fechaInicio: fechaActualValida() }),
               });
@@ -153,7 +153,7 @@ export default function ModalEditarServicios({ contratoId, fechaInicioContrato, 
             } else {
               // Desactivar: sin body
               await fetchWithToken(`${BACKEND_URL}/servicios-contrato/${servicioId}/desactivar`, {
-                method: "DELETE",
+                method: "PATCH",
               });
               console.log(`✅ Servicio ${servicioId} desactivado exitosamente`);
             }

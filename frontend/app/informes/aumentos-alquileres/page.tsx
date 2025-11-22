@@ -41,7 +41,7 @@ export default function AumentosAlquileresPage() {
 	const [data, setData] = useState<AumentosResponse | null>(null)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
-	const [meses, setMeses] = useState('6')
+	const [meses, setMeses] = useState('12')
 	const [expandidos, setExpandidos] = useState<Record<number, boolean>>({})
 
 	const fetchData = async (mesesParam: string) => {

@@ -150,7 +150,7 @@ export default function ModalNotificacionesInicio({ isOpen, onClose, setNotifica
                         Facturas Pendientes de Pago
                       </h3>
                       <p className="text-sm text-foreground">
-                        Hay <Badge variant="outline" className="mx-1 bg-orange-200 text-primary">{serviciosPendientes}</Badge>
+                        Hay <Badge variant="outline" className="mx-1 bg-orange-100 dark:bg-orange-900 text-primary">{serviciosPendientes}</Badge>
                         {serviciosPendientes === 1 ? 'servicio pendiente' : 'servicios pendientes'} de pagar
                       </p>
                     </div>
