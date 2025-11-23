@@ -72,7 +72,7 @@ export default function ServiciosContratoPage({esVigente, idContrato, fechaInici
                                 </div>
                                 <div className="flex flex-col gap-2">
                                     <p><span className="font-semibold">Número de Cuenta:</span> {servicio.nroCuenta || "No asignado"}</p>
-                                    {(servicio.nroContratoServicio !== null || servicio.nroContratoServicio !== "") &&(
+                                    {(servicio.nroContratoServicio !== null && servicio.nroContratoServicio !== "") &&(
                                         <p><span className="font-semibold">Nro. de Contrato de Servicio:</span> {servicio.nroContratoServicio || "No asignado"}</p>
                                     )}
                                     <p><span className="font-semibold">Responsable del Pago:</span> {servicio.esDeInquilino ? "Inquilino" : "Estudio Jurídico"}</p>
