@@ -27,4 +27,5 @@ export interface ContratoDetallado {
   estadoContratoNombre: string;
   montoUltimoAlquiler: number;
   porcentajeHonorario: number;
+  tienePDF: boolean;
 }

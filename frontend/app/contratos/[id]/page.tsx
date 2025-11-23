@@ -371,7 +371,7 @@ export default function DetalleContratoPage({contratoDetallado} : {contratoDetal
                     fechaInicioContrato={contratoBD.fechaInicio}
                 />
 
-                <PDFContratoCard idContrato={contratoBD.id} />
+                <PDFContratoCard idContrato={contratoBD.id} tienePDF={contratoBD.tienePDF} />
             </main>
             {/* Modal para cargar PDF */}
             <ModalCargarPdf

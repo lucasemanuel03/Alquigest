@@ -5,7 +5,7 @@ import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
 import { useEffect, useState } from "react";
 import { FileText, ExternalLink } from "lucide-react";
 
-export default function PDFContratoCard({idContrato}: {idContrato: number}) {
+export default function PDFContratoCard({idContrato, tienePDF}: {idContrato: number, tienePDF: boolean}) {
 
         const [pdfUrl, setPdfUrl] = useState<string | null>(null);
         const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -60,11 +60,18 @@ export default function PDFContratoCard({idContrato}: {idContrato: number}) {
 
                 <CardContent>
                     <div className="flex flex-col gap-4">
-                        <p className="text-sm text-muted-foreground">
+                        {tienePDF ? (
+                             <p className="text-sm text-muted-foreground">
                             Visualice el documento PDF del contrato si ha sido cargado previamente.
-                        </p>
+                            </p>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">
+                            Este contrato no tiene un documento PDF cargado.
+                            </p>
+                        )}
+                       
                         <div className="flex items-center gap-3">
-                            <Button onClick={handleVerPdf} loading={loading} variant="default">
+                            <Button onClick={handleVerPdf} loading={loading} variant="default" disabled={!tienePDF}>
                                 <FileText className="h-4 w-4 mr-2" />
                                 Ver PDF del Contrato
                             </Button>
