@@ -114,22 +114,24 @@ export default function ModalReciboServicios({
             Cargando datos del recibo...
           </div>
         ) : datos ? (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {/* Período */}
-            <div className="flex items-center gap-2 bg-muted rounded-lg">
-              <span className=" text-base">Período:</span>
-                <p className="font-bold">{datos.periodo}</p>
+            <div className="flex items-center justify-center gap-2 bg-card rounded-lg p-4 border border-border">
+              <span className="text-base text-muted-foreground">Período:</span>
+              <p className="font-bold">{datos.periodo}</p>
             </div>
 
+            <div className="border-t border-border"></div>
+
             {/* Información del Contrato */}
-            <div className="space-y-3">
-              <h3 className="font-semibold text-base border-b pb-2">Información del Contrato</h3>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div>
+            <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
+              <h3 className="font-semibold text-base border-b border-border pb-2">Información del Contrato</h3>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="space-y-1">
                   <span className="text-muted-foreground">Tipo de Inmueble:</span>
                   <p className="font-medium">{datos.contrato.tipoInmueble}</p>
                 </div>
-                <div>
+                <div className="space-y-1">
                   <span className="text-muted-foreground">Inicio del Contrato:</span>
                   <p className="font-medium">
                     {new Date(datos.contrato.fechaInicioContrato).toLocaleDateString('es-AR')}
@@ -138,61 +140,74 @@ export default function ModalReciboServicios({
               </div>
             </div>
 
-              <h3 className="font-semibold text-sm">Locador:</h3>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div>
+            <div className="border-t border-border"></div>
+
+            {/* Locador */}
+            <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
+              <h3 className="font-semibold text-base border-b border-border pb-2">Locador</h3>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="space-y-1">
                   <span className="text-muted-foreground">Apellido, Nombre:</span>
                   <p className="font-medium">{datos.propietario.apellido}, {datos.propietario.nombre}</p>
                 </div>
-                <div>
+                <div className="space-y-1">
                   <span className="text-muted-foreground">DNI:</span>
                   <p className="font-medium">{datos.propietario.dni}</p>
                 </div>
-                <div className="col-span-2">
+                <div className="col-span-2 space-y-1">
                   <span className="text-muted-foreground">Dirección:</span>
                   <p className="font-medium">{datos.propietario.direccion} - {datos.propietario.barrio}</p>
                 </div>
               </div>
+            </div>
 
-              <h3 className="font-semibold text-sm">Locatario: </h3>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div>
+            {/* Locatario */}
+            <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
+              <h3 className="font-semibold text-base border-b border-border pb-2">Locatario</h3>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="space-y-1">
                   <span className="text-muted-foreground">Apellido, Nombre:</span>
                   <p className="font-medium">{datos.inquilino.apellido}, {datos.inquilino.nombre}</p>
                 </div>
-                <div>
+                <div className="space-y-1">
                   <span className="text-muted-foreground">DNI:</span>
                   <p className="font-medium">{datos.inquilino.dni}</p>
                 </div>
-                <div className="col-span-2">
+                <div className="col-span-2 space-y-1">
                   <span className="text-muted-foreground">Dirección:</span>
                   <p className="font-medium">{datos.inquilino.direccion} - {datos.inquilino.barrio}</p>
                 </div>
               </div>
+            </div>
+
+            <div className="border-t border-border"></div>
 
             {/* Servicios */}
             <div className="space-y-3">
-              <h3 className="font-semibold text-base border-b pb-2">Servicios</h3>
-              <div className="space-y-1">
-                {datos.servicios.map((servicio) => (
-                  <div
-                    key={servicio.id}
-                    className="flex items-center justify-between p-2 bg-muted"
-                  >
-                    <div>
-                      <span className="font-medium">{servicio.nombreTipoServicio}</span>
+              <h3 className="font-semibold text-base border-b border-border pb-2">Servicios</h3>
+              <div className="space-y-2">
+                {datos.servicios.map((servicio, index) => (
+                  <div key={servicio.id}>
+                    <div className="flex items-center justify-between p-3 bg-card rounded-lg hover:bg-muted transition-colors border border-border">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                        <span className="font-medium">{servicio.nombreTipoServicio}</span>
+                      </div>
+                      <span className="font-semibold text-green-600 dark:text-green-400">
+                        ${servicio.monto.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
                     </div>
-                    <span className="font-semibold text-green-600">
-                      ${servicio.monto.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </span>
+                    {index < datos.servicios.length - 1 && (
+                      <div className="h-px bg-border/50 mx-4 my-1"></div>
+                    )}
                   </div>
                 ))}
               </div>
 
               {/* Total */}
-              <div className="flex items-center justify-between p-4 bg-green-100 rounded-lg border-2 border-green-500/50">
+              <div className="flex items-center justify-between p-4 bg-card rounded-lg border-2 border-green-500/50 shadow-sm mt-4">
                 <span className="font-bold text-lg">Total:</span>
-                <span className="font-bold text-xl text-green-600">
+                <span className="font-bold text-xl text-green-600 dark:text-green-400">
                   ${calcularTotal().toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>

@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import auth from "@/utils/functions/auth-functions/auth";
 import NuevoPropietarioModal from "@/app/propietarios/nuevoPropietarioModal";
 import ModalError from "@/components/modal-error";
+import ModalConfirmacion from "@/components/modal-confirmacion";
 
 import { useAuth } from "@/contexts/AuthProvider"
 import BusquedaDesplegable from "@/components/busqueda/busqueda-desplegable";
@@ -197,6 +198,19 @@ export default function NuevoInmuebleModal(props: NuevoInmuebleModalProps) {
         setContinuarRegistro(false) // reset
       };
 
+    const handleConfirmarDireccionDuplicada = () => {
+      setMostrarConfirmacion(false)
+      setContinuarRegistro(true)
+      // Disparar el submit programáticamente
+      handleNewInmueble()
+    }
+
+    const handleCancelarDireccionDuplicada = () => {
+      setMostrarConfirmacion(false)
+      setContinuarRegistro(false)
+      // El modal principal permanece abierto para que el usuario pueda editar
+    }
+
 
   return(
      <div>
@@ -321,6 +335,15 @@ export default function NuevoInmuebleModal(props: NuevoInmuebleModalProps) {
             </form>
         </DialogContent>
       </Dialog>
+
+      {/* Modal de confirmación por dirección duplicada */}
+      <ModalConfirmacion
+        open={mostrarConfirmacion}
+        titulo="Dirección Duplicada"
+        mensaje={`Ya existe un inmueble registrado con la dirección "${formData.direccion}". ¿Desea continuar de todas formas?`}
+        onConfirm={handleConfirmarDireccionDuplicada}
+        onCancel={handleCancelarDireccionDuplicada}
+      />
 
       {/* Modal de error */}
       {mostrarError && (

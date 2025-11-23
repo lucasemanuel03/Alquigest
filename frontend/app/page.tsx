@@ -267,6 +267,7 @@ export default function HomePage() {
         {/* Botón modo edición */}
         <div className="mb-3 flex justify-end mr-2">
           <Button
+            className="w-38"
             variant={editingLayout ? "secondary" : "outline"}
             onClick={() => {
               if (editingLayout) {
@@ -294,7 +295,7 @@ export default function HomePage() {
           >
             <div className="flex items-center gap-2">
               <EditIcon className="h-4 w-4" />
-              {editingLayout ? "Guardar orden" : "Ordenar Tarjetas"}
+              {editingLayout ? "Guardar orden" : "Ordenar paneles"}
             </div>
           </Button>
         </div>
