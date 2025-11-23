@@ -171,7 +171,9 @@ export default function DetalleContratoPage({contratoDetallado} : {contratoDetal
                                 <FileText className="h-5 w-5"/>
                                 <CardTitle className="font-bold">Datos del Contrato</CardTitle>
                             </div>
+                            {contratoBD.estadoContratoId === 1 &&
                             <ProximoAumentoBadge fechaAumento={contratoBD.fechaAumento} />
+                            }
                         </CardHeader>
 
                         <CardContent>

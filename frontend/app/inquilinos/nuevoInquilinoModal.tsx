@@ -147,7 +147,7 @@ return (
           </div>
 
           <div>
-            <Label htmlFor="cuil">Cuil</Label>
+            <Label htmlFor="cuil">CUIL</Label>
             <Input
               id="cuil"
               type="text"

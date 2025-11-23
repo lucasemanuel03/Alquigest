@@ -76,7 +76,7 @@ export default function Paso4Resumen({ formData, datosAdicionales, serviciosCont
                       <p className='font-bold'>{TIPO_SERVICIO_LABEL[servicio.tipoServicioId]}</p>
                     </div>
                     <p> Nro. de Cuenta: {servicio.nroCuenta || 'Sin cuenta'}</p>
-                    <p>{servicio.esDeInquilino ? 'A cargo del Locatario' : 'Control del Estudio'}</p> 
+                    <p>{servicio.esDeInquilino ? 'A cargo del Locatario' : 'A cargo del Estudio'}</p> 
                   </div>
                 }
           </div>
