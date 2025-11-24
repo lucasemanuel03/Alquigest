@@ -25,7 +25,7 @@ interface NotificacionFechaLimiteProps {
 export default function NotificacionFechaLimite({ onClose }: NotificacionFechaLimiteProps) {
   const date = new Date()
   const diaActual = date.getDate()
-  const mostrarNotificacion = diaActual === 10 || diaActual === 11
+  const mostrarNotificacion = diaActual === 24 || diaActual === 25
 
   const [alquileresNoPagados, setAlquileresNoPagados] = useState<AlquilerNoPagado[]>([])
   const [loading, setLoading] = useState(false)
