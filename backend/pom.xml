@@ -80,6 +80,12 @@
 			<version>2.2.0</version>
 		</dependency>
 
+		<!-- Spring AOP -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
+
 		<!-- Spring Cache -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
