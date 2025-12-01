@@ -39,22 +39,16 @@ public class ServicioActualizacionService {
 
     private final PagoServicioRepository pagoServicioRepository;
     private final ConfiguracionSistemaRepository configuracionSistemaRepository;
-    private final ContratoRepository contratoRepository;
-    private final TipoServicioRepository tipoServicioRepository;
     private final ServicioContratoRepository servicioContratoRepository;
     private final ClockService clockService;
 
     public ServicioActualizacionService(
             PagoServicioRepository pagoServicioRepository,
             ConfiguracionSistemaRepository configuracionSistemaRepository,
-            ContratoRepository contratoRepository,
-            TipoServicioRepository tipoServicioRepository,
             ServicioContratoRepository servicioContratoRepository,
             ClockService clockService) {
         this.pagoServicioRepository = pagoServicioRepository;
         this.configuracionSistemaRepository = configuracionSistemaRepository;
-        this.contratoRepository = contratoRepository;
-        this.tipoServicioRepository = tipoServicioRepository;
         this.servicioContratoRepository = servicioContratoRepository;
         this.clockService = clockService;
     }
@@ -241,13 +235,13 @@ public class ServicioActualizacionService {
      * Actualiza las fechas de último y próximo pago de un servicio
      */
     private void actualizarFechasServicio(ServicioContrato servicio) {
-        LocalDate proximoPago = servicio.getProximoPago();
+        LocalDate proximoPago = servicio.getProximoPago().withDayOfMonth(1);
         servicio.setUltimoPagoGenerado(proximoPago);
 
         // Calcular el próximo pago según si es anual o mensual
         LocalDate nuevoProximoPago = servicio.getEsAnual()
             ? proximoPago.plusYears(1).withDayOfMonth(1)
-            : proximoPago.plusMonths(1).withDayOfMonth(1);
+            : LocalDate.now().withDayOfMonth(1);
 
         servicio.setProximoPago(nuevoProximoPago);
         servicioContratoRepository.save(servicio);
