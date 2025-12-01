@@ -25,9 +25,9 @@ public interface ServicioContratoRepository extends JpaRepository<ServicioContra
 
     /**
      * Busca servicios activos que requieren generación de pagos
-     * (MONTH(proximoPago) = MONTH(fechaActual), esActivo = true y contrato vigente)
+     * (proximoPago <= fechaActual, esActivo = true y contrato vigente)
      */
-    @Query("SELECT sc FROM ServicioContrato sc JOIN sc.contrato c JOIN c.estadoContrato e WHERE MONTH(sc.proximoPago) = MONTH(:fechaActual) AND sc.esActivo = true AND e.nombre = 'Vigente'")
+    @Query("SELECT sc FROM ServicioContrato sc JOIN sc.contrato c JOIN c.estadoContrato e WHERE sc.proximoPago <= :fechaActual AND sc.esActivo = true AND e.nombre = 'Vigente'")
     List<ServicioContrato> findServiciosConPagosPendientes(@Param("fechaActual") LocalDate fechaActual);
 
     /**
