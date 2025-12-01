@@ -241,7 +241,7 @@ public class ServicioActualizacionService {
         // Calcular el próximo pago según si es anual o mensual
         LocalDate nuevoProximoPago = servicio.getEsAnual()
             ? proximoPago.plusYears(1).withDayOfMonth(1)
-            : LocalDate.now().withDayOfMonth(1);
+            : LocalDate.now().plusMonths(1).withDayOfMonth(1);
 
         servicio.setProximoPago(nuevoProximoPago);
         servicioContratoRepository.save(servicio);
