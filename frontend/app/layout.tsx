@@ -24,6 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es" suppressHydrationWarning>
       <head>
+        <meta name="theme-color" content="#e8be50" />
         {/* Script bloqueante que lee el tema antes de renderizar para evitar flash */}
         <script
           dangerouslySetInnerHTML={{
