@@ -105,6 +105,7 @@ useEffect(() => {
               <Button
                 onClick={() => setFiltroInactivos(!filtroInactivos)} 
                 className="transition-all"
+                title={filtroInactivos ? "Mostrar los locadores con los que se trabaja actualmente" : "Mostrar locadores con los que no se trabaja actualmente"}
                 variant="outline">
                 {!filtroInactivos? <div className="flex gap-2 items-center"><SquareX/>Ver Inactivos</div> : <div className="flex gap-2 items-center"><SquareCheck/>Ver Activos</div> }
               </Button>

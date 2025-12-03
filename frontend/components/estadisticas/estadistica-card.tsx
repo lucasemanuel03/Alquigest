@@ -12,7 +12,7 @@ interface EstadisticaCardProps {
   coloresIcono?: string;
 }
 
-export default function EstadisticaCard({ titulo, valor = "N/A", icono, subtitulo, tituloAyuda = "Alquigest S.A.", cargando=false, coloresIcono }: EstadisticaCardProps) {
+export default function EstadisticaCard({ titulo, valor = "N/A", icono, subtitulo, tituloAyuda = "", cargando=false, coloresIcono }: EstadisticaCardProps) {
   return (
     <Card className="hover:shadow-lg transition-shadow border-1 border-foreground/20">
       <CardContent className="px-6">
@@ -60,7 +60,7 @@ export default function EstadisticaCard({ titulo, valor = "N/A", icono, subtitul
             
             {/* Desktop: Layout horizontal */}
             <div className="hidden md:flex justify-between items-center gap-4">
-              <div className="flex-1 min-w-0">
+              <div title={tituloAyuda} className="flex-1 min-w-0 hover:cursor-help">
                 <CardTitle className="text-sm md:text-base font-medium">{titulo}</CardTitle>
                 <div className="text-3xl font-bold font-sans text-foreground/80 break-words">{valor}</div>
                 {subtitulo && <p className="text-sm text-muted-foreground">{subtitulo}</p>}
