@@ -28,7 +28,7 @@ import java.util.Arrays;
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    @Value("${app.cors.allowedOrigins:http://localhost:3000}")
+    @Value("${allowed.origins:http://localhost:3000}")
     private String allowedOrigins;
 
     private final UserDetailsServiceImpl userDetailsService;
@@ -136,7 +136,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/actualizaciones-servicio/**").hasAnyRole("ADMINISTRADOR", "ABOGADA")
 
                 // HEALTH CHECK - Público
-                .requestMatchers("/api/health/**").permitAll()
+                .requestMatchers("/health", "/api/health", "/api/health/**").permitAll()
 
                 // Cualquier otra petición requiere autenticación
                 .anyRequest().authenticated()
