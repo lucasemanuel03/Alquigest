@@ -138,6 +138,9 @@ public class AuthController {
                     .maxAge(cookieMaxAge)
                     .build();
 
+            // ⭐ AGREGAR LA COOKIE A LA RESPUESTA
+            response.addHeader("Set-Cookie", cookie.toString());
+
             UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
             List<String> roles = userDetails.getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
@@ -344,8 +347,11 @@ public class AuthController {
                     .secure(true)
                     .sameSite("None")
                     .path("/")
-                    .maxAge(cookieMaxAge)
+                    .maxAge(0)  // ⭐ Cambiar a 0 para borrar la cookie
                     .build();
+
+            // ⭐ AGREGAR LA COOKIE AL RESPONSE PARA BORRARLA
+            response.addHeader("Set-Cookie", rCookie.toString());
 
             // Obtener el token de la cookie para invalidarlo en la blacklist
             Cookie[] cookies = request.getCookies();
@@ -472,6 +478,9 @@ public class AuthController {
                     .path("/")
                     .maxAge(cookieMaxAge)
                     .build();
+
+            // ⭐ AGREGAR LA COOKIE AL RESPONSE
+            response.addHeader("Set-Cookie", rCookie.toString());
 
             List<String> roles = userDetails.getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
