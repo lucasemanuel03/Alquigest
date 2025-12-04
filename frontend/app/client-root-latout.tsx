@@ -98,9 +98,8 @@ export default function ClientRootLayout({ children }: { children: ReactNode }) 
           isOpen={showNotificaciones}
           onClose={() => {
             setShowNotificaciones(false);
-            if (needsReload) {
-              window.location.reload();
-            }
+            setNeedsReload(false);
+            // NO recargar - React maneja el estado automáticamente
           }}
           setNotificationDot={setNotificationDot}
         />
