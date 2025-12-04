@@ -49,6 +49,7 @@ export default function NuevaContrasenaCard({token}: {token?: string}) {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({
           token: token,
           nuevaContrasena: nuevaContrasena,

@@ -30,6 +30,7 @@ export default function RecuperarContrasenaPaso1() {
             headers: {
                 "Content-Type": "application/json"
             },
+            credentials: "include",
             body: JSON.stringify(formData),
         });
         console.log("Respuesta:", response);
