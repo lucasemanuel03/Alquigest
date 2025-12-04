@@ -22,21 +22,16 @@ export default function RecuperarContrasenaPaso1() {
       const handleSendEmail = async (e: React.FormEvent) => {
         try {
             setLoadingSendEmail(true);
-
-        // Hacemos POST al backend
-        console.log("FormData: ", formData)
-        const response = await fetch(`${BACKEND_URL}/auth/recuperar-contrasena`, {
+          const response = await fetch(`${BACKEND_URL}/auth/recuperar-contrasena`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             credentials: "include",
             body: JSON.stringify(formData),
-        });
-        console.log("Respuesta:", response);
+          });
 
         setLoadingSendEmail(false);
-
         // Limpiamos el formulario
         setFormData({ email: "" });
 

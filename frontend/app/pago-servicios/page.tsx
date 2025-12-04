@@ -37,12 +37,10 @@ export default function PagoServiciosPage() {
   useEffect(() => {
     // Fetch principal: contratos (bloquea el loading principal)
     const fetchContratos = async () => {
-      console.log("Ejecutando fetch de Contratos...")
       setLoading(true)
       
       try {
         const data = await fetchWithToken(`${BACKEND_URL}/contratos/vigentes`)
-        console.log("Contratos parseados del backend:", data)
         setContratos(data)
       } catch (err: any) {
         console.error("Error al traer contratos:", err.message)
@@ -87,8 +85,6 @@ export default function PagoServiciosPage() {
 
   // Función para refrescar los datos cuando se registra un pago
   const handlePagoRegistrado = async (contratoId: number) => {
-    console.log(`Pago registrado para contrato ${contratoId}, actualizando contadores...`)
-    
     // Refrescar contadores
     try {
       const cantServicios = await fetchWithToken(`${BACKEND_URL}/pagos-servicios/count/pendientes`)

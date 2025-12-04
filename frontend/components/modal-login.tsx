@@ -31,7 +31,7 @@ export default function ModalLogin({ onClose, isDarkMode, open}: ModalDefaultPro
     }
   }, [open])
   const handleClose = () => {
-    console.log("Closing modal")
+
     setIsOpen(false)
     setError("") // Limpia el mensaje de error al cerrar el modal
   }

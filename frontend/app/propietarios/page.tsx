@@ -38,12 +38,8 @@ useEffect(() => {
         ? `${BACKEND_URL}/propietarios/inactivos`
         : `${BACKEND_URL}/propietarios/activos`;
 
-    console.log("Ejecutando fetch de propietarios...");
     try {
-      console.log(filtroInactivos ? "Filtro inactivos Activado" : "Cargando inmuebles activos...");
       const data = await fetchWithToken(url);
-      console.log("Datos parseados del backend:", data);
-
       // Ordenar por apellido ascendente
       const dataOrdenada = data.sort((a: Propietario, b: Propietario) =>
         a.apellido.localeCompare(b.apellido));

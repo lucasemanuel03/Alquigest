@@ -36,7 +36,7 @@ export default function GenerarReciboPage() {
             console.log("Ejecutando fetch de Contratos...");
             try {
                 const data = await fetchWithToken(`${BACKEND_URL}/contratos/${alquilerId}`);
-                console.log("Datos parseados del backend:", data);
+                
                 setContratoBD(data);
                 
             } catch (err: any) {

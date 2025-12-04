@@ -35,17 +35,13 @@ export default function InquilinosPage() {
   const [filtroInactivos, setFiltroInactivos] = useState(false);
  
   useEffect(() => {
-    console.log("Ejecutando fetch de Inquilinos...");
-
     const fetchInquilinos = async () => {
       const url = filtroInactivos
         ? '/inquilinos/inactivos'
         : '/inquilinos/activos';
 
       try{
-        console.log("Ejecutando fetch de inquilinos...")
           const data = await fetchWithToken(url)
-          console.log("Datos parseados del backend:", data)
           // Ordenar por apellido ascendente
           const dataOrdenada = data.sort((a: Inquilino, b: Inquilino) =>
             a.apellido.localeCompare(b.apellido));
@@ -86,8 +82,6 @@ export default function InquilinosPage() {
 
       // Caso: si se está desactivando al inquilino
       if (!editingInquilino.esActivo) {
-        console.log("Inactivando inquilino...");
-
         const response = await fetchWithToken(
           `/inquilinos/${(editingInquilino as any).id}/desactivar`,
           {
@@ -103,8 +97,6 @@ export default function InquilinosPage() {
 
       } else {
         // Caso normal: actualización de datos
-        console.log("Actualizando datos del inquilino...");
-
         const response = await fetchWithToken(
           `/inquilinos/${(editingInquilino as any).id}`,
           {

@@ -89,8 +89,6 @@ export default function InmueblesContainer() {
         const data: Inmueble[] = await fetchWithToken(url)
         setInmueblesBD(data)
         setInmueblesMostrar(data)
-        console.log("Inmuebles obtenidos:", data);
-        console.log("Inmuebles para mostrar:", inmueblesMostrar);
         setLoading(false)
       } catch (error) {
         console.error("Error al obtener inmuebles:", error)

@@ -150,13 +150,11 @@ export default function ModalEditarServicios({ contratoId, fechaInicioContrato, 
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ fechaInicio: fechaActualValida() }),
               });
-              console.log(`✅ Servicio ${servicioId} reactivado exitosamente`);
             } else {
               // Desactivar: sin body
               await fetchWithToken(`${BACKEND_URL}/servicios-contrato/${servicioId}/desactivar`, {
                 method: "PATCH",
               });
-              console.log(`✅ Servicio ${servicioId} desactivado exitosamente`);
             }
           } catch (error: any) {
             console.error(`❌ Error al cambiar estado del servicio ${servicioId}:`, error);
@@ -183,7 +181,6 @@ export default function ModalEditarServicios({ contratoId, fechaInicioContrato, 
                 esAnual: servicio.esAnual,
               }),
             });
-            console.log(`✅ Servicio ${servicioId} actualizado exitosamente`);
           } catch (error: any) {
             console.error(`❌ Error al actualizar datos del servicio ${servicioId}:`, error);
             errores.push(`Error al actualizar datos del servicio`);
