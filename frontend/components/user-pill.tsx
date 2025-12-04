@@ -27,7 +27,8 @@ export default function PildoraUsuario({
     if (username === "" && onLoginClick) {
       onLoginClick(); // Abre el modal de login
     } else {
-      handleLogout();// Cierra sesión - AuthProvider maneja la redirección
+      handleLogout();// Cierra sesión
+      window.location.reload(); 
     }
   };
 
