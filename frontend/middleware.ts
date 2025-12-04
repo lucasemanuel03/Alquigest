@@ -2,35 +2,14 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  const token = request.cookies.get("accessToken")?.value;
-  const pathname = request.nextUrl.pathname;
-
-  // Rutas públicas que NO requieren autenticación
-  const publicRoutes = [
-    "/auth/recuperar-contrasena",
-    "/auth/resetear-contrasena",
-  ];
-
-  // Verificar si es una ruta pública
-  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
-
-  // Si es una ruta pública, permitir acceso
-  if (isPublicRoute) {
-    return NextResponse.next();
-  }
-
-  // Todas las demás rutas requieren autenticación (excepto home "/" que maneja AuthProvider)
-  // Si no hay token y no es la home, redirigir a home (donde se mostrará el modal de login)
-  if (!token && pathname !== "/") {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
-
+  // El middleware aquí es principalmente para headers/logging
+  // La protección de rutas es manejada por AuthProvider + client-root-layout
+  // Las cookies HttpOnly no son accesibles en el middleware durante navegación del cliente
+  
   return NextResponse.next();
 }
 
-// El middleware se ejecuta en todas las rutas excepto:
-// - Archivos estáticos (_next/static, favicon, imágenes, etc.)
-// - API routes internas de Next.js
+// El middleware se ejecuta en todas las rutas excepto archivos estáticos
 export const config = {
   matcher: [
     /*
