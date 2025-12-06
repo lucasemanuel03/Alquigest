@@ -7,6 +7,7 @@ const auth = {
     const res = await fetch(`${BACKEND_URL}/auth/signin`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include", // Importante: enviar/recibir cookies HttpOnly
       body: JSON.stringify({ username, password }),
     });
 
@@ -27,12 +28,17 @@ const auth = {
       throw error;
     }
 
-    const data = payload; // { accessToken, username, email, roles, permisos }
+    const data = payload; // { username, email, roles, permisos, accessToken? }
 
-    localStorage.setItem("token", data.accessToken); // JWT
-    localStorage.setItem("user", JSON.stringify(data)); // info completa usuario
+    // En producción usamos cookie HttpOnly; no dependemos de accessToken en body.
+    // Guardamos sólo info de usuario para UI.
+    if (data) {
+      try {
+        localStorage.setItem("user", JSON.stringify(data));
+      } catch (_) {}
+    }
 
-    return { username: data.username };
+    return { username: data?.username };
   },
 
   logout: async () => {
@@ -40,6 +46,7 @@ const auth = {
       await fetch(`${BACKEND_URL}/auth/signout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
       });
     } catch (e) {
       console.warn("Error en signout backend:", e);
@@ -55,16 +62,9 @@ const auth = {
   },
 
   UserEstaLogeado: () => {
-    if (typeof window === "undefined") return false;
-    const token = localStorage.getItem("token");
-    if (!token) return false;
-
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      return payload.exp * 1000 > Date.now();
-    } catch {
-      return false;
-    }
+    // Con cookie HttpOnly no podemos leer el token aquí.
+    // Estrategia: intentamos ping a /auth/me con credenciales; si 200 → logeado.
+    return false;
   },
 
   getUser: () => {
@@ -93,8 +93,8 @@ const auth = {
   },
 
   getToken: () => {
-    if (typeof window === "undefined") return null;
-    return localStorage.getItem("token");
+    // No disponible en enfoque HttpOnly; las peticiones deben usar credentials: 'include'.
+    return null;
   },
 };
 

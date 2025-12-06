@@ -46,10 +46,8 @@ export default function NuevoInmueblePage() {
 
   // Traer propietarios (solo fetch, sin mutar formData directamente)
   useEffect(() => {
-    console.log("Ejecutando fetch de propietarios...");
     fetchWithToken(`${BACKEND_URL}/propietarios/activos`)
       .then((data) => {
-        console.log("Datos parseados del backend:", data);
         setPropietariosBD(data);
       })
       .catch((err) => {
@@ -76,11 +74,9 @@ export default function NuevoInmueblePage() {
       const url = `${BACKEND_URL}/inmuebles/buscar-direccion?${params.toString()}`
       
       const result = await fetchWithToken(url, { method: "GET" })
-      console.log("Resultado del verificar: ", result)
 
       // Si el endpoint devuelve algo → existe
       if (result.length > 0) {
-        console.log("Llego a la validacion >0")
         setMostrarConfirmacion(true)
         return false
       }

@@ -59,7 +59,6 @@ export default function ModalRegistrarPagoAlquiler({
     setLoading(true)
     try {
       const data = await fetchWithToken(`${BACKEND_URL}/alquileres/contrato/${contrato.id}/pendientes`)
-      console.log("Pagos pendientes del backend:", data)
       setPagosPendientes(data)
       
       // Seleccionar el primer pago por defecto

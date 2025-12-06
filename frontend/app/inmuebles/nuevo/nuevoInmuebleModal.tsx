@@ -109,11 +109,9 @@ export default function NuevoInmuebleModal(props: NuevoInmuebleModalProps) {
         const url = `${BACKEND_URL}/inmuebles/buscar-direccion?${params.toString()}`
         
         const result = await fetchWithToken(url, { method: "GET" })
-        console.log("Resultado del verificar: ", result)
   
         // Si el endpoint devuelve algo → existe
         if (result.length > 0) {
-          console.log("Llego a la validacion >0")
           setMostrarConfirmacion(true)
           return false
         }

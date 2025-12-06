@@ -31,7 +31,7 @@ export default function ModalLogin({ onClose, isDarkMode, open}: ModalDefaultPro
     }
   }, [open])
   const handleClose = () => {
-    console.log("Closing modal")
+
     setIsOpen(false)
     setError("") // Limpia el mensaje de error al cerrar el modal
   }
@@ -42,8 +42,9 @@ export default function ModalLogin({ onClose, isDarkMode, open}: ModalDefaultPro
     try {
       // Llamar a la función de login del AuthProvider
       await login(username, password);
+      // Login exitoso - cerrar modal
       setIsOpen(false);
-      onClose(username, true); // Login exitoso
+      onClose(username, true);
     } catch (err: any) {
       // Mostrar mensajes específicos devueltos por el backend
       setError(err?.message || "No se pudo iniciar sesión. Verifique su conexión e intente nuevamente.");
