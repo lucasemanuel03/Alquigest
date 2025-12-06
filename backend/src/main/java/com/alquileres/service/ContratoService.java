@@ -35,6 +35,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CacheConfig;
+import com.alquileres.config.CacheNames;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -45,6 +49,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@CacheConfig(cacheNames = {CacheNames.CONTRATOS, CacheNames.CONTRATOS_VIGENTES,
+                            CacheNames.CONTRATOS_NO_VIGENTES, CacheNames.CONTRATOS_PROXIMOS_VENCER,
+                            CacheNames.CONTRATOS_POR_INMUEBLE, CacheNames.CONTRATOS_POR_INQUILINO})
 public class ContratoService {
 
     private static final Logger logger = LoggerFactory.getLogger(ContratoService.class);
@@ -252,6 +259,7 @@ public class ContratoService {
      * 
      * @return Lista de todos los contratos con información enriquecida
      */
+    @Cacheable(CacheNames.CONTRATOS)
     public List<ContratoDTO> obtenerTodosLosContratos() {
         List<Contrato> contratos = contratoRepository.findAll();
         return contratos.stream()
@@ -266,6 +274,7 @@ public class ContratoService {
      * @return ContratoDTO con información completa
      * @throws BusinessException si el contrato no existe
      */
+    @Cacheable(value = CacheNames.CONTRATO_POR_ID, key = "#id")
     public ContratoDTO obtenerContratoPorId(Long id) {
         Contrato contrato = contratoRepository.findById(id)
             .orElseThrow(() -> new BusinessException(
@@ -284,6 +293,7 @@ public class ContratoService {
      * @return Lista de contratos del inmueble
      * @throws BusinessException si el inmueble no existe
      */
+    @Cacheable(value = CacheNames.CONTRATOS_POR_INMUEBLE, key = "#inmuebleId")
     public List<ContratoDTO> obtenerContratosPorInmueble(Long inmuebleId) {
         Inmueble inmueble = inmuebleRepository.findById(inmuebleId)
             .orElseThrow(() -> new BusinessException(
@@ -305,6 +315,7 @@ public class ContratoService {
      * @return Lista de contratos del inquilino
      * @throws BusinessException si el inquilino no existe
      */
+    @Cacheable(value = CacheNames.CONTRATOS_POR_INQUILINO, key = "#inquilinoId")
     public List<ContratoDTO> obtenerContratosPorInquilino(Long inquilinoId) {
         Inquilino inquilino = inquilinoRepository.findById(inquilinoId)
             .orElseThrow(() -> new BusinessException(
@@ -326,6 +337,7 @@ public class ContratoService {
      * 
      * @return Lista de contratos vigentes
      */
+    @Cacheable(CacheNames.CONTRATOS_VIGENTES)
     public List<ContratoDTO> obtenerContratosVigentes() {
         List<Contrato> contratos = contratoRepository.findContratosVigentes();
         return contratos.stream()
@@ -340,6 +352,7 @@ public class ContratoService {
      * 
      * @return Lista de contratos no vigentes
      */
+    @Cacheable(CacheNames.CONTRATOS_NO_VIGENTES)
     public List<ContratoDTO> obtenerContratosNoVigentes() {
         List<Contrato> contratos = contratoRepository.findContratosNoVigentes();
         return contratos.stream()
@@ -352,6 +365,7 @@ public class ContratoService {
      * 
      * @return Cantidad de contratos vigentes
      */
+    @Cacheable("contratos-vigentes-count")
     public Long contarContratosVigentes() {
         return contratoRepository.countContratosVigentes();
     }
@@ -364,6 +378,7 @@ public class ContratoService {
      * @param diasAntes Número de días hacia adelante para buscar vencimientos
      * @return Lista de contratos próximos a vencer
      */
+    @Cacheable(value = CacheNames.CONTRATOS_PROXIMOS_VENCER, key = "#diasAntes")
     public List<ContratoDTO> obtenerContratosProximosAVencer(int diasAntes) {
         String fechaActual = clockService.getCurrentDate().format(DateTimeFormatter.ISO_LOCAL_DATE);
         String fechaLimite = clockService.getCurrentDate().plusDays(diasAntes).format(DateTimeFormatter.ISO_LOCAL_DATE);
@@ -384,6 +399,7 @@ public class ContratoService {
      * @param diasAntes Número de días hacia adelante para buscar vencimientos
      * @return Cantidad de contratos próximos a vencer
      */
+    @Cacheable(value = "contratos-proximos-vencer-count", key = "#diasAntes")
     public Long contarContratosProximosAVencer(int diasAntes) {
         String fechaActual = clockService.getCurrentDate().format(DateTimeFormatter.ISO_LOCAL_DATE);
         String fechaLimite = clockService.getCurrentDate().plusDays(diasAntes).format(DateTimeFormatter.ISO_LOCAL_DATE);
@@ -407,6 +423,17 @@ public class ContratoService {
      * @throws BusinessException si hay errores de validación
      */
     @Transactional
+    @CacheEvict(
+        allEntries = true,
+        cacheNames = {
+            CacheNames.CONTRATOS,
+            CacheNames.CONTRATOS_VIGENTES,
+            CacheNames.CONTRATOS_PROXIMOS_VENCER,
+            CacheNames.CONTRATOS_POR_INMUEBLE,
+            CacheNames.CONTRATOS_POR_INQUILINO,
+            CacheNames.INMUEBLE_TIENE_CONTRATO_VIGENTE
+        }
+    )
     public ContratoDTO crearContrato(ContratoCreateDTO contratoDTO) {
         // Paso 1: Validar entidades relacionadas
         Inmueble inmueble = validarYObtenerInmueble(contratoDTO.getInmuebleId());
@@ -831,6 +858,20 @@ public class ContratoService {
      * @return ContratoDTO con el contrato actualizado
      * @throws BusinessException si el contrato no existe o el cambio no es válido
      */
+    @Transactional
+    @CacheEvict(
+        allEntries = true,
+        cacheNames = {
+            CacheNames.CONTRATOS,
+            CacheNames.CONTRATO_POR_ID,
+            CacheNames.CONTRATOS_VIGENTES,
+            CacheNames.CONTRATOS_NO_VIGENTES,
+            CacheNames.CONTRATOS_PROXIMOS_VENCER,
+            CacheNames.CONTRATOS_POR_INMUEBLE,
+            CacheNames.CONTRATOS_POR_INQUILINO,
+            CacheNames.INMUEBLE_TIENE_CONTRATO_VIGENTE
+        }
+    )
     public ContratoDTO terminarContrato(Long id, EstadoContratoUpdateDTO estadoContratoUpdateDTO) {
         // Validar existencia del contrato y nuevo estado
         Contrato contrato = contratoRepository.findById(id)
@@ -1053,6 +1094,7 @@ public class ContratoService {
      * @param id ID del contrato a verificar
      * @return true si el contrato existe, false en caso contrario
      */
+    @Cacheable(value = CacheNames.CONTRATO_EXISTE, key = "#id")
     public boolean existeContrato(Long id) {
         return contratoRepository.existsById(id);
     }
@@ -1063,6 +1105,7 @@ public class ContratoService {
      * @param inmuebleId ID del inmueble a verificar
      * @return true si el inmueble tiene un contrato vigente, false en caso contrario
      */
+    @Cacheable(value = CacheNames.INMUEBLE_TIENE_CONTRATO_VIGENTE, key = "#inmuebleId")
     public boolean inmuebleTieneContratoVigente(Long inmuebleId) {
         return contratoRepository.existsContratoVigenteByInmuebleId(inmuebleId);
     }
@@ -1076,6 +1119,7 @@ public class ContratoService {
      * @return ContratoDTO con el PDF guardado
      * @throws BusinessException si el contrato no existe
      */
+    @CacheEvict(value = CacheNames.CONTRATO_POR_ID, key = "#id")
     public ContratoDTO guardarPdf(Long id, byte[] pdfBytes, String nombreArchivo) throws Exception {
         Contrato contrato = contratoRepository.findById(id)
             .orElseThrow(() -> new BusinessException(

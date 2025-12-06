@@ -5,9 +5,11 @@ import com.alquileres.model.Propietario;
 import com.alquileres.repository.PropietarioRepository;
 import com.alquileres.repository.ContratoRepository;
 import com.alquileres.security.EncryptionService;
+import com.alquileres.config.CacheNames;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
 import com.alquileres.exception.BusinessException;
 import com.alquileres.exception.ErrorCodes;
 import org.slf4j.Logger;
@@ -186,6 +188,17 @@ public class PropietarioService {
     }
 
     // Actualizar propietario
+    @Transactional
+    @CacheEvict(
+        allEntries = true,
+        cacheNames = {
+            CacheNames.CONTRATOS,
+            CacheNames.CONTRATOS_VIGENTES,
+            CacheNames.CONTRATOS_NO_VIGENTES,
+            CacheNames.CONTRATOS_PROXIMOS_VENCER,
+            CacheNames.CONTRATOS_POR_INMUEBLE
+        }
+    )
     public PropietarioDTO actualizarPropietario(Long id, PropietarioDTO propietarioDTO) {
         Optional<Propietario> propietarioExistente = propietarioRepository.findById(id);
 
@@ -253,6 +266,17 @@ public class PropietarioService {
 
     // Actualizar parcialmente propietario (PATCH)
     // No modifica la clave fiscal a menos que se envíe explícitamente
+    @Transactional
+    @CacheEvict(
+        allEntries = true,
+        cacheNames = {
+            CacheNames.CONTRATOS,
+            CacheNames.CONTRATOS_VIGENTES,
+            CacheNames.CONTRATOS_NO_VIGENTES,
+            CacheNames.CONTRATOS_PROXIMOS_VENCER,
+            CacheNames.CONTRATOS_POR_INMUEBLE
+        }
+    )
     public PropietarioDTO actualizarParcialPropietario(Long id, PropietarioDTO propietarioDTO) {
         Propietario propietarioExistente = propietarioRepository.findById(id)
             .orElseThrow(() -> new BusinessException(
@@ -489,6 +513,16 @@ public class PropietarioService {
      * @throws BusinessException si el propietario no existe
      */
     @Transactional
+    @CacheEvict(
+        allEntries = true,
+        cacheNames = {
+            CacheNames.CONTRATOS,
+            CacheNames.CONTRATOS_VIGENTES,
+            CacheNames.CONTRATOS_NO_VIGENTES,
+            CacheNames.CONTRATOS_PROXIMOS_VENCER,
+            CacheNames.CONTRATOS_POR_INMUEBLE
+        }
+    )
     public PropietarioDTO modificarClaveFiscal(Long propietarioId, String claveFiscalNueva) {
         Propietario propietario = propietarioRepository.findById(propietarioId)
             .orElseThrow(() -> new BusinessException(

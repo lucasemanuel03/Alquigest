@@ -11,12 +11,14 @@ import com.alquileres.repository.PagoServicioRepository;
 import com.alquileres.repository.ServicioContratoRepository;
 import com.alquileres.repository.TipoServicioRepository;
 import com.alquileres.util.FechaUtil;
+import com.alquileres.config.CacheNames;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -89,6 +91,7 @@ public class ServicioContratoService {
      * @param fechaInicio Fecha de inicio del servicio
      * @return El servicio creado
      */
+    @Transactional
     public ServicioContrato crearServicioCompleto(Long contratoId, Integer tipoServicioId,
                                                   String nroCuenta, String nroContrato, String nroContratoServicio,
                                                   Boolean esDeInquilino, Boolean esAnual,
@@ -207,6 +210,18 @@ public class ServicioContratoService {
      * Actualiza los datos administrativos de un servicio
      */
     @Transactional
+    @CacheEvict(
+        allEntries = true,
+        cacheNames = {
+            CacheNames.CONTRATOS,
+            CacheNames.CONTRATOS_VIGENTES,
+            CacheNames.CONTRATOS_NO_VIGENTES,
+            CacheNames.CONTRATOS_PROXIMOS_VENCER,
+            CacheNames.CONTRATOS_POR_INMUEBLE,
+            CacheNames.CONTRATOS_POR_INQUILINO,
+            CacheNames.SERVICIOS_POR_CONTRATO
+        }
+    )
     public ServicioContrato actualizarServicio(Integer servicioId, String nroCuenta,
                                               String nroContrato, String nroContratoServicio,
                                               Boolean esDeInquilino, Boolean esAnual) {
@@ -232,6 +247,18 @@ public class ServicioContratoService {
      * Desactiva un servicio (borrado lógico)
      */
     @Transactional
+    @CacheEvict(
+        allEntries = true,
+        cacheNames = {
+            CacheNames.CONTRATOS,
+            CacheNames.CONTRATOS_VIGENTES,
+            CacheNames.CONTRATOS_NO_VIGENTES,
+            CacheNames.CONTRATOS_PROXIMOS_VENCER,
+            CacheNames.CONTRATOS_POR_INMUEBLE,
+            CacheNames.CONTRATOS_POR_INQUILINO,
+            CacheNames.SERVICIOS_POR_CONTRATO
+        }
+    )
     public void desactivarServicio(Integer servicioId) {
         ServicioContrato servicio = servicioContratoRepository.findById(servicioId)
                 .orElseThrow(() -> new BusinessException(
@@ -249,6 +276,18 @@ public class ServicioContratoService {
      * Reactiva un servicio (versión simple)
      */
     @Transactional
+    @CacheEvict(
+        allEntries = true,
+        cacheNames = {
+            CacheNames.CONTRATOS,
+            CacheNames.CONTRATOS_VIGENTES,
+            CacheNames.CONTRATOS_NO_VIGENTES,
+            CacheNames.CONTRATOS_PROXIMOS_VENCER,
+            CacheNames.CONTRATOS_POR_INMUEBLE,
+            CacheNames.CONTRATOS_POR_INQUILINO,
+            CacheNames.SERVICIOS_POR_CONTRATO
+        }
+    )
     public void reactivarServicio(Integer servicioId) {
         reactivarServicioConFecha(servicioId, clockService.getCurrentDate().format(FORMATO_FECHA));
     }
@@ -260,6 +299,18 @@ public class ServicioContratoService {
      * @param nuevaFechaInicio Nueva fecha de inicio para reactivar
      */
     @Transactional
+    @CacheEvict(
+        allEntries = true,
+        cacheNames = {
+            CacheNames.CONTRATOS,
+            CacheNames.CONTRATOS_VIGENTES,
+            CacheNames.CONTRATOS_NO_VIGENTES,
+            CacheNames.CONTRATOS_PROXIMOS_VENCER,
+            CacheNames.CONTRATOS_POR_INMUEBLE,
+            CacheNames.CONTRATOS_POR_INQUILINO,
+            CacheNames.SERVICIOS_POR_CONTRATO
+        }
+    )
     public void reactivarServicioConFecha(Integer servicioId, String nuevaFechaInicio) {
         ServicioContrato servicio = servicioContratoRepository.findById(servicioId)
                 .orElseThrow(() -> new BusinessException(
@@ -348,6 +399,18 @@ public class ServicioContratoService {
      * Desactiva todos los servicios de un contrato
      */
     @Transactional
+    @CacheEvict(
+        allEntries = true,
+        cacheNames = {
+            CacheNames.CONTRATOS,
+            CacheNames.CONTRATOS_VIGENTES,
+            CacheNames.CONTRATOS_NO_VIGENTES,
+            CacheNames.CONTRATOS_PROXIMOS_VENCER,
+            CacheNames.CONTRATOS_POR_INMUEBLE,
+            CacheNames.CONTRATOS_POR_INQUILINO,
+            CacheNames.SERVICIOS_POR_CONTRATO
+        }
+    )
     public void desactivarServiciosDeContrato(Long contratoId) {
         List<ServicioContrato> servicios = servicioContratoRepository.findByContratoId(contratoId);
         servicios.forEach(servicio -> {
