@@ -45,8 +45,6 @@ export default function ContratoAlquilerCard({
     contrato.montoUltimoAlquiler = 0;
   }
 
-  console.log("ContratoAlquilerCard - contrato:", contrato);
-
   return (
     <Card
       className="hover:shadow-lg transition-shadow cursor-pointer border-1 border-foreground/20"

@@ -17,7 +17,7 @@ export default function NuevaContrasenaPage() {
     setToken(tokenParam || "")
     
     if (tokenParam) {
-        console.log('Token recibido:', tokenParam)
+        console.log('Token recibido')
         setHayToken(true)
       // Aquí podés hacer lo que necesites con el token
     } else {

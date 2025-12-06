@@ -4,6 +4,7 @@ import { Nunito } from "next/font/google";
 import "./globals.css";
 import ClientRootLayout from "./client-root-latout";
 import { AuthProvider } from "@/contexts/AuthProvider";
+import { Analytics } from "@vercel/analytics/next"
 
 const nunito = Nunito({
   subsets: ["latin"],
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es" suppressHydrationWarning>
       <head>
+        <meta name="theme-color" content="#e8be50" />
         {/* Script bloqueante que lee el tema antes de renderizar para evitar flash */}
         <script
           dangerouslySetInnerHTML={{
@@ -43,6 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <ClientRootLayout>{children}</ClientRootLayout>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );

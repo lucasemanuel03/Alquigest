@@ -68,7 +68,7 @@ export default function NotificacionFechaLimite({ onClose }: NotificacionFechaLi
 
   return (
     <div className="">
-      <div className="p-4 bg-yellow-50 dark:bg-yellow-900/10 border-muted border-1 rounded-xl">
+      <div className="p-4 bg-yellow-50 dark:bg-yellow-900/10 border-muted border rounded-xl">
         <div className="flex items-start justify-between gap-3 mb-2">
           <div className="flex-1">
             <p className="font-bold flex items-center gap-2">
@@ -116,7 +116,7 @@ export default function NotificacionFechaLimite({ onClose }: NotificacionFechaLi
               >
                 <div className="p-3 bg-white dark:bg-yellow-950/40 rounded-lg border border-muted hover:border-primary hover:shadow-md transition-all cursor-pointer">
                   <div className="flex items-center gap-3">
-                    <User className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                    <User className="h-5 w-5 mt-0.5 shrink-0" />
                     <div className="flex gap-2 min-w-0">
                       <p className="font-semibold text-sm text-foreground truncate">
                         {alquiler.nombreInquilino} {alquiler.apellidoInquilino}

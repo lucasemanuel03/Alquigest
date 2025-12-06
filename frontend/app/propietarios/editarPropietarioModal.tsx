@@ -63,7 +63,6 @@ const handleBajaPropietarioInmueble = async () => {
       esActivo: false
     };
 
-    console.log("Propietario desactivado correctamente.");
     onPropietarioActualizado(propietarioDesactivado);
     onClose();
     

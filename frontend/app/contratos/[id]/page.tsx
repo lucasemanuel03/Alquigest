@@ -49,7 +49,6 @@ export default function DetalleContratoPage({contratoDetallado} : {contratoDetal
                 console.log("Ejecutando fetch de Contratos...");
                 try {
                     const data = await fetchWithToken(`${BACKEND_URL}/contratos/${id}`);
-                    console.log("Datos parseados del backend:", data);
                     setContatoBD(data);
     
                     setEsVigente(data?.estadoContratoId === 1);
@@ -106,8 +105,6 @@ export default function DetalleContratoPage({contratoDetallado} : {contratoDetal
             minute: '2-digit'
         });
     };
-
-    console.log(contratoBD)
 
       // Mostrar un mensaje de carga mientras los datos se están obteniendo
   if(loading){

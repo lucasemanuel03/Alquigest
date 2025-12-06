@@ -113,8 +113,6 @@ export default function NuevoContratoPage() {
       contratoId: contratoId,
       nroContrato: contratoId.toString(),
     }));
-    
-    console.log("Servicios a enviar (array):", serviciosConContrato);
 
     try {
       // Enviar todos los servicios en un solo array

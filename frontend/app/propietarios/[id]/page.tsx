@@ -27,11 +27,8 @@ export default function PropietarioDetalles() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        console.log("Ejecutando fetch de propietario...");
-
         fetchWithToken(`${BACKEND_URL}/propietarios/${id}`)
             .then((data) => {
-                console.log("Datos parseados del backend:", data);
                 setPropietario(data);
                 setLoading(false);
             })
@@ -41,15 +38,11 @@ export default function PropietarioDetalles() {
             });
     }, [id]);
 
-
     // PARA VER SUS INMUEBLES
     const [susInmuebles, setSusInmuebles] = useState<Inmueble[]>([]);
     useEffect(() => {
-        console.log("Ejecutando fetch de inmuebles del propietario...");
-
         fetchWithToken(`${BACKEND_URL}/inmuebles/propietario/${id}`)
             .then((data) => {
-                console.log("Datos parseados del backend:", data);
                 setSusInmuebles(data);
                 setLoading(false);
             })
