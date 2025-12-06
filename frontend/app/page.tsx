@@ -209,7 +209,7 @@ export default function HomePage() {
   return (
     <div className="bg-background">
       {/* Main Content */}
-      <main className="container mx-auto px-6 py-8 pt-30">
+      <main className="container mx-auto px-6 py-8 pt-25 sm:pt-28">
         {/* Welcome Section */}
         <div className="mb-8 flex justify-between gap-6">
           <div>

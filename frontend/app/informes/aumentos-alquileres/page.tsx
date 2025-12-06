@@ -101,7 +101,7 @@ export default function AumentosAlquileresPage() {
 
 	return (
 		<div className="min-h-screen bg-background">
-			<main className="container mx-auto px-6 py-8 pt-30">
+			<main className="container mx-auto px-6 py-8 pt-25 sm:pt-28">
 				<Link href={"/informes"} className="mb-8 flex flex-col gap-3">
 					<Button variant="outline" className="w-fit">
 						<ArrowLeft className="h-4 w-4 mr-2" />

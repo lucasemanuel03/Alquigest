@@ -28,7 +28,7 @@ export default function NuevaContrasenaPage() {
 
 
   return (
-        <main className="container h-screen mx-auto px-6 py-8 pt-30">
+        <main className="container h-screen mx-auto px-6 py-8 pt-25 sm:pt-28">
             {hayToken ? (
                 <>
                     <div className="flex flex-col gap-3 mb-8">

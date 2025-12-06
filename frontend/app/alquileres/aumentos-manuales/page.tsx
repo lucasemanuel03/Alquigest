@@ -84,7 +84,7 @@ export default function AumentosManualesAlquileresPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="container mx-auto px-6 py-8 pt-30">
+      <main className="container mx-auto px-6 py-8 pt-25 sm:pt-28">
         {/* Header */}
         <div className="mb-8 flex justify-between gap-3">
           <Link href="/alquileres">

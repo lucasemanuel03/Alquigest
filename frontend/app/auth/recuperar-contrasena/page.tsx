@@ -6,7 +6,7 @@ import { ArrowLeft, KeyRound } from "lucide-react";
 
 export default function RecuperarContrasenaPage() {
   return (
-    <main className="container h-screen mx-auto px-6 py-8 pt-30">
+    <main className="container h-screen mx-auto px-6 py-8 pt-25 sm:pt-28">
         <div className="flex flex-col gap-3 mb-8">
             <Button variant="outline" onClick={() => window.history.back()} className="w-fit">
                 <ArrowLeft className="h-4 w-4 mr-2" />

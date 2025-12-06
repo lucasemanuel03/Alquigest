@@ -149,7 +149,7 @@ export default function InquilinosPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="container mx-auto px-6 py-8 pt-30">
+      <main className="container mx-auto px-6 py-8 pt-25 sm:pt-28">
         {/* Page Title */}
         <div className="mb-8 flex flex-col gap-5">
           <div className="mt-8 flex items-center justify-between">

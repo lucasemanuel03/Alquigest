@@ -117,7 +117,7 @@ export default function PagoServiciosPage() {
     <div className="min-h-screen bg-background">
 
       {/* Main Content */}
-      <main className="container mx-auto px-6 py-8 pt-30">
+      <main className="container mx-auto px-6 py-8 pt-25  sm:pt-30">
         <div className="mb-8 flex flex-col gap-3">
           <Button variant="outline" onClick={() => window.history.back()} className="w-fit">
           <ArrowLeft className="h-4 w-4 mr-2" />

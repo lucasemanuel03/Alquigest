@@ -127,7 +127,7 @@ export default function DetalleContratoPage({contratoDetallado} : {contratoDetal
     return(
         <div className="min-h-screen bg-background">
            
-            <main className="container mx-auto px-4 py-8 pt-30">
+            <main className="container mx-auto px-4 py-8 pt-25 sm:pt-28">
                     <div className="mb-8 flex flex-col gap-3">
                         <Button variant="outline" onClick={() => window.history.back()} className="w-fit">
                         <ArrowLeft className="h-4 w-4 mr-2" />

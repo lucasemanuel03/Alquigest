@@ -11,8 +11,8 @@ export default function HeaderAlquigest({ tituloPagina = "", username, toggleThe
   const gradientAlqui = "bg-gradient-to-l from-[var(--amarillo-alqui)] to-[var(--background)]"
 
   return (
-    <header className={`border-b border-border ${gradientVar} shadow-lg fixed w-screen p-1 z-40`}>
-      <div className="container mx-auto px-6 py-4">
+    <header className={`border-b border-border ${gradientVar} shadow-lg fixed w-screen z-40`}>
+      <div className="container mx-auto px-3 py-3 sm:py-5 sm:px-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Link href="/" className="flex items-center space-x-3">
