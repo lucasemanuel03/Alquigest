@@ -21,7 +21,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/alquileres")
 @Tag(name = "Alquileres", description = "API para la gestion de pago de alquileres")
-@CrossOrigin(origins = "*")
 public class AlquilerController {
 
     private final AlquilerService alquilerService;

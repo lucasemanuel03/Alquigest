@@ -8,7 +8,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/ambito-pdfs")
-@CrossOrigin(origins = "*", maxAge = 3600)
 public class AmbitoPDFController {
 
     private final AmbitoPDFService ambitoPDFService;
