@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -62,12 +61,6 @@ public class SecurityConfig {
         return authConfig.getAuthenticationManager();
     }
 
-    // ToDo
-    // Modificar aca los permisos de cada rol, los endpoints
-    // Para activar la seguridad:
-    // Comenta las líneas 65-72 (la parte activa con permitAll())
-    // Descomenta las líneas 74-123 (el bloque que empieza con /* Original authentication configuration...)
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -75,6 +68,7 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+
                 // Endpoints públicos de autenticación
                 .requestMatchers("/api/auth/signup").hasAnyRole("ABOGADA", "SECRETARIA")
                 .requestMatchers("/api/auth/**").permitAll()
@@ -85,65 +79,66 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-resources/**").permitAll()
                 .requestMatchers("/webjars/**").permitAll()
 
-                // TIPOS DE INMUEBLE - Solo ADMIN puede crear/editar/eliminar
-                .requestMatchers(HttpMethod.GET, "/api/tipos-inmueble").hasAnyRole("ADMINISTRADOR", "ABOGADA", "SECRETARIA")
-                .requestMatchers(HttpMethod.GET, "/api/tipos-inmueble/{id}").hasAnyRole("ADMINISTRADOR", "ABOGADA", "SECRETARIA")
+                // TIPOS DE INMUEBLE
+                .requestMatchers(HttpMethod.GET, "/api/tipos-inmueble").hasAnyRole("ABOGADA", "SECRETARIA")
+                .requestMatchers(HttpMethod.GET, "/api/tipos-inmueble/{id}").hasAnyRole("ABOGADA", "SECRETARIA")
                 .requestMatchers("/api/tipos-inmueble/**").hasRole("ADMINISTRADOR")
 
-                // ESTADOS DE CONTRATO - Solo ADMIN puede crear/editar/eliminar
-                .requestMatchers(HttpMethod.GET, "/api/estados-contrato/**").hasAnyRole("ADMINISTRADOR", "ABOGADA", "SECRETARIA")
+                // ESTADOS DE CONTRATO
+                .requestMatchers(HttpMethod.GET, "/api/estados-contrato/**").hasAnyRole("ABOGADA", "SECRETARIA")
                 .requestMatchers("/api/estados-contrato/**").hasRole("ADMINISTRADOR")
 
-                // CONTRATOS - Lectura: todos los roles, Escritura: ADMIN y ABOGADA
-                .requestMatchers(HttpMethod.GET, "/api/contratos/**").hasAnyRole("ADMINISTRADOR", "ABOGADA", "SECRETARIA")
-                .requestMatchers("/api/contratos/**").hasAnyRole("ADMINISTRADOR", "ABOGADA")
+                // CONTRATOS - Lectura: todos los roles, Escritura: ABOGADA
+                .requestMatchers(HttpMethod.GET, "/api/contratos/**").hasAnyRole("ABOGADA", "SECRETARIA")
+                .requestMatchers("/api/contratos/**").hasAnyRole("ABOGADA")
 
-                // INMUEBLES - Lectura: todos los roles, Escritura: ADMIN y ABOGADA
-                .requestMatchers(HttpMethod.GET, "/api/inmuebles/**").hasAnyRole("ADMINISTRADOR", "ABOGADA", "SECRETARIA")
-                .requestMatchers("/api/inmuebles/**").hasAnyRole("ADMINISTRADOR", "ABOGADA")
+                // INMUEBLES - Lectura: todos los roles, Escritura: ABOGADA
+                .requestMatchers(HttpMethod.GET, "/api/inmuebles/**").hasAnyRole("ABOGADA", "SECRETARIA")
+                .requestMatchers("/api/inmuebles/**").hasAnyRole("ABOGADA")
 
-                // INQUILINOS - Lectura: todos los roles, Escritura: ADMIN y ABOGADA
-                .requestMatchers(HttpMethod.GET, "/api/inquilinos/**").hasAnyRole("ADMINISTRADOR", "ABOGADA", "SECRETARIA")
-                .requestMatchers("/api/inquilinos/**").hasAnyRole("ADMINISTRADOR", "ABOGADA")
+                // INQUILINOS - Lectura: todos los roles, Escritura: ABOGADA
+                .requestMatchers(HttpMethod.GET, "/api/inquilinos/**").hasAnyRole("ABOGADA", "SECRETARIA")
+                .requestMatchers("/api/inquilinos/**").hasAnyRole("ABOGADA")
 
-                // PROPIETARIOS - Lectura: todos los roles, Escritura: ADMIN y ABOGADA
-                .requestMatchers(HttpMethod.GET, "/api/propietarios/**").hasAnyRole("ADMINISTRADOR", "ABOGADA", "SECRETARIA")
-                .requestMatchers("/api/propietarios/**").hasAnyRole("ADMINISTRADOR", "ABOGADA")
+                // PROPIETARIOS - Lectura: todos los roles, Escritura: ABOGADA
+                .requestMatchers(HttpMethod.GET, "/api/propietarios/**").hasAnyRole("ABOGADA", "SECRETARIA")
+                .requestMatchers("/api/propietarios/**").hasAnyRole("ABOGADA")
 
                 // AMBITOS PDF - Lectura: todos los roles autenticados
-                .requestMatchers(HttpMethod.GET, "/api/ambito-pdfs/**").hasAnyRole("ADMINISTRADOR", "ABOGADA", "SECRETARIA")
+                .requestMatchers(HttpMethod.GET, "/api/ambito-pdfs/**").hasAnyRole("ABOGADA", "SECRETARIA")
 
-                // ALQUILERES - Lectura: todos los roles, Escritura: ADMIN y ABOGADA
-                .requestMatchers(HttpMethod.GET, "/api/alquileres/**").hasAnyRole("ADMINISTRADOR", "ABOGADA", "SECRETARIA")
-                .requestMatchers(HttpMethod.GET, "/api/alquileres/honorarios").hasAnyRole("ADMINISTRADOR", "ABOGADA")
-                .requestMatchers(HttpMethod.GET, "/api/alquileres/{id}/honorarios").hasAnyRole("ADMINISTRADOR", "ABOGADA")
-                .requestMatchers("/api/alquileres/**").hasAnyRole("ADMINISTRADOR", "ABOGADA")
+                // ALQUILERES - Lectura: todos los roles, Escritura: ABOGADA
+                .requestMatchers(HttpMethod.GET, "/api/alquileres/**").hasAnyRole("ABOGADA", "SECRETARIA")
+                .requestMatchers(HttpMethod.GET, "/api/alquileres/honorarios").hasAnyRole("ABOGADA")
+                .requestMatchers(HttpMethod.GET, "/api/alquileres/{id}/honorarios").hasAnyRole("ABOGADA")
+                .requestMatchers("/api/alquileres/**").hasAnyRole("ABOGADA")
 
-                // SERVICIOS POR CONTRATO - Lectura: todos los roles, Escritura: ADMIN y ABOGADA
-                .requestMatchers(HttpMethod.GET, "/api/servicios-contrato/**").hasAnyRole("ADMINISTRADOR", "ABOGADA", "SECRETARIA")
-                .requestMatchers("/api/servicios-contrato/**").hasAnyRole("ADMINISTRADOR", "ABOGADA")
+                // SERVICIOS POR CONTRATO - Lectura: todos los roles, Escritura: ABOGADA
+                .requestMatchers(HttpMethod.GET, "/api/servicios-contrato/**").hasAnyRole("ABOGADA", "SECRETARIA")
+                .requestMatchers("/api/servicios-contrato/**").hasAnyRole("ABOGADA")
 
-                // PAGOS DE SERVICIO - Lectura: todos los roles, Escritura: ADMIN y ABOGADA
-                .requestMatchers(HttpMethod.GET, "/api/pagos-servicios/**").hasAnyRole("ADMINISTRADOR", "ABOGADA", "SECRETARIA")
-                .requestMatchers("/api/pagos-servicio/**").hasAnyRole("ADMINISTRADOR", "ABOGADA")
+                // PAGOS DE SERVICIO - Lectura: todos los roles, Escritura: ABOGADA
+                .requestMatchers(HttpMethod.GET, "/api/pagos-servicios/**").hasAnyRole("ABOGADA", "SECRETARIA")
+                .requestMatchers("/api/pagos-servicio/**").hasAnyRole("ABOGADA")
 
-                // CANCELACIONES DE CONTRATO - Lectura: todos los roles, Escritura: ADMIN y ABOGADA
-                .requestMatchers(HttpMethod.GET, "/api/cancelaciones-contratos/**").hasAnyRole("ADMINISTRADOR", "ABOGADA", "SECRETARIA")
-                .requestMatchers("/api/cancelaciones/**").hasAnyRole("ADMINISTRADOR", "ABOGADA")
+                // CANCELACIONES DE CONTRATO - Lectura: todos los roles, Escritura: ABOGADA
+                .requestMatchers(HttpMethod.GET, "/api/cancelaciones-contratos/**").hasAnyRole("ABOGADA", "SECRETARIA")
+                .requestMatchers("/api/cancelaciones/**").hasAnyRole("ABOGADA")
 
-                // MOTIVOS DE CANCELACIÓN - Solo ADMIN
-                .requestMatchers(HttpMethod.GET, "/api/motivos-cancelacion/**").hasAnyRole("ADMINISTRADOR", "ABOGADA", "SECRETARIA")
+                // MOTIVOS DE CANCELACIÓN
+                .requestMatchers(HttpMethod.GET, "/api/motivos-cancelacion/**").hasAnyRole("ABOGADA", "SECRETARIA")
                 .requestMatchers("/api/motivos-cancelacion/**").hasRole("ADMINISTRADOR")
 
-                // ACTUALIZACIONES DE SERVICIO - Lectura: todos los roles, Escritura: ADMIN y ABOGADA
-                .requestMatchers(HttpMethod.GET, "/api/servicios-actualizacion/**").hasAnyRole("ADMINISTRADOR", "ABOGADA", "SECRETARIA")
-                .requestMatchers("/api/actualizaciones-servicio/**").hasAnyRole("ADMINISTRADOR", "ABOGADA")
+                // ACTUALIZACIONES DE SERVICIO - Lectura: todos los roles, Escritura: ABOGADA
+                .requestMatchers(HttpMethod.GET, "/api/servicios-actualizacion/**").hasAnyRole("ABOGADA", "SECRETARIA")
+                .requestMatchers("/api/actualizaciones-servicio/**").hasAnyRole("ABOGADA")
 
                 // HEALTH CHECK - Público
                 .requestMatchers("/health", "/api/health", "/api/health/**").permitAll()
 
                 // Cualquier otra petición requiere autenticación
-                .anyRequest().authenticated()            );
+                .anyRequest().authenticated()
+            );
 
         // Autenticacion JWT
          http.authenticationProvider(authenticationProvider());
