@@ -54,13 +54,6 @@ public class BackupService {
                     backup.append("-- Tabla: ").append(tabla).append("\n");
                     backup.append("-- ================================================\n\n");
 
-                    // Obtener estructura de la tabla (columnas)
-                    List<Map<String, Object>> columnas = jdbcTemplate.queryForList(
-                        "SELECT column_name, data_type FROM information_schema.columns " +
-                        "WHERE table_schema = 'public' AND table_name = ? ORDER BY ordinal_position",
-                        tabla
-                    );
-
                     // Obtener datos de la tabla
                     List<Map<String, Object>> rows = jdbcTemplate.queryForList("SELECT * FROM " + tabla);
 
@@ -154,6 +147,53 @@ public class BackupService {
         LocalDateTime ahora = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy--HH-mm");
         return ahora.format(formatter) + "-Backup-Alquigest.sql";
+    }
+
+    /**
+     * Carga un backup SQL a la base de datos
+     * @param backupContent Contenido del archivo SQL
+     * @throws Exception Si ocurre un error durante la restauración
+     */
+    public void cargarBackupSQL(byte[] backupContent) throws Exception {
+        try {
+            logger.info("Iniciando carga de backup SQL");
+
+            String backupSQL = new String(backupContent, StandardCharsets.UTF_8);
+
+            // Dividir el archivo en sentencias SQL individuales
+            String[] sentencias = backupSQL.split(";");
+
+            int ejecutadas = 0;
+            int errores = 0;
+
+            for (String sentencia : sentencias) {
+                String sql = sentencia.trim();
+
+                // Ignorar comentarios y líneas vacías
+                if (sql.isEmpty() || sql.startsWith("--") || sql.startsWith("SET ")) {
+                    continue;
+                }
+
+                try {
+                    jdbcTemplate.execute(sql);
+                    ejecutadas++;
+                } catch (Exception e) {
+                    errores++;
+                    logger.warn("Error ejecutando sentencia SQL: {}. Error: {}",
+                        sql.substring(0, Math.min(50, sql.length())), e.getMessage());
+                }
+            }
+
+            logger.info("Backup cargado. Sentencias ejecutadas: {}, Errores: {}", ejecutadas, errores);
+
+            if (errores > ejecutadas / 2) {
+                throw new Exception("Demasiados errores durante la restauración. Ejecutadas: " + ejecutadas + ", Errores: " + errores);
+            }
+
+        } catch (Exception e) {
+            logger.error("Error cargando backup SQL", e);
+            throw new Exception("Error al cargar el backup: " + e.getMessage(), e);
+        }
     }
 }
 
