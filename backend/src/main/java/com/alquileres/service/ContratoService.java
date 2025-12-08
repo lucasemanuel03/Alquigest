@@ -867,8 +867,10 @@ public class ContratoService {
             CacheNames.CONTRATOS,
             CacheNames.CONTRATO_POR_ID,
             CacheNames.CONTRATOS_VIGENTES,
+            CacheNames.CONTRATOS_VIGENTES_COUNT,
             CacheNames.CONTRATOS_NO_VIGENTES,
             CacheNames.CONTRATOS_PROXIMOS_VENCER,
+            CacheNames.CONTRATOS_PROXIMOS_VENCER_COUNT,
             CacheNames.CONTRATOS_POR_INMUEBLE,
             CacheNames.CONTRATOS_POR_INQUILINO,
             CacheNames.INMUEBLE_TIENE_CONTRATO_VIGENTE
