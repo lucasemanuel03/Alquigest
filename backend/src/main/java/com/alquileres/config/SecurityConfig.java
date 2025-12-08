@@ -133,7 +133,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/servicios-actualizacion/**").hasAnyRole("ABOGADA", "SECRETARIA")
                 .requestMatchers("/api/actualizaciones-servicio/**").hasAnyRole("ABOGADA")
 
-                // BACKUP - Solo ADMINISTRADOR
+                // BACKUP
+                .requestMatchers("/api/backup/descargar").hasRole("ABOGADA")
                 .requestMatchers("/api/backup/**").hasRole("ADMINISTRADOR")
 
                 // HEALTH CHECK - Público
