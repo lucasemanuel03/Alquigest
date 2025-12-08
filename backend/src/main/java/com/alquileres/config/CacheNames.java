@@ -21,21 +21,7 @@ public class CacheNames {
     public static final String CONTRATO_EXISTE = "contrato-existe";
     public static final String INMUEBLE_TIENE_CONTRATO_VIGENTE = "inmueble-contrato-vigente";
 
-    // Cachés de Alquileres
-    public static final String ALQUILERES = "alquileres";
-    public static final String ALQUILERES_PENDIENTES = "alquileres-pendientes";
-
-    // Cachés de Inmuebles
-    public static final String INMUEBLES = "inmuebles";
-
-    // Cachés de Inquilinos
-    public static final String INQUILINOS = "inquilinos";
-
-    // Cachés de Propietarios
-    public static final String PROPIETARIOS = "propietarios";
-
     // Cachés de Servicios
-    public static final String SERVICIOS = "servicios";
     public static final String SERVICIOS_POR_CONTRATO = "servicios-contrato";
 
     private CacheNames() {

@@ -55,12 +55,6 @@ public class CacheConfig {
                 "contrato-id",
                 "contrato-existe",
                 "inmueble-contrato-vigente",
-                "alquileres",
-                "alquileres-pendientes",
-                "inmuebles",
-                "inquilinos",
-                "propietarios",
-                "servicios",
                 "servicios-contrato"
         );
     }
