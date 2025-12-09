@@ -36,24 +36,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const checkAuth = async () => {
+    const startTime = performance.now();
+    console.log("🔍 [AUTH] Iniciando verificación de sesión...");
+    
     try {
+      const fetchStart = performance.now();
+      console.log(`🌐 [AUTH] Enviando petición a: ${BACKEND_URL}/auth/me`);
+      
       const res = await fetch(`${BACKEND_URL}/auth/me`, {
         credentials: 'include' // ⭐ CLAVE: Incluir cookies
       });
 
+      const fetchEnd = performance.now();
+      console.log(`⏱️ [AUTH] Petición completada en: ${(fetchEnd - fetchStart).toFixed(2)}ms`);
+
       if (res.ok) {
+        const parseStart = performance.now();
         const userData = await res.json();
+        const parseEnd = performance.now();
+        
         setUser(userData);
-        console.log("✅ Sesión activa:", userData.username);
+        console.log(`✅ [AUTH] Sesión activa: ${userData.username}`);
+        console.log(`📊 [AUTH] Parsing JSON: ${(parseEnd - parseStart).toFixed(2)}ms`);
       } else {
         setUser(null);
-        console.log("❌ Sin sesión activa");
+        console.log(`❌ [AUTH] Sin sesión activa (${res.status})`);
       }
     } catch (error) {
-      console.error("Error verificando autenticación:", error);
+      console.error("❌ [AUTH] Error verificando autenticación:", error);
       setUser(null);
     } finally {
+      const totalTime = performance.now() - startTime;
       setIsLoading(false);
+      console.log(`🏁 [AUTH] Verificación total completada en: ${totalTime.toFixed(2)}ms`);
     }
   };
 

@@ -2,10 +2,12 @@
 // Esta función ahora usa cookies en lugar de localStorage
 // El comportamiento de retorno se mantiene igual para compatibilidad
 
+import BACKEND_URL from "@/utils/backendURL";
+
 export const fetchWithToken = async (url: string, options: RequestInit = {}) => {
   
   // Construir la URL completa si es relativa
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8081/api";
+  ;
   const fullUrl = url.startsWith("http") ? url : `${BACKEND_URL}${url.startsWith("/") ? url : `/${url}`}`;
 
   // Construir headers dinámicamente: no forzar Content-Type si el body es FormData

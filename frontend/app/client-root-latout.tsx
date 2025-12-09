@@ -18,6 +18,16 @@ export default function ClientRootLayout({ children }: { children: ReactNode }) 
   const pathname = usePathname();
   const isPublicRoute = pathname?.startsWith("/auth/") === true;
 
+  // 📊 Log de estado de carga
+  useEffect(() => {
+    console.log("🎨 [RENDER] Estado actual:", { 
+      isLoading, 
+      isAuthenticated, 
+      hasUser: !!user,
+      pathname 
+    });
+  }, [isLoading, isAuthenticated, user, pathname]);
+
   // Mapear las rutas a títulos específicos
   const getTituloPagina = (path: string) => {
     if (path.startsWith("/propietarios")) return "Locadores";
@@ -59,9 +69,16 @@ export default function ClientRootLayout({ children }: { children: ReactNode }) 
 
   // Mostrar loading mientras verifica sesión
   if (isLoading) {
+    console.log("⏳ [RENDER] Mostrando pantalla de carga...");
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <div className="flex flex-col gap-4 items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <p>Verificando sesión...</p>
+          <p className="text-xs text-gray-500">
+            Si esto tarda mucho, puede ser que el servidor esté iniciando (cold start)
+          </p>
+        </div>
       </div>
     );
   }
