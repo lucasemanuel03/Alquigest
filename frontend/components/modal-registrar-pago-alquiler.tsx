@@ -425,7 +425,7 @@ export default function ModalRegistrarPagoAlquiler({
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Fecha de Pago</p>
-                    <p className="font-semibold">{new Date(formData.fechaPago).toLocaleDateString('es-AR')}</p>
+                    <p className="font-semibold">{new Date(formData.fechaPago).toLocaleDateString('es-AR', {timeZone: "UTC"})}</p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Cuenta de Banco</p>
