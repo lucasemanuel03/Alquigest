@@ -56,7 +56,7 @@ export default function ContratoAlquilerCard({
         <div className="flex items-center gap-2 md:col-span-4">
           <InmuebleIcon tipoInmuebleString={contrato?.tipoInmueble} className="h-7 w-7" />
           <CardTitle className="text-xl md:text-xl font-semibold">
-            <Link href={`/inmuebles/${contrato.inmuebleId}`} className="hover:text-primary">
+            <Link href={`/contratos/${contrato.id}`} className="hover:text-primary">
               {contrato.direccionInmueble}
             </Link>
           </CardTitle>
@@ -137,12 +137,12 @@ export default function ContratoAlquilerCard({
         <div className="grid grid-cols-1 items-center justify-between pt-4 border-t gap-2 md:flex md:justify-between">
           <div className="flex gap-2">
             <Link href={`/contratos/${contrato.id}`}>
-              <Button variant="outline" size="sm">
+              <Button className="w-42" variant="outline" size="sm">
                 <FileText />
                 Ver Contrato</Button>
             </Link>
             <Link href={`/alquileres/${contrato.id}/historial-pago-alquiler`}>
-              <Button variant="outline" size="sm">
+              <Button className="w-42" variant="outline" size="sm">
                 <CalendarCheck />
                 Ver Historial
               </Button>
@@ -152,14 +152,14 @@ export default function ContratoAlquilerCard({
             <Button
               size="sm"
               disabled={!estaPendiente}
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-green-600 hover:bg-green-700 w-42"
               onClick={handleRegistrarPago}
             >
               <Import />
               Registrar Pago
             </Button>
             <Link href={`/alquileres/${contrato.id}/generar-recibo`}>
-              <Button variant="outline" size="sm">
+              <Button className="w-42" variant="outline" size="sm">
                 <Receipt />
                 Mercedes Locativas
               </Button>

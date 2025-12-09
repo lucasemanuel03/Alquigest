@@ -137,25 +137,30 @@ export default function DetalleContratoPage({contratoDetallado} : {contratoDetal
                         <div className="flex gap-2">
                             <FileText className="h-15 w-15 text-yellow-700" />
                             <div>
-                                <h2 className="text-xl font-bold text-foreground font-sans">Contrato Nro. {contratoBD.id}</h2>
-                                <p className="text-2xl font-medium font-sans text-secondary">{contratoBD.direccionInmueble}</p>
+                                <h2 className="text-2xl font-bold text-foreground font-sans">{contratoBD.direccionInmueble}</h2>
+                                <p className="text-lg sm:text-xl font-medium font-sans text-secondary">{contratoBD.estadoContratoNombre}</p>
                             </div>
                         </div>
-                        <div className="flex flex-col md:flex-row items-center md:justify-end gap-3 my-4">
-                            <Button className="w-42" variant="outline" onClick={() => router.push(`/alquileres/${id}/historial-pago-alquiler`)}>
-                                <History className="h-4 w-4 mr-2" /> Historial de Pagos
-                            </Button>
-                            <Button className="w-42" variant="outline" onClick={() => setOpenModalPdf(true)} disabled={contratoBD.estadoContratoId !== 1}>
-                                <FileUp className="h-4 w-4 mr-2" /> Cargar PDF
-                            </Button>
-                            {contratoBD && (
-                                <ChangeEstadoContrato
-                                    disabled={!hasPermission("cambiar_estado_contrato")}
-                                    contratoId={contratoBD.id}
-                                    estadoActualId={contratoBD.estadoContratoId || 1}
-                                    onEstadoActualizado={handleEstadoActualizado}
-                                />
-                            )}
+                        <div className="flex justify-center">
+                            <div className="grid grid-cols-2 xl:grid-cols-4 md:justify-end gap-2 mt-10">
+                                <Button className="w-42" variant="outline" onClick={() => router.push(`/alquileres/${id}/historial-pago-alquiler`)}>
+                                    <History className="h-4 w-4 " /> Pagos de Alquiler
+                                </Button>
+                                <Button className="w-42" variant="outline" onClick={() => router.push(`/contratos/${id}/historial-pagos-servicios`)}>
+                                    <History className="h-4 w-4 " /> Pagos de Servicios
+                                </Button>
+                                <Button className="w-42 " variant="outline" onClick={() => setOpenModalPdf(true)} disabled={contratoBD.estadoContratoId !== 1}>
+                                    <FileUp className="h-4 w-4" />Cargar PDF
+                                </Button>
+                                {contratoBD && (
+                                    <ChangeEstadoContrato
+                                        disabled={!hasPermission("cambiar_estado_contrato")}
+                                        contratoId={contratoBD.id}
+                                        estadoActualId={contratoBD.estadoContratoId || 1}
+                                        onEstadoActualizado={handleEstadoActualizado}
+                                    />
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
