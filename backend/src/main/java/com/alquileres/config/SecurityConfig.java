@@ -70,8 +70,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
 
                 // Endpoints públicos de autenticación
-                .requestMatchers("/api/auth/signup").hasAnyRole("ABOGADA", "SECRETARIA")
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/auth/signup").hasAnyRole("ABOGADA", "SECRETARIA")
 
                 // Swagger/OpenAPI (público)
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html").permitAll()
