@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -56,6 +57,7 @@ public class ServicioContratoService {
     /**
      * Obtiene todos los servicios de un contrato
      */
+    @Cacheable(value = CacheNames.SERVICIOS_POR_CONTRATO, key = "#contratoId")
     public List<ServicioContrato> getServiciosByContrato(Long contratoId) {
         return servicioContratoRepository.findByContratoId(contratoId);
     }
@@ -63,6 +65,7 @@ public class ServicioContratoService {
     /**
      * Obtiene servicios activos de un contrato
      */
+    @Cacheable(value = CacheNames.SERVICIOS_POR_CONTRATO, key = "#contratoId + '_activos'")
     public List<ServicioContrato> getServiciosActivosByContrato(Long contratoId) {
         return servicioContratoRepository.findByContratoIdAndEsActivoTrue(contratoId);
     }
@@ -92,6 +95,18 @@ public class ServicioContratoService {
      * @return El servicio creado
      */
     @Transactional
+    @CacheEvict(
+        allEntries = true,
+        cacheNames = {
+            CacheNames.CONTRATOS,
+            CacheNames.CONTRATOS_VIGENTES,
+            CacheNames.CONTRATOS_NO_VIGENTES,
+            CacheNames.CONTRATOS_PROXIMOS_VENCER,
+            CacheNames.CONTRATOS_POR_INMUEBLE,
+            CacheNames.CONTRATOS_POR_INQUILINO,
+            CacheNames.SERVICIOS_POR_CONTRATO
+        }
+    )
     public ServicioContrato crearServicioCompleto(Long contratoId, Integer tipoServicioId,
                                                   String nroCuenta, String nroContrato, String nroContratoServicio,
                                                   Boolean esDeInquilino, Boolean esAnual,

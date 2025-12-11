@@ -372,6 +372,18 @@ public class InmuebleService {
     }
 
     // Cambiar estado de alquiler (método usado por el controller)
+    @Transactional
+    @CacheEvict(
+        allEntries = true,
+        cacheNames = {
+            CacheNames.CONTRATOS,
+            CacheNames.CONTRATOS_VIGENTES,
+            CacheNames.CONTRATOS_NO_VIGENTES,
+            CacheNames.CONTRATOS_PROXIMOS_VENCER,
+            CacheNames.CONTRATOS_POR_INMUEBLE,
+            CacheNames.INMUEBLE_TIENE_CONTRATO_VIGENTE
+        }
+    )
     public InmuebleDTO cambiarEstadoAlquiler(Long id, Boolean esAlquilado) {
         if (esAlquilado) {
             return marcarComoAlquilado(id);
