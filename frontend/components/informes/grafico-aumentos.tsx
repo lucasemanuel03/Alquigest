@@ -29,7 +29,7 @@ const CustomTooltip = ({ active, payload }: any) => {
 export default function GraficoAumentosContrato({ contrato } : { contrato: any }) {
   const data = contrato.aumentos.map(a => ({
     fecha: new Date(a.fechaAumento).toLocaleDateString("es-AR", { month: "short", year: "2-digit" }),
-    fechaAumentoLong: new Date(a.fechaAumento).toLocaleDateString("es-AR", { month: "long", year: "numeric" }),
+    fechaAumentoLong: new Date(a.fechaAumento).toLocaleDateString("es-AR", { month: "long", year: "numeric", timeZone: 'UTC'}),
     porcentajeAumento: a.porcentajeAumento,
     montoNuevo: a.montoNuevo,
     montoAnterior: a.montoAnterior,
