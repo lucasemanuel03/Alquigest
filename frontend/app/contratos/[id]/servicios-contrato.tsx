@@ -19,7 +19,7 @@ export default function ServiciosContratoPage({esVigente, idContrato, fechaInici
     const fetchServiciosContrato = async () => {
         console.log("Ejecutando fetch de Servicios del Contrato...");
         try {
-            const data = await fetchWithToken(`${BACKEND_URL}/servicios-contrato/contrato/${idContrato}`);
+            const data = await fetchWithToken(`${BACKEND_URL}/servicios-contrato/contrato/${idContrato}/activos`);
             setServiciosContrato(data);
         } catch (err: any) {
             console.error("Error al traer Servicios del Contrato:", err.message);
