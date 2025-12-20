@@ -219,6 +219,7 @@ export default function NuevoPropietarioModal(props: NuevoPropietarioModalProps)
               <Label htmlFor="direccion">Dirección</Label>
               <Input
                 id="direccion"
+                required
                 maxLength={50}
                 value={nuevoPropietario.direccion}
                 onChange={(e) =>
@@ -231,6 +232,7 @@ export default function NuevoPropietarioModal(props: NuevoPropietarioModalProps)
               <Label htmlFor="barrio">Barrio</Label>
               <Input
                 id="barrio"
+                required
                 maxLength={50}
                 value={nuevoPropietario.barrio}
                 onChange={(e) =>
