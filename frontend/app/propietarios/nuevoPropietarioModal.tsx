@@ -5,13 +5,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useState, useEffect } from "react"
-import BACKEND_URL from "@/utils/backendURL"
 import ModalError from "@/components/modal-error"
-import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
-import auth from "@/utils/functions/auth-functions/auth"
 import { useAuth } from "@/contexts/AuthProvider"
+import { useCrearPropietario } from "@/hooks/useCrearPropietario"
 
 
 type NuevoPropietarioModalProps = {
@@ -24,13 +21,10 @@ type NuevoPropietarioModalProps = {
 }
 
 export default function NuevoPropietarioModal(props: NuevoPropietarioModalProps) {
+  const { text = "Nuevo Locador", onPropietarioCreado, disabled, open, onOpenChange, showTrigger = true } = props;
 
   const { hasPermission, hasRole, user } = useAuth();
-
-  const { text = "Nuevo Locador", onPropietarioCreado, disabled, open, onOpenChange, showTrigger = true } = props;
-  const [errorCarga, setErrorCarga] = useState("")
-  const [mostrarError, setMostrarError] = useState(false)
-  const [loadingCreacion, setLoadingCreacion] = useState(false) // nuevo estado para loading
+  const { crearPropietario, loading, error, mostrarError, setMostrarError } = useCrearPropietario()
   const [isNuevoPropietarioOpen, setIsNuevoPropietarioOpen] = useState(false)
   const isControlled = open !== undefined
   const isOpen = isControlled ? !!open : isNuevoPropietarioOpen
@@ -58,18 +52,11 @@ export default function NuevoPropietarioModal(props: NuevoPropietarioModalProps)
   }, []);
 
   const handleNuevoPropietario = async () => {
-    setLoadingCreacion(true); // Activar loading
-    try {
-      const response = await fetchWithToken(`${BACKEND_URL}/propietarios`, {
-        method: "POST",
-        body: JSON.stringify(nuevoPropietario),
-      })
 
-      const jsonNuevoPropietario = await response
+      const creado = await crearPropietario(nuevoPropietario)
+      if (!creado) return
 
-      if (onPropietarioCreado) {
-        onPropietarioCreado(jsonNuevoPropietario)
-      }
+      onPropietarioCreado?.(creado)
 
       // Limpiar form y cerrar modal
       setNuevoPropietario({
@@ -83,14 +70,6 @@ export default function NuevoPropietarioModal(props: NuevoPropietarioModalProps)
         barrio: ""
       })
   setOpenSafe(false)
-    } catch (error) {
-      console.error("Error al crear propietario:", error)
-      const mensajeError = (error instanceof Error && error.message) ? error.message : "Error al conectarse al servidor";
-      setErrorCarga(mensajeError)
-      setMostrarError(true) // Mostrar el modal de error
-    } finally {
-      setLoadingCreacion(false); // Desactivar loading
-    }
   }
 
   return (
@@ -246,7 +225,7 @@ export default function NuevoPropietarioModal(props: NuevoPropietarioModalProps)
               <Button 
                 type="submit" 
                 className="flex-1"
-                loading={loadingCreacion}
+                loading={loading}
               >
                 Registrar Locador
               </Button>
@@ -259,7 +238,7 @@ export default function NuevoPropietarioModal(props: NuevoPropietarioModalProps)
                   setOpenSafe(false)
                 }}
                 className="flex-1"
-                disabled={loadingCreacion}
+                disabled={loading}
               >
                 Cancelar
               </Button>
@@ -272,7 +251,7 @@ export default function NuevoPropietarioModal(props: NuevoPropietarioModalProps)
       {mostrarError && (
         <ModalError
           titulo="Error al crear Propietario"
-          mensaje={errorCarga}
+          mensaje={error || "Error no identificado"}
           onClose={() => setMostrarError(false)} // Restablecer el estado al cerrar el modal
         />
       )}

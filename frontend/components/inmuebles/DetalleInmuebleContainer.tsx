@@ -7,15 +7,15 @@ import InmuebleHeader from "@/components/inmuebles/InmuebleHeader"
 import InmuebleDatosCard from "@/components/inmuebles/InmuebleDatosCard"
 import PropietarioCard from "@/components/inmuebles/PropietarioCard"
 import ContratoResumenCard from "@/components/inmuebles/ContratoResumenCard"
-import { Inmueble } from "@/types/Inmueble"
 import { Propietario } from "@/types/Propietario"
 import { ContratoDetallado } from "@/types/ContratoDetallado"
 import BACKEND_URL from "@/utils/backendURL"
 import { TIPOS_INMUEBLES, ESTADOS_INMUEBLE } from "@/utils/constantes"
 import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
+import { InmueblesService } from "@/utils/services/inmueblesService"
 
 export default function DetalleInmuebleContainer({ id }: { id: string }) {
-  const [inmueble, setInmueble] = useState<Inmueble | null>(null)
+  const [inmueble, setInmueble] = useState<any | null>(null)
   const [propietario, setPropietario] = useState<Propietario | null>(null)
   const [contratos, setContratos] = useState<ContratoDetallado[]>([])
 
@@ -27,7 +27,7 @@ export default function DetalleInmuebleContainer({ id }: { id: string }) {
     let isMounted = true
     setLoadingInmueble(true)
 
-    fetchWithToken(`${BACKEND_URL}/inmuebles/${id}`)
+    InmueblesService.getById(id)
       .then((data) => {
         if (!isMounted) return
         setInmueble(data)
