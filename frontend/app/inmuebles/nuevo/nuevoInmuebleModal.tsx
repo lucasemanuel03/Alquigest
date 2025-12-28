@@ -10,13 +10,14 @@ import { Plus, Save } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import auth from "@/utils/functions/auth-functions/auth";
 import NuevoPropietarioModal from "@/app/propietarios/nuevoPropietarioModal";
 import ModalError from "@/components/modal-error";
 import ModalConfirmacion from "@/components/modal-confirmacion";
 
 import { useAuth } from "@/contexts/AuthProvider"
 import BusquedaDesplegable from "@/components/busqueda/busqueda-desplegable";
+import { useInmuebles } from "@/hooks/useInmuebles";
+import { InmueblesService } from "@/utils/services/inmueblesService";
 
 type NuevoInmuebleModalProps = {
   text?: string
@@ -30,11 +31,12 @@ type NuevoInmuebleModalProps = {
 
 export default function NuevoInmuebleModal(props: NuevoInmuebleModalProps) {
     const { hasPermission, hasRole, user } = useAuth();
+    const { create, error, clearError } = useInmuebles();
 
     const { text = "Nuevo Inmueble", onInmuebleCreado, onPropietarioCreado, disabled, open, onOpenChange, showTrigger = true } = props;
     const [errorCarga, setErrorCarga] = useState("")
     const [mostrarError, setMostrarError] = useState(false)
-    const [loadingCreacion, setLoadingCreacion] = useState(false) // nuevo estado para loading
+    const [loadingCreacion, setLoadingCreacion] = useState(false)
     const [isNuevoInmuebleOpen, setIsNuevoInmuebleOpen] = useState(false)
     const isControlled = open !== undefined
     const isOpen = isControlled ? !!open : isNuevoInmuebleOpen
@@ -88,7 +90,7 @@ export default function NuevoInmuebleModal(props: NuevoInmuebleModalProps) {
       if (isOpen && propietariosBD.length === 0 && !loadingPropietarios) {
         cargarPropietarios();
       }
-    }, [isOpen]); // Solo depende de isOpen
+    }, [isOpen]);
   
     // Mantener esActivo / esAlquilado consistentes cuando cambie estado
     useEffect(() => {
@@ -102,13 +104,10 @@ export default function NuevoInmuebleModal(props: NuevoInmuebleModalProps) {
       });
     }, [formData.estado]);
   
-      // Verificar dirección antes de crear
+    // Verificar dirección antes de crear
     const verificarDireccion = async () => {
       try {
-        const params = new URLSearchParams({ direccion: formData.direccion })
-        const url = `${BACKEND_URL}/inmuebles/buscar-direccion?${params.toString()}`
-        
-        const result = await fetchWithToken(url, { method: "GET" })
+        const result = await InmueblesService.buscarPorDireccion(formData.direccion);
   
         // Si el endpoint devuelve algo → existe
         if (result.length > 0) {
@@ -124,23 +123,20 @@ export default function NuevoInmuebleModal(props: NuevoInmuebleModalProps) {
   
   
     const handleNewInmueble = async () => {
-      setLoadingCreacion(true); // Activar loading
+      setLoadingCreacion(true);
       try {
         // Convertir campos string a number para el backend
         const dataToSend = {
-          ...formData,
           propietarioId: parseInt(formData.propietarioId),
+          direccion: formData.direccion,
           tipoInmuebleId: parseInt(formData.tipoInmuebleId),
           estado: parseInt(formData.estado),
-          superficie: formData.superficie ? parseFloat(formData.superficie) : null,
+          superficie: formData.superficie ? parseFloat(formData.superficie) : 0,
           esActivo: formData.esActivo === "true",
           esAlquilado: formData.esAlquilado === "true",
         };
 
-        const createdInmueble = await fetchWithToken(`${BACKEND_URL}/inmuebles`, {
-          method: "POST",
-          body: JSON.stringify(dataToSend),
-        });
+        const createdInmueble = await create(dataToSend);
         console.log("Inmueble creado con éxito:", createdInmueble);
   
         // Encontrar el propietario seleccionado y pasarlo junto con el inmueble
@@ -167,7 +163,7 @@ export default function NuevoInmuebleModal(props: NuevoInmuebleModalProps) {
         setErrorCarga(error.message || "No se pudo conectar con el servidor");
         setMostrarError(true);
       } finally {
-        setLoadingCreacion(false); // Desactivar loading
+        setLoadingCreacion(false);
       }
     };
   
@@ -199,14 +195,12 @@ export default function NuevoInmuebleModal(props: NuevoInmuebleModalProps) {
     const handleConfirmarDireccionDuplicada = () => {
       setMostrarConfirmacion(false)
       setContinuarRegistro(true)
-      // Disparar el submit programáticamente
       handleNewInmueble()
     }
 
     const handleCancelarDireccionDuplicada = () => {
       setMostrarConfirmacion(false)
       setContinuarRegistro(false)
-      // El modal principal permanece abierto para que el usuario pueda editar
     }
 
 

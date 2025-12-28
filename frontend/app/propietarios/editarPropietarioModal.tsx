@@ -17,29 +17,13 @@ type EditarPropietarioModalProps = {
   onPropietarioActualizado: (propietarioActualizado: any) => void
 }
 
-export default function EditarPropietarioModal({
-  propietario,
-  isOpen,
-  onClose,
-  onPropietarioActualizado,
-}: EditarPropietarioModalProps) {
+export default function EditarPropietarioModal({ propietario, isOpen, onClose, onPropietarioActualizado,} : EditarPropietarioModalProps) {
   const [editingOwner, setEditingOwner] = useState(propietario)
   const [claveFiscalActualizada, setClaveFiscalActualizada] = useState("")
-  
-  const { 
-    actualizarPropietario, 
-    desactivarPropietario, 
-    loading, 
-    error, 
-    mostrarError, 
-    setMostrarError 
-  } = useEditarPropietario()
+  const { actualizarPropietario, desactivarPropietario, loading, error, mostrarError, setMostrarError } = useEditarPropietario()
 
   // Sincronizar el estado interno con la prop `propietario` cuando esta cambie
-  useEffect(() => {
-    setEditingOwner(propietario)
-    setClaveFiscalActualizada("") // Resetear la clave fiscal al cambiar de propietario
-  }, [propietario])
+  useEffect(() => { setEditingOwner(propietario); setClaveFiscalActualizada("") }, [propietario])
 
   // Resetear la clave fiscal cuando se cierra el modal
   useEffect(() => {

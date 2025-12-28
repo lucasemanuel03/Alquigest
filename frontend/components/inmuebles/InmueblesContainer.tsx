@@ -7,13 +7,14 @@ import { Propietario } from "@/types/Propietario"
 import BACKEND_URL from "@/utils/backendURL"
 import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
 import Loading from "@/components/loading"
-import InmueblesHeader, { FiltroInmuebles } from "@/components/inmuebles/InmueblesHeader"
+import InmueblesHeader from "@/components/inmuebles/InmueblesHeader"
 import InmueblesGrid from "@/components/inmuebles/InmueblesGrid"
 import ModalEditarInmueble, { EditingInmueble } from "@/components/modal-editar-inmueble"
 import ModalError from "@/components/modal-error"
 import BarraBusqueda from "../busqueda/barra-busqueda"
-import { set } from "lodash"
 import { useAuth } from "@/contexts/AuthProvider"
+import { useInmuebles } from "@/hooks/useInmuebles"
+import { FiltroInmuebles } from "@/utils/services/inmueblesService"
 
 export default function InmueblesContainer() {
   const { hasPermission } = useAuth();
@@ -25,12 +26,11 @@ export default function InmueblesContainer() {
   const filtrosValidos: FiltroInmuebles[] = ["activos", "inactivos", "alquilados", "disponibles"]
   const filtroInicial = filtrosValidos.includes(filtroFromURL) ? filtroFromURL : "activos"
 
-  const [inmueblesBD, setInmueblesBD] = useState<Inmueble[]>([])
+  const [filtro, setFiltro] = useState<FiltroInmuebles>(filtroInicial)
+  const { inmuebles, loading, error, refetch, update } = useInmuebles(filtro)
+
   const [inmueblesMostrar, setInmueblesMostrar] = useState<Inmueble[]>([])
   const [propietariosBD, setPropietariosBD] = useState<Propietario[]>([])
-
-  const [loading, setLoading] = useState(true)
-  const [filtro, setFiltro] = useState<FiltroInmuebles>(filtroInicial)
 
   const [isEditInmuebleOpen, setIsEditInmuebleOpen] = useState(false)
   const [editingInmueble, setEditingInmueble] = useState<EditingInmueble>({
@@ -52,9 +52,14 @@ export default function InmueblesContainer() {
   // Función para cambiar filtro y actualizar URL
   const handleChangeFiltro = (nuevoFiltro: FiltroInmuebles) => {
     setFiltro(nuevoFiltro)
-    // Actualizar URL sin recargar la página
     router.push(`/inmuebles?filtro=${nuevoFiltro}`, { scroll: false })
+    refetch(nuevoFiltro)
   }
+
+  // Sincronizar inmueblesMostrar con inmuebles cuando cambien
+  useEffect(() => {
+    setInmueblesMostrar(inmuebles)
+  }, [inmuebles])
 
   useEffect(() => {
     const fetchPropietarios = async () => {
@@ -68,34 +73,6 @@ export default function InmueblesContainer() {
     }
 
     fetchPropietarios()
-  }, [filtro])
-
-  useEffect(() => {
-    const fetchInmuebles = async () => {
-
-      setLoading(true)
-      
-      // Mapear filtro a endpoint
-      const endpointMap: Record<FiltroInmuebles, string> = {
-        activos: "inmuebles/activos",
-        inactivos: "inmuebles/inactivos",
-        alquilados: "inmuebles/alquilados",
-        disponibles: "inmuebles/disponibles",
-      }
-
-      const url = `${BACKEND_URL}/${endpointMap[filtro]}`
-
-      try {
-        const data: Inmueble[] = await fetchWithToken(url)
-        setInmueblesBD(data)
-        setInmueblesMostrar(data)
-        setLoading(false)
-      } catch (error) {
-        console.error("Error al obtener inmuebles:", error)
-      }
-    }
-
-    fetchInmuebles()
   }, [filtro])
 
   const handleEditInmueble = (inmueble: Inmueble) => {
@@ -117,31 +94,27 @@ export default function InmueblesContainer() {
       if (!editingInmueble || !editingInmueble.id) {
         throw new Error("Inmueble no válido para editar")
       }
-      let updatedInmueble
 
-
-      // Si estado actual es "Inactivo", llamar a endpoint de desactivación
-      if (editingInmueble.estado === 3 || editingInmueble.estado === "3") {
-        editingInmueble.esActivo = false
-        await fetchWithToken(`${BACKEND_URL}/inmuebles/${editingInmueble.id}/desactivar`, { method: "PATCH" })
-        updatedInmueble = { ...editingInmueble, esActivo: false }
+      // Convertir datos si es necesario
+      const dataToUpdate: Partial<Inmueble> = {
+        propietarioId: typeof editingInmueble.propietarioId === "string" 
+          ? parseInt(editingInmueble.propietarioId) 
+          : editingInmueble.propietarioId,
+        direccion: editingInmueble.direccion,
+        tipoInmuebleId: typeof editingInmueble.tipoInmuebleId === "string"
+          ? parseInt(editingInmueble.tipoInmuebleId)
+          : editingInmueble.tipoInmuebleId,
+        estado: typeof editingInmueble.estado === "string"
+          ? parseInt(editingInmueble.estado)
+          : editingInmueble.estado,
+        superficie: typeof editingInmueble.superficie === "string"
+          ? parseFloat(editingInmueble.superficie)
+          : editingInmueble.superficie,
+        esAlquilado: editingInmueble.esAlquilado,
+        esActivo: editingInmueble.esActivo,
       }
 
-      // Si estado actual es distinto de "Inactivo", llamar a endpoint de actualización normal
-      if (editingInmueble.estado !== 3 && editingInmueble.estado !== "3") {
-        editingInmueble.esActivo = true
-      }
-      
-      updatedInmueble = await fetchWithToken(`${BACKEND_URL}/inmuebles/${editingInmueble.id}`, {
-          method: "PUT",
-          body: JSON.stringify(editingInmueble)
-      })
-
-      if (!updatedInmueble || !updatedInmueble.id) {
-        throw new Error("El servidor no retornó el inmueble actualizado")
-      }
-
-      setInmueblesBD((prev) => prev.map((p) => (p.id === updatedInmueble.id ? updatedInmueble : p)))
+      await update(editingInmueble.id, dataToUpdate)
 
       setIsEditInmuebleOpen(false)
       setEditingInmueble({
@@ -174,15 +147,15 @@ export default function InmueblesContainer() {
       <InmueblesHeader
         filtro={filtro}
         onChangeFiltro={handleChangeFiltro}
-        count={inmueblesBD.length}
+        count={inmuebles.length}
         onInmuebleCreado={(nuevo) => {
-          setInmueblesBD((prev) => [...prev, nuevo])
           setInmueblesMostrar((prev) => [...prev, nuevo])
+          refetch(filtro)
         }}
       />
 
       <BarraBusqueda 
-        arrayDatos={inmueblesBD}
+        arrayDatos={inmuebles}
         placeholder="Buscar por dirección..." 
         setDatosFiltrados={setInmueblesMostrar} 
         propiedadesBusqueda={["direccion"]}/>
@@ -204,7 +177,11 @@ export default function InmueblesContainer() {
       />
 
       {mostrarError && (
-        <ModalError titulo="Error al crear Inmueble" mensaje={errorCarga} onClose={() => setMostrarError(false)} />
+        <ModalError titulo="Error al editar Inmueble" mensaje={errorCarga} onClose={() => setMostrarError(false)} />
+      )}
+
+      {error && (
+        <ModalError titulo="Error al cargar Inmuebles" mensaje={error} onClose={() => setMostrarError(false)} />
       )}
     </main>
   )

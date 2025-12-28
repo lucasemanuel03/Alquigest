@@ -11,8 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-
-export type FiltroInmuebles = "activos" | "inactivos" | "alquilados" | "disponibles"
+import { FiltroInmuebles } from "@/utils/services/inmueblesService"
 
 type Props = {
   filtro: FiltroInmuebles
