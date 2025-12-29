@@ -47,7 +47,7 @@ export default function ContratoAlquilerCard({
 
   return (
     <Card
-      className="hover:shadow-lg transition-shadow cursor-pointer border-1 border-foreground/20"
+      className="hover:shadow-lg transition-shadow cursor-pointer border-foreground/20"
       onClick={() => onToggle(contrato.id)}
     >
       {/* Header */}

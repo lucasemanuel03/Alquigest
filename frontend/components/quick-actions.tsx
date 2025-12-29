@@ -4,16 +4,20 @@ import { useMemo, useState } from "react";
 
 import Link from "next/link";
 import { Button } from "./ui/button";
-import { FastForward, FilePlus2, FileText, Home, HousePlusIcon, Plus, SquareArrowOutUpRight, UserCircle2, UserPlus, UserPlus2 } from "lucide-react";
+import { Blocks, FastForward, FilePlus2, FileText, Home, HousePlusIcon, Plus, Receipt, SquareArrowOutUpRight, UserCircle2, UserPlus, UserPlus2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import NuevoInmuebleModal from "@/app/inmuebles/nuevo/nuevoInmuebleModal";
 import { useAuth } from "@/contexts/AuthProvider";
+import PagoServiciosModal from "./pago-servicios-modal";
+import PagoAlquileresModal from "./pago-alquileres-modal";
 
 export default function QuickActions() {
   const { hasPermission, hasRole, user } = useAuth();
   const [openInquilino, setOpenInquilino] = useState(false)
   const [openPropietario, setOpenPropietario] = useState(false)
   const [openInmueble, setOpenInmueble] = useState(false)
+  const [openPagoServicios, setOpenPagoServicios] = useState(false)
+  const [openPagoAlquileres, setOpenPagoAlquileres] = useState(false)
   // permisos
   const perms = useMemo(() => ({
     crearPropietario: hasPermission("crear_propietario"),
@@ -33,6 +37,20 @@ export default function QuickActions() {
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-full">
+            {/* Pagar Alquileres */}
+            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setOpenPagoAlquileres(true) }}>
+              <Button  size="sm" className="w-full flex items-center justify-start bg-green-600 hover:bg-green-800" >
+                <Receipt className="mr-2 text-background" />
+                Pagar Alquileres (Beta)
+              </Button>
+            </DropdownMenuItem>
+            {/* Pagar Servicios */}
+            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setOpenPagoServicios(true) }}>
+              <Button  size="sm" className="w-full flex items-center justify-start bg-green-600 hover:bg-green-800" >
+                <Blocks className="mr-2 text-background" />
+                Pagar Servicios (Beta)
+              </Button>
+            </DropdownMenuItem>
             {/* Nuevo Locador */}
             <DropdownMenuItem onSelect={(e) => { e.preventDefault(); if (perms.crearPropietario) setOpenPropietario(true) }}>
               <Button  size="sm" className="w-full flex items-center justify-start" disabled={!perms.crearPropietario}>
@@ -101,6 +119,8 @@ export default function QuickActions() {
 
         {/* Modales controlados y fuera del dropdown para evitar unmount */}
         <div>
+          <PagoAlquileresModal open={openPagoAlquileres} onOpenChange={setOpenPagoAlquileres} />
+          <PagoServiciosModal open={openPagoServicios} onOpenChange={setOpenPagoServicios} />
           <NuevoPropietarioModal open={openPropietario} onOpenChange={setOpenPropietario} showTrigger={false} />
           <NuevoInquilinoModal open={openInquilino} onOpenChange={setOpenInquilino} showTrigger={false} />
           <NuevoInmuebleModal open={openInmueble} onOpenChange={setOpenInmueble} showTrigger={false} />

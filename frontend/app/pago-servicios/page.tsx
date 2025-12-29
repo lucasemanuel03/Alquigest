@@ -1,28 +1,32 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useMemo } from "react"
 import { CreditCard, Blocks, ArrowLeft, Receipt } from "lucide-react"
-import { ContratoDetallado } from "@/types/ContratoDetallado"
-import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
-import BACKEND_URL from "@/utils/backendURL"
+import { usePagoServicios } from "@/hooks/usePagoServicios"
 import Loading from "@/components/loading"
 import ContratoServiciosCard from "@/components/pago-servicios/contrato-servicios-card"
 import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
 import EstadisticaCard from "@/components/estadisticas/estadistica-card"
 
-
+/**
+ * Página de Pago de Servicios
+ * 
+ * Responsabilidades:
+ * - Orquestar el hook usePagoServicios
+ * - Ordenar y filtrar datos
+ * - Coordinar la actualización cuando se registra un pago
+ * - Delegar renderizado a componentes presentacionales
+ */
 export default function PagoServiciosPage() {
-  const [contratos, setContratos] = useState<ContratoDetallado[]>([])
-  const [loading, setLoading] = useState(true)
-  const [contratosServiciosNoPagos, setContratosServiciosNoPagos] = useState<Record<string, number>>({})
-  const [loadingContadores, setLoadingContadores] = useState(true)
-  const [loadingPendientes, setLoadingPendientes] = useState(true)
-  const [contadores, setContadores] = useState({
-    cantServiciosNoPagos: 0,
-    cantServicios: 0,
-  })
+  const {
+    contratos,
+    contadores,
+    contratosServiciosNoPagos,
+    loading,
+    loadingContadores,
+    loadingPendientes,
+    refrescarDatos,
+  } = usePagoServicios()
 
   // Ordenar contratos por cantidad de servicios pendientes (descendente)
   const contratosOrdenados = useMemo(() => {
@@ -34,75 +38,12 @@ export default function PagoServiciosPage() {
     })
   }, [contratos, contratosServiciosNoPagos])
 
-  useEffect(() => {
-    // Fetch principal: contratos (bloquea el loading principal)
-    const fetchContratos = async () => {
-      setLoading(true)
-      
-      try {
-        const data = await fetchWithToken(`${BACKEND_URL}/contratos/vigentes`)
-        setContratos(data)
-      } catch (err: any) {
-        console.error("Error al traer contratos:", err.message)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    // Fetch secundario: contadores (en background)
-    const fetchContadores = async () => {
-      setLoadingContadores(true)
-      try {
-        const cantServicios = await fetchWithToken(`${BACKEND_URL}/pagos-servicios/count/pendientes`)
-        setContadores({
-          cantServiciosNoPagos: cantServicios.serviciosPendientes,
-          cantServicios: cantServicios.serviciosTotales,
-        })
-      } catch (err: any) {
-        console.error("Error al traer contadores:", err.message)
-      } finally {
-        setLoadingContadores(false)
-      }
-    }
-
-    // Fetch secundario: servicios no pagados por contrato (en background)
-    const fetchServiciosNoPagados = async () => {
-      setLoadingPendientes(true)
-      try {
-        const data = await fetchWithToken(`${BACKEND_URL}/pagos-servicios/no-pagados/mes-actual/por-contrato`)
-        setContratosServiciosNoPagos(data)
-      } catch (err: any) {
-        console.error("Error al traer servicios no pagados:", err.message)
-      } finally {
-        setLoadingPendientes(false)
-      }
-    }
-
-    fetchContratos()
-    fetchContadores()
-    fetchServiciosNoPagados()
-  }, [])
-
-  // Función para refrescar los datos cuando se registra un pago
+  /**
+   * Callback cuando se registra un pago en un contrato
+   * Refrescar datos secundarios (contadores y pendientes)
+   */
   const handlePagoRegistrado = async (contratoId: number) => {
-    // Refrescar contadores
-    try {
-      const cantServicios = await fetchWithToken(`${BACKEND_URL}/pagos-servicios/count/pendientes`)
-      setContadores({
-        cantServiciosNoPagos: cantServicios.serviciosPendientes,
-        cantServicios: cantServicios.serviciosTotales,
-      })
-    } catch (err: any) {
-      console.error("Error al refrescar contadores:", err.message)
-    }
-
-    // Refrescar badges de pendientes por contrato
-    try {
-      const data = await fetchWithToken(`${BACKEND_URL}/pagos-servicios/no-pagados/mes-actual/por-contrato`)
-      setContratosServiciosNoPagos(data)
-    } catch (err: any) {
-      console.error("Error al refrescar servicios no pagados:", err.message)
-    }
+    await refrescarDatos(contratoId)
   }
 
   if(loading){
@@ -130,7 +71,7 @@ export default function PagoServiciosPage() {
 
           <EstadisticaCard 
             titulo="Total de servicios"
-            valor={contadores.cantServicios}
+            valor={contadores.serviciosTotales}
             icono={<Blocks className=" text-slate-700" />}
             coloresIcono="bg-slate-300"
             subtitulo="Bajo control del estudio jurídico"
@@ -139,7 +80,7 @@ export default function PagoServiciosPage() {
             />
           <EstadisticaCard
             titulo="Servicios Pendientes"
-            valor={contadores.cantServiciosNoPagos}
+            valor={contadores.serviciosPendientes}
             icono={<Receipt className=" text-orange-700" />}
             coloresIcono="bg-orange-300"
             subtitulo="Servicios aún no pagados"
@@ -149,7 +90,7 @@ export default function PagoServiciosPage() {
 
           <EstadisticaCard 
             titulo="Servicios Pagados"
-            valor={contadores.cantServicios - contadores.cantServiciosNoPagos}
+            valor={contadores.serviciosTotales - contadores.serviciosPendientes}
             icono={<CreditCard className=" text-green-700" />}
             coloresIcono="bg-green-300"
             subtitulo="Servicios pagados este mes"
@@ -171,7 +112,7 @@ export default function PagoServiciosPage() {
           {/* Cards de contratos */}
           {/** Lista ordenada: primero contratos con más servicios pendientes */}
           <div className="grid grid-cols-1 gap-4 ">
-            {contratosOrdenados.map((contrato: ContratoDetallado) => (
+            {contratosOrdenados.map((contrato) => (
               <ContratoServiciosCard 
                 key={contrato.id} 
                 contrato={contrato} 
