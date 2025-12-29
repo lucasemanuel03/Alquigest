@@ -9,6 +9,7 @@ import Loading from "@/components/loading"
 import ContratoServiciosCard from "@/components/pago-servicios/contrato-servicios-card"
 import { Blocks, X, ExternalLink } from "lucide-react"
 import { DialogDescription } from "@radix-ui/react-dialog"
+import Link from "next/link"
 
 type PagoServiciosModalProps = {
   open: boolean
@@ -85,9 +86,11 @@ export default function PagoServiciosModal({ open, onOpenChange }: PagoServicios
         </DialogDescription>
 
         <DialogFooter className="px-6 pb-2">
-            <Button variant="outline" onClick={() => window.open('/pago-servicios', '_blank')}>
-                <ExternalLink/> Ver Todos
+                      <Link href="/pago-servicios">
+            <Button variant="outline" onClick={() => {onOpenChange(false)}}>
+                <ExternalLink /> Ver Todos
             </Button>
+          </Link>
             <Button variant="outline" onClick={() => onOpenChange(false)}>
                <X/> Cerrar
             </Button>

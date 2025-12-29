@@ -4,9 +4,11 @@ export type PagoAlquiler = {
   fechaVencimientoPago: string
   monto: number
   estaPagado: boolean
-  cuentaBanco: string
-  titularDePago: string
-  metodo: string
+  fechaPago: string | null
+  necesitaAumentoManual: boolean
+  cuentaBanco: string | null
+  titularDePago: string | null
+  metodo: string | null
   createdAt: string
   updatedAt: string | null
   inmuebleId: number
