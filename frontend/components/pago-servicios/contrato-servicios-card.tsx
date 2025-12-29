@@ -18,13 +18,15 @@ import { useAuth } from "@/contexts/AuthProvider"
 import ModalReciboServicios from "@/components/pago-servicios/modal-recibo-servicios"
 
 interface ContratoServiciosCardProps {
+  estoyEnModal?: boolean
   contrato: ContratoDetallado
   cantidadPendientes?: number
   loadingPendientes?: boolean
   onPagoRegistrado?: () => void | Promise<void>
 }
 
-export default function ContratoServiciosCard({ 
+export default function ContratoServiciosCard({
+  estoyEnModal = false, 
   contrato, 
   cantidadPendientes = 0, 
   loadingPendientes = false,
@@ -154,7 +156,7 @@ export default function ContratoServiciosCard({
   }
 
   return (
-    <Card className="transition-all duration-200 hover:shadow-lg cursor-pointer border-1 border-foreground/20">
+    <Card className="transition-all duration-200 hover:shadow-lg cursor-pointer border-foreground/20">
       <CardHeader onClick={toggleCard} className="cursor-pointer">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -226,7 +228,7 @@ export default function ContratoServiciosCard({
             )}
             <div className="pt-4 border-t flex flex-col gap-4 sm:flex-row sm:justify-end sm:items-center">
                  {/* Aquí va el botón HISTORIAL */}
-              <Link href={`/contratos/${contrato.id}/historial-pagos-servicios`}>
+              <Link href={`/contratos/${contrato.id}/historial-pagos-servicios`} target={estoyEnModal ? "_blank" : undefined}>
                 <Button className="w-full sm:w-auto" variant={"outline"}>
                   <FileClock className="h-4 w-4 mr-2" />
                   Ver Historial
@@ -241,7 +243,7 @@ export default function ContratoServiciosCard({
                 Recibo de Servicios
               </Button>
                 {/* Aquí va el botón para generar MERCEDES LOCATIVAS */}
-              <Link href={`/alquileres/${contrato.id}/generar-recibo`}>
+              <Link href={`/alquileres/${contrato.id}/generar-recibo`} target={estoyEnModal ? "_blank" : undefined}>
                 <Button className="w-full sm:w-auto" variant={"outline"}>
                   <Receipt className="h-4 w-4 mr-2" />
                   Mercedes Locativas
