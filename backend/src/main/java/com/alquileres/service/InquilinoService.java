@@ -6,8 +6,11 @@ import com.alquileres.repository.InquilinoRepository;
 import com.alquileres.repository.ContratoRepository;
 import com.alquileres.exception.BusinessException;
 import com.alquileres.exception.ErrorCodes;
+import com.alquileres.config.CacheNames;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -125,6 +128,17 @@ public class InquilinoService {
     }
 
     // Actualizar inquilino
+    @Transactional
+    @CacheEvict(
+        allEntries = true,
+        cacheNames = {
+            CacheNames.CONTRATOS,
+            CacheNames.CONTRATOS_VIGENTES,
+            CacheNames.CONTRATOS_NO_VIGENTES,
+            CacheNames.CONTRATOS_PROXIMOS_VENCER,
+            CacheNames.CONTRATOS_POR_INQUILINO
+        }
+    )
     public InquilinoDTO actualizarInquilino(Long id, InquilinoDTO inquilinoDTO) {
         Optional<Inquilino> inquilinoExistente = inquilinoRepository.findById(id);
 

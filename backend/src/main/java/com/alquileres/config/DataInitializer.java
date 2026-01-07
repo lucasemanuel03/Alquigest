@@ -130,26 +130,26 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("Ámbitos de PDF inicializados en la base de datos");
         }
 
-        // Crear usuario administrador por defecto si no existe ningún usuario con rol ADMINISTRADOR
-        Rol adminRole = rolRepository.findByNombre(RolNombre.ROLE_ADMINISTRADOR)
-                .orElseThrow(() -> new RuntimeException("Error: Rol ADMINISTRADOR no encontrado."));
+        // Crear usuario administrador por defecto si no existe ningún usuario con rol ABOGADA
+        Rol abogadaRole= rolRepository.findByNombre(RolNombre.ROLE_ABOGADA)
+                .orElseThrow(() -> new RuntimeException("Error: Rol ABOGADA no encontrado."));
 
-        // Verificar si el usuario "admin" ya existe
-        if (!usuarioRepository.existsByUsername("admin")) {
+        // Verificar si el usuario "carina" ya existe
+        if (!usuarioRepository.existsByUsername("carina")) {
             // Crear el usuario administrador por defecto
-            Usuario adminUsuario = new Usuario("admin", "admin@alquileres.com", passwordEncoder.encode("123456"));
-            adminUsuario.setEsActivo(true);
+            Usuario abogadaUsuario = new Usuario("carina", "carina@alquileres.com", passwordEncoder.encode("carinaabogada"));
+            abogadaUsuario.setEsActivo(true);
 
-            // Asignar el rol de administrador
-            Set<Rol> adminRoles = new HashSet<>();
-            adminRoles.add(adminRole);
-            adminUsuario.setRoles(adminRoles);
+            // Asignar el rol de abogada
+            Set<Rol> abogadaRoles = new HashSet<>();
+            abogadaRoles.add(abogadaRole);
+            abogadaUsuario.setRoles(abogadaRoles);
 
-            usuarioRepository.save(adminUsuario);
+            usuarioRepository.save(abogadaUsuario);
 
-            System.out.println("Usuario administrador por defecto creado: username='admin', password='123456'");
+            System.out.println("Usuario 'carina' por defecto creado: username='carina', password='carinaabogada'");
         } else {
-            System.out.println("Usuario administrador 'admin' ya existe en la base de datos");
+            System.out.println("Usuario administrador 'carina' ya existe en la base de datos");
         }
     }
 }

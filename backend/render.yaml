@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: alquigest-backend
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:postgresql://aws-1-sa-east-1.pooler.supabase.com:6543/postgres?user=postgres.tenoiqaislbaxtzysjod&prepareThreshold=0
+      - key: SPRING_DATASOURCE_USERNAME
+        value: postgres.tenoiqaislbaxtzysjod
+      - key: SPRING_DATASOURCE_PASSWORD
+        value: P2LHTNcQYMA0DFRR
+      - key: SPRING_PROFILES_ACTIVE
+        value: production
+      - key: ALLOWED_ORIGINS
+        value: http://localhost:3000,https://*.onrender.com
+      - key: JWT_SECRET
+        value: d784f597704159192eb9e6ce35152c0a1827ccd934e29708ca30e26592084168
+      - key: JWT_EXPIRATION_MS
+        value: 86400000
+      - key: ENCRYPTION_KEY
+        value: 6a3838956795d84d0c717e266885a25a37aacd0260G
+      - key: MAIL_USERNAME
+        value: noreply.alquigest@gmail.com
+      - key: MAIL_PASSWORD
+        value: tmdlmdbhorsauljv
+      - key: PASSWORD_RESET_TOKEN_EXPIRATION_MS
+        value: 3600000
+      - key: JAVA_OPTS
+        value: -Xmx512m -Xms256m
+

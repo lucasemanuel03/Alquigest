@@ -56,12 +56,30 @@ public class EncryptionService {
 
     /**
      * Obtiene la clave secreta desde la configuración
+     * Decodifica la clave hexadecimal a bytes (32 bytes = 256 bits)
      *
      * @return La clave AES como SecretKeySpec
      */
     private SecretKeySpec obtenerClave() {
-        byte[] keyBytes = Base64.getDecoder().decode(encryptionKey);
+        // Convertir clave hexadecimal a bytes
+        byte[] keyBytes = hexStringToByteArray(encryptionKey);
         return new SecretKeySpec(keyBytes, 0, keyBytes.length, ALGORITHM);
+    }
+
+    /**
+     * Convierte una cadena hexadecimal a array de bytes
+     *
+     * @param hexString Cadena hexadecimal
+     * @return Array de bytes
+     */
+    private byte[] hexStringToByteArray(String hexString) {
+        int len = hexString.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(hexString.charAt(i), 16) << 4)
+                    + Character.digit(hexString.charAt(i + 1), 16));
+        }
+        return data;
     }
 }
 
