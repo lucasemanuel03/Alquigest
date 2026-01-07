@@ -11,8 +11,11 @@ import com.alquileres.repository.TipoInmuebleRepository;
 import com.alquileres.repository.ContratoRepository;
 import com.alquileres.exception.BusinessException;
 import com.alquileres.exception.ErrorCodes;
+import com.alquileres.config.CacheNames;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
 
 import java.util.List;
 import java.util.Optional;
@@ -151,6 +154,18 @@ public class InmuebleService {
     }
 
     // Actualizar inmueble
+    @Transactional
+    @CacheEvict(
+        allEntries = true,
+        cacheNames = {
+            CacheNames.CONTRATOS,
+            CacheNames.CONTRATOS_VIGENTES,
+            CacheNames.CONTRATOS_NO_VIGENTES,
+            CacheNames.CONTRATOS_PROXIMOS_VENCER,
+            CacheNames.CONTRATOS_POR_INMUEBLE,
+            CacheNames.INMUEBLE_TIENE_CONTRATO_VIGENTE
+        }
+    )
     public InmuebleDTO actualizarInmueble(Long id, InmuebleDTO inmuebleDTO) {
         Optional<Inmueble> inmuebleExistente = inmuebleRepository.findById(id);
 
@@ -206,6 +221,18 @@ public class InmuebleService {
     }
 
     // Eliminar inmueble (borrado lógico)
+    @Transactional
+    @CacheEvict(
+        allEntries = true,
+        cacheNames = {
+            CacheNames.CONTRATOS,
+            CacheNames.CONTRATOS_VIGENTES,
+            CacheNames.CONTRATOS_NO_VIGENTES,
+            CacheNames.CONTRATOS_PROXIMOS_VENCER,
+            CacheNames.CONTRATOS_POR_INMUEBLE,
+            CacheNames.INMUEBLE_TIENE_CONTRATO_VIGENTE
+        }
+    )
     public void eliminarInmueble(Long id) {
         Optional<Inmueble> inmueble = inmuebleRepository.findById(id);
         if (inmueble.isEmpty()) {
@@ -248,6 +275,18 @@ public class InmuebleService {
      * @param propietarioId ID del propietario
      * @return Cantidad de inmuebles desactivados
      */
+    @Transactional
+    @CacheEvict(
+        allEntries = true,
+        cacheNames = {
+            CacheNames.CONTRATOS,
+            CacheNames.CONTRATOS_VIGENTES,
+            CacheNames.CONTRATOS_NO_VIGENTES,
+            CacheNames.CONTRATOS_PROXIMOS_VENCER,
+            CacheNames.CONTRATOS_POR_INMUEBLE,
+            CacheNames.INMUEBLE_TIENE_CONTRATO_VIGENTE
+        }
+    )
     public int desactivarInmueblesPorPropietario(Long propietarioId) {
         // Obtener el estado "Inactivo"
         EstadoInmueble estadoInactivo = estadoInmuebleRepository.findByNombre("Inactivo")
@@ -269,6 +308,18 @@ public class InmuebleService {
     }
 
     // Marcar inmueble como alquilado
+    @Transactional
+    @CacheEvict(
+        allEntries = true,
+        cacheNames = {
+            CacheNames.CONTRATOS,
+            CacheNames.CONTRATOS_VIGENTES,
+            CacheNames.CONTRATOS_NO_VIGENTES,
+            CacheNames.CONTRATOS_PROXIMOS_VENCER,
+            CacheNames.CONTRATOS_POR_INMUEBLE,
+            CacheNames.INMUEBLE_TIENE_CONTRATO_VIGENTE
+        }
+    )
     public InmuebleDTO marcarComoAlquilado(Long id) {
         Optional<Inmueble> inmueble = inmuebleRepository.findById(id);
         if (inmueble.isPresent()) {
@@ -292,6 +343,18 @@ public class InmuebleService {
     }
 
     // Marcar inmueble como disponible
+    @Transactional
+    @CacheEvict(
+        allEntries = true,
+        cacheNames = {
+            CacheNames.CONTRATOS,
+            CacheNames.CONTRATOS_VIGENTES,
+            CacheNames.CONTRATOS_NO_VIGENTES,
+            CacheNames.CONTRATOS_PROXIMOS_VENCER,
+            CacheNames.CONTRATOS_POR_INMUEBLE,
+            CacheNames.INMUEBLE_TIENE_CONTRATO_VIGENTE
+        }
+    )
     public InmuebleDTO marcarComoDisponible(Long id) {
         Optional<Inmueble> inmueble = inmuebleRepository.findById(id);
         if (inmueble.isPresent()) {
@@ -309,6 +372,18 @@ public class InmuebleService {
     }
 
     // Cambiar estado de alquiler (método usado por el controller)
+    @Transactional
+    @CacheEvict(
+        allEntries = true,
+        cacheNames = {
+            CacheNames.CONTRATOS,
+            CacheNames.CONTRATOS_VIGENTES,
+            CacheNames.CONTRATOS_NO_VIGENTES,
+            CacheNames.CONTRATOS_PROXIMOS_VENCER,
+            CacheNames.CONTRATOS_POR_INMUEBLE,
+            CacheNames.INMUEBLE_TIENE_CONTRATO_VIGENTE
+        }
+    )
     public InmuebleDTO cambiarEstadoAlquiler(Long id, Boolean esAlquilado) {
         if (esAlquilado) {
             return marcarComoAlquilado(id);
@@ -318,6 +393,18 @@ public class InmuebleService {
     }
 
     // Cambiar tipo de inmueble
+    @Transactional
+    @CacheEvict(
+        allEntries = true,
+        cacheNames = {
+            CacheNames.CONTRATOS,
+            CacheNames.CONTRATOS_VIGENTES,
+            CacheNames.CONTRATOS_NO_VIGENTES,
+            CacheNames.CONTRATOS_PROXIMOS_VENCER,
+            CacheNames.CONTRATOS_POR_INMUEBLE,
+            CacheNames.INMUEBLE_TIENE_CONTRATO_VIGENTE
+        }
+    )
     public InmuebleDTO cambiarTipoInmueble(Long id, Long tipoInmuebleId) {
         // Verificar que existe el inmueble
         Optional<Inmueble> inmuebleExistente = inmuebleRepository.findById(id);
@@ -354,6 +441,18 @@ public class InmuebleService {
     }
 
     // Activar inmueble (reactivación)
+    @Transactional
+    @CacheEvict(
+        allEntries = true,
+        cacheNames = {
+            CacheNames.CONTRATOS,
+            CacheNames.CONTRATOS_VIGENTES,
+            CacheNames.CONTRATOS_NO_VIGENTES,
+            CacheNames.CONTRATOS_PROXIMOS_VENCER,
+            CacheNames.CONTRATOS_POR_INMUEBLE,
+            CacheNames.INMUEBLE_TIENE_CONTRATO_VIGENTE
+        }
+    )
     public void activarInmueble(Long id) {
         Optional<Inmueble> inmueble = inmuebleRepository.findById(id);
         if (inmueble.isEmpty()) {
@@ -371,6 +470,18 @@ public class InmuebleService {
 
     // Metodo que se usa cuando se da de baja un contrato automaticamente
     // Cambia el estado del inmueble a Disponible y esAlquilado = false
+    @Transactional
+    @CacheEvict(
+        allEntries = true,
+        cacheNames = {
+            CacheNames.CONTRATOS,
+            CacheNames.CONTRATOS_VIGENTES,
+            CacheNames.CONTRATOS_NO_VIGENTES,
+            CacheNames.CONTRATOS_PROXIMOS_VENCER,
+            CacheNames.CONTRATOS_POR_INMUEBLE,
+            CacheNames.INMUEBLE_TIENE_CONTRATO_VIGENTE
+        }
+    )
     public void actualizarEstadoInmueble(Inmueble i) {
         Optional<EstadoInmueble> estadoInmuebleDisponible = estadoInmuebleRepository.findByNombre("Disponible");
         if (estadoInmuebleDisponible.isEmpty()) {

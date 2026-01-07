@@ -50,11 +50,11 @@ spring-boot-*.jar
 .settings/
 bin/
 
-# OS
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
+# Environment variables
+.env
+.env.local
+.env.production
+
 .Trashes
 ehthumbs.db
 Thumbs.db

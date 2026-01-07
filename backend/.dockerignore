@@ -1,0 +1,50 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+LICENSE
+CHECKLIST_DESPLIEGUE.md
+DESPLIEGUE_RENDER.md
+mdsDeCopilot/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.classpath
+.project
+.settings/
+
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.local
+.env.production
+.env.example
+
+# Scripts
+test-docker.sh
+run-tests.sh
+test-cookies.sh
+
+# OS
+.DS_Store
+Thumbs.db
+

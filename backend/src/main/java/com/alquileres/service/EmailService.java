@@ -19,7 +19,7 @@ public class EmailService {
 
     public void enviarEmailRecuperacionContrasena(String destinatario, String usuario, String token) {
         try {
-            String enlace = "http://localhost:3000/auth/nueva-contrasena?token=" + token;
+            String enlace = "http://alquigest.vercel.app/auth/nueva-contrasena?token=" + token;
             String contenido = "Hola " + usuario + ",\n\n" +
                     "Ha solicitado recuperar su contraseña. Por favor haga clic en el siguiente enlace:\n" +
                     enlace + "\n\n" +

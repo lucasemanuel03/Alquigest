@@ -1,5 +1,7 @@
 package com.alquileres.exception;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -16,6 +18,8 @@ import jakarta.validation.ConstraintViolationException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiError> handleBusinessException(BusinessException ex, WebRequest request) {
@@ -76,6 +80,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGenericException(Exception ex, WebRequest request) {
+        // Logging detallado para diagnosticar errores
+        logger.error("=== ERROR CAPTURADO ===");
+        logger.error("Path: {}", getPath(request));
+        logger.error("Tipo de excepción: {}", ex.getClass().getName());
+        logger.error("Mensaje: {}", ex.getMessage());
+        logger.error("Stack trace completo:", ex);
+
         ApiError apiError = new ApiError(
             HttpStatus.INTERNAL_SERVER_ERROR.value(),
             HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),

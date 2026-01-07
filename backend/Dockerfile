@@ -1,33 +1,35 @@
-# Stage 1: Build
-FROM maven:3.9.4-eclipse-temurin-17 AS builder
-
+# Etapa 1: Build
+FROM maven:3.9.9-eclipse-temurin-21-alpine AS build
 WORKDIR /app
 
-# Copy pom.xml and download dependencies
+# Copiar solo pom.xml primero (cache de dependencias)
 COPY pom.xml .
-RUN mvn dependency:resolve
+RUN mvn dependency:go-offline -B
 
-# Copy source code
+# Copiar el resto del código y compilar
 COPY src ./src
+RUN mvn clean package -DskipTests -B
 
-# Build the application
-RUN mvn clean package -DskipTests
-
-# Stage 2: Runtime
-FROM eclipse-temurin:17-jre-alpine
-
+# Etapa 2: Runtime
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-# Copy the JAR file from builder
-COPY --from=builder /app/target/*.jar app.jar
+# Crear usuario no-root
+RUN addgroup -g 1001 appuser && \
+    adduser -D -u 1001 -G appuser appuser
 
-# Expose port
-EXPOSE 8081
+# Copiar el JAR de la etapa de build
+COPY --from=build /app/target/*.jar app.jar
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:8081/health || exit 1
+# Cambiar al usuario no-root
+USER appuser
 
-# Run the application
-CMD ["java", "-jar", "app.jar"]
+# Exponer puerto
+EXPOSE 8080
 
+# Variables de entorno por defecto
+ENV JAVA_OPTS="-Xms256m -Xmx512m" \
+    SPRING_PROFILES_ACTIVE=production
+
+# Ejecutar la aplicación
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
